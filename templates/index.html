@@ -35,10 +35,33 @@
 
             margin: 2px;
         }
+
+        .selected {
+
+            fill: #444444;
+            stroke: #D1D1D1;
+        }
+
+        .selected:hover {
+            fill: #a9a9a9 !important;
+        }
+
+        #model rect {
+            cursor: pointer;
+        }
+
+
+        #model rect:hover {
+            cursor: pointer;
+            fill: #333333;
+            stroke: #D1D1D1;
+        }
+
     </style>
 </head>
 <body>
 <script src="{{ url_for('static', filename='assets/js/main.js')}}"></script>
+<script src="{{ url_for('static', filename='assets/js/mapsHandler.js')}}"></script>
 
 <!-- Primary Page Layout
 –––––––––––––––––––––––––––––––––––––––––––––––––– -->
@@ -68,6 +91,15 @@
                 <label style="display: inline-block" for="question">Question</label>
                 <input style="display: inline-block" type="text" class="one-half" id="question">
                 <button class="button-primary" id="reset"> reset</button>
+
+                <svg id="model" style="width: 100%;height: 250px"></svg>
+
+                <div>
+                    <button class="button-primary" id="go"> go</button>
+                    <button class="button" id="resetMod"> reset Selection</button>
+
+                </div>
+
             </div>
         </div>
 
@@ -76,7 +108,12 @@
     <div class="row">
         <div class="twelve column" style="margin-top: 0.2%">
 
-            <div style="width: 100%;height: 640px;border: #555555 solid 1px">
+            <div style="width: 100%;height: 640px;border: #555555 solid 1px;position: relative">
+                <div style="position: absolute;left: 43%;top: 31%;visibility: hidden" id="loader">
+                    <img src="static/assets/images/load.gif" style="width: 150px"/>
+                    <h3> Loading ... </h3>
+                </div>
+
                 <svg id="proj" style="height: 100%;width:100%">
 
                 </svg>
@@ -91,6 +128,20 @@
 
 <script>
     // load_data_light().then(r => init(r));
+
+    const keymap = {};
+    onkeyup = function (e) {
+        if (e.keyCode in keymap) {
+            keymap[e.keyCode] = false;
+        }
+    };
+
+    onkeydown = function (e) {
+        e = e || event;
+        keymap[e.keyCode] = e.type === 'keydown';
+
+    };
+
 
     $("#ggroup").change(function () {
 
@@ -116,8 +167,85 @@
     $("#question").change(function () {
         d3.selectAll("circle").style("opacity", 0.05)
         d3.selectAll("circle").filter(d => d.question.toLowerCase().includes(this.value.toLowerCase())).style("opacity", 0.8).attr("r", 4)
+    })
+
+
+    $("#resetMod").click(function () {
+        attsMaps = [];
+        d3.selectAll("#model rect").attr("class", "");
+    })
+
+    $("#go").click(function () {
+
+        d3.select("#proj").transition().duration(470).style("opacity", "0.2")
+        $("#loader").css("visibility", "visible")
+
+        let form = new FormData();
+        form.append("units", attsMaps);
+
+        $.ajax({
+            type: "POST",
+            url: "/proj",
+            processData: false,
+            contentType: false,
+            data: form,
+            success: function (d) {
+                d = JSON.parse(d);
+
+                for (let i = 0; i < curData.length; i++) {
+                    curData[i].k_dist = d["proj"][i]
+                }
+                plotter_init(curData)
+
+                d3.select("#proj").transition().duration(170).style("opacity", "1")
+                $("#loader").css("visibility", "hidden")
+            }
+        })
+    });
+
+
+    $("#model").on("click", "rect", function () {
+        console.log('lalal');
+
+        let elem = $(this);
+        let type = elem.attr("type");
+        let name = elem.attr("name");
+        let nb = elem.attr("nb");
+
+
+        if (type === "0") {
+            console.log("block");
+
+            let temp = block2names(name, nb);
+
+            if (keymap[16]) {
+                attsMaps = union_arrays(attsMaps, temp)
+            } else {
+                attsMaps = temp
+            }
+
+        } else if (type === "1") {
+            let temp = layer2names(name, nb);
+
+            if (keymap[16]) {
+                attsMaps = union_arrays(attsMaps, temp)
+            } else {
+                attsMaps = temp
+            }
+
+        }
+
+        console.log(attsMaps);
+
+        d3.selectAll("#model rect").attr("class", "");
+        for (let i = 0; i < attsMaps.length; i++) {
+            d3.select("#" + attsMaps[i]).attr("class", "selected")
+        }
+
 
     })
+
+
 </script>
 
 </body>

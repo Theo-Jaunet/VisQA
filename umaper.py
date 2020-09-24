@@ -12,10 +12,10 @@ def convert_dict_to_json(file_path):
         for i in range(len(data)):
             res.append(formatLine(data[i]))
         print(res[0])
-        print(res[1])
-        print(res[2])
-        print(res[3])
-        json.dump(res, fjson, ensure_ascii=False, sort_keys=True, indent=4)
+        # print(res[1])
+        # print(res[2])
+        # print(res[3])
+        # json.dump(res, fjson, ensure_ascii=False, sort_keys=True, indent=4)
 
 
 def formatLine(data):
@@ -23,7 +23,7 @@ def formatLine(data):
     for i in range(len(data["k_dist"])):
         k_dist.append(int(round(data["k_dist"][i])))
     data["k_dist"] = k_dist
-    # print(data)
+    print(data["maps_order"])
     del data["maps_order"]
     return data
 
