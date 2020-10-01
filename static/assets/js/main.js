@@ -1,6 +1,6 @@
 let curData = [];
 
-let mod = {lang: 9, vis: 4, cross: 4, head: 12}
+let mod = {lang: 9, vis: 5, cross: 5, head: 12};
 let refKmean = {};
 
 load_data_light().then(r => init(r));
@@ -21,13 +21,16 @@ function drawModel(mod) {
 
     let sqSize = (960 / mlen)
 
-    let blockHeight = (250 - pad * 4) / 2
+    let blockHeight = (210 - pad * 4) / 2
+
+    let top_marg = 20;
+
 
     let headSize = sqSize - (mod.head * 2) / mod.head;
 
     let crossSt = Math.max((((sqSize + pad) * mod.lang)), (((sqSize + pad) * mod.vis)))
 
-    crossSt += pad * 6
+    crossSt += pad * 6;
 
     //LANG
 
@@ -36,15 +39,25 @@ function drawModel(mod) {
         .attr("type", "0")
         .attr("nb", "0")
         .attr("x", pad)
-        .attr("y", pad)
+        .attr("y", top_marg + pad)
         .attr("width", ((sqSize + pad) * mod.lang) + pad)
         .attr("height", blockHeight)
         .attr("fill", '#e1964b')
         .attr("stroke", '#555555')
         .attr("stroke-width", '1');
 
+
+    svg.append("text")
+        .attr("x", ((((sqSize + pad) * mod.lang) + pad) / 2) - 85)
+        .attr("y", 15)
+        .text("Language Self-Attention")
+        .style("font-family", '"Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif')
+        .style("color", "#222")
+        .style("font-weight", "500")
+
+
     let x = pad
-    let y = pad * 2
+    let y = top_marg + pad * 2
     for (let i = 0; i < mod.lang; i++) {
         x += pad;
         svg.append("rect")
@@ -63,8 +76,6 @@ function drawModel(mod) {
         drawHeads(svg, 12, x, y, sqSize, blockHeight - (pad * 2), "lang_" + i)
 
         x += sqSize
-
-
     }
 
 
@@ -74,16 +85,24 @@ function drawModel(mod) {
         .attr("type", "0")
         .attr("nb", "0")
         .attr("x", pad)
-        .attr("y", blockHeight + pad * 3)
+        .attr("y", top_marg + blockHeight + pad * 3)
         .attr("width", ((sqSize + pad) * mod.vis) + pad)
         .attr("height", blockHeight)
         .attr("fill", '#a5bb60')
         .attr("stroke", '#555555')
         .attr("stroke-width", '1')
 
+    svg.append("text")
+        .attr("x", ((((sqSize + pad) * mod.vis) + pad) / 2) - 70)
+        .attr("y", 245)
+        .text("Vision Self-Attention")
+        .style("font-family", '"Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif')
+        .style("color", "#222")
+        .style("font-weight", "500")
+
 
     x = pad
-    y = (blockHeight + pad * 3) + pad
+    y = top_marg + (blockHeight + pad * 3) + pad
     for (let i = 0; i < mod.vis; i++) {
         x += pad;
         svg.append("rect")
@@ -113,7 +132,7 @@ function drawModel(mod) {
             .attr("type", "0")
             .attr("nb", i)
             .attr("x", crossSt + ((pad + (sqSize + pad * 2) * 2) * i) + pad)
-            .attr("y", pad)
+            .attr("y", top_marg + pad)
             .attr("width", ((sqSize + pad) * 2) + pad)
             .attr("height", (blockHeight * 2) - pad * 2)
             .attr("fill", '#7964a0')
@@ -122,8 +141,8 @@ function drawModel(mod) {
 
 
         x = crossSt + ((pad + (sqSize + pad * 2) * 2) * i) + (pad)
-        y = pad * 2
-        let names = [["vl", "lv"], ["ll", "vv"]];
+        y = top_marg + pad * 2
+        let names = [["lv", "vl"], ["ll", "vv"]];
 
         for (let j = 0; j < 2; j++) {
             x += pad;
@@ -133,11 +152,21 @@ function drawModel(mod) {
                 .attr("nb", i)
                 .attr("x", x)
                 .attr("y", y)
-                .attr("width", sqSize*0.9)
+                .attr("width", sqSize * 0.9)
                 .attr("height", blockHeight * 0.9 - pad * 2)
                 .attr("fill", 'steelblue')
                 .attr("stroke", '#555555')
                 .attr("stroke-width", '1');
+
+
+            svg.append("text")
+                .attr("x", x + ((sqSize * 0.9) / 2) - 6)
+                .attr("y", 15)
+                .text(names[j][0])
+                .style("font-family", '"Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif')
+                .style("color", "#222")
+                .style("font-weight", "500")
+
 
             drawHeads(svg, 12, x, y, sqSize, blockHeight * 0.9 - pad * 2, names[j][0] + "_" + i)
 
@@ -148,17 +177,26 @@ function drawModel(mod) {
                 .attr("x", x)
                 // .attr("x", x+(i==1?pad:0))
                 .attr("y", y + (blockHeight))
-                .attr("width", sqSize*0.9)
+                .attr("width", sqSize * 0.9)
                 .attr("height", blockHeight * 0.9 - pad * 2)
                 .attr("fill", 'steelblue')
                 .attr("stroke", '#555555')
                 .attr("stroke-width", '1');
 
 
+            svg.append("text")
+                .attr("x", x + ((sqSize * 0.9) / 2) - 6)
+                .attr("y", 225)
+                .text(names[j][1])
+                .style("font-family", '"Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif')
+                .style("color", "#222")
+                .style("font-weight", "500")
+
+
             drawHeads(svg, 12, x, y + (blockHeight), sqSize, blockHeight * 0.9 - pad * 2, names[j][1] + "_" +
                 i)
 
-            x += sqSize+pad
+            x += sqSize + pad
         }
     }
 }
@@ -175,9 +213,7 @@ function drawHeads(svg, nb, x, y, width, height, name) {
     y += pad;
     for (let i = 0; i < nb; i++) {
         let offx = (i < 6 ? pad : headSize + pad * 4);
-
         let col = "#f3cfdb"
-
         if (refKmean[name + "_" + i] < 20) {
             col = "#bbd8e6" // blue
         } else if (refKmean[name + "_" + i] < 35) {

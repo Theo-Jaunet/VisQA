@@ -136,7 +136,7 @@ def toFilterIdx(fil):
 
 def make_umap(fil=None):
     dat = to_map[:]
-    if not fil is None and not fil ==['']:
+    if not fil is None and not fil == ['']:
         filter(fil, dat)
     res = make_proj(dat)
     return res
