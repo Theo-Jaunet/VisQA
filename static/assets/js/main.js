@@ -1,6 +1,7 @@
 let curData = [];
 
 let mod = {lang: 9, vis: 5, cross: 5, head: 12};
+
 let refKmean = {};
 
 load_data_light().then(r => init(r));
