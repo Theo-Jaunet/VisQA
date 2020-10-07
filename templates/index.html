@@ -65,17 +65,28 @@
 
 <!-- Primary Page Layout
 –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-<div class="container" style="margin-bottom: 5%">
-    <div class="row">
-        <div class="twelve column" style="margin-top: 10%">
-            <h4 style="text-align: center"> Estimating Patterns</h4>
-        </div>
 
+<div id="asker" style="position: absolute;left: 15%;top:28%">
+    <input type="text" id="ask-quest" style="width: 350px" placeholder="Ask a question about the picture">
+    <div style="width: 400px;height: 420px;margin-top:40px">
+        <canvas id="inVis"></canvas>
+        <input type="range" id="imSlide" min="0" value="0" class="u-full-width">
     </div>
+    <p id="result" style="text-align: center;font-weight: 600"></p>
+
+</div>
+
+<div class="container" style="margin-bottom: 5%;margin-left: 40%">
+    <!--    <div class="row">
+            <div class="twelve column" style="margin-top: 10%">
+                <h4 style="text-align: center"> Estimating Patterns</h4>
+            </div>
+
+        </div>-->
 
 
     <div class="row">
-        <div class="twelve column" style="margin-top: 10%">
+        <div class="twelve column" style="text-align: center;margin-top: 10%">
             <div style="width: 100%">
                 <label style="display: inline-block" for="ggroup">
                     Global Group
@@ -92,14 +103,13 @@
                 <input style="display: inline-block" type="text" class="one-half" id="question">
                 <button class="button-primary" id="reset"> reset</button>
 
-                <svg id="model" style="width: 100%;height: 250px"></svg>
+                <svg id="model" style="width: 100%;height: 250px;margin-top: 30px"></svg>
 
-                <div>
-                    <button class="button-primary" id="go"> go</button>
+                <div style="display: inline-block">
+                    <button class="button-primary" id="go"> Make Proj</button>
+                    <button class="button-primary" id="ask">Ask</button>
                     <button class="button" id="resetMod"> reset Selection</button>
-
                 </div>
-
             </div>
         </div>
 
@@ -108,7 +118,7 @@
     <div class="row">
         <div class="twelve column" style="margin-top: 0.2%">
 
-            <div style="width: 100%;height: 640px;border: #555555 solid 1px;position: relative">
+            <div style="width:100%;height: 640px;border: #555555 solid 1px;position: relative">
                 <div style="position: absolute;left: 43%;top: 31%;visibility: hidden" id="loader">
                     <img src="static/assets/images/load.gif" style="width: 150px"/>
                     <h3> Loading ... </h3>
@@ -145,28 +155,28 @@
 
     $("#ggroup").change(function () {
 
-        d3.selectAll("circle").style("opacity", 0.05)
-        d3.selectAll("circle").filter(d => d.global_group === this.value).style("opacity", 0.8).attr("r", 4)
+        d3.selectAll(".umapDot").style("opacity", 0.05)
+        d3.selectAll(".umapDot").filter(d => d.global_group === this.value).style("opacity", 0.8).attr("r", 4)
     })
 
 
     $("#function").change(function () {
 
-        d3.selectAll("circle").style("opacity", 0.05)
-        d3.selectAll("circle").filter(d => d.functions.indexOf(this.value) >= 0).style("opacity", 0.8).attr("r", 4)
+        d3.selectAll(".umapDot").style("opacity", 0.05)
+        d3.selectAll(".umapDot").filter(d => d.functions.indexOf(this.value) >= 0).style("opacity", 0.8).attr("r", 4)
     })
 
 
     $("#reset").on("click", function () {
 
-        d3.selectAll("circle").style("opacity", 0.8).attr("r", 2.5)
+        d3.selectAll(".umapDot").style("opacicty", 0.8).attr("r", 2.5)
 
     })
 
 
     $("#question").change(function () {
-        d3.selectAll("circle").style("opacity", 0.05)
-        d3.selectAll("circle").filter(d => d.question.toLowerCase().includes(this.value.toLowerCase())).style("opacity", 0.8).attr("r", 4)
+        d3.selectAll(".umapDot").style("opacity", 0.05)
+        d3.selectAll(".umapDot").filter(d => d.question.toLowerCase().includes(this.value.toLowerCase())).style("opacity", 0.8).attr("r", 4)
     })
 
 
@@ -202,6 +212,47 @@
             }
         })
     });
+
+
+    $("#ask").click(function () {
+        let form = new FormData();
+        form.append("units", attsMaps);
+        form.append("question", $("#ask-quest").val());
+        form.append("image", imgs[$("#imSlide").val()] + ".jpg");
+
+        $.ajax({
+            type: "POST",
+            url: "/ask",
+            processData: false,
+            contentType: false,
+            data: form,
+            success: function (d) {
+                d = JSON.parse(d);
+
+                $("#result").html("Answer: " + d.pred + " at " + (Math.round(d.confidence * 10000) / 100) + "%")
+                console.log(d);
+                filler(d.alignment)
+                let svg = d3.select("#proj");
+
+                console.log("-----------------")
+                console.log(d.coords);
+                console.log(xscale(d.coords[0]));
+
+                svg.select("#askDot").remove()
+
+                svg.append("circle")
+                    .attr("cx", xscale(d.coords[0][0]))
+                    .attr("cy", yscale(d.coords[0][1]))
+                    .attr("r", "10")
+                    .attr("id","askDot")
+                    .attr("fill", "steelblue")
+                    .attr("stroke","#555555")
+                    .attr("stroke-width","3")
+
+            }
+        })
+
+    })
 
 
     $("#model").on("click", "rect", function () {
@@ -242,6 +293,32 @@
             d3.select("#" + attsMaps[i]).attr("class", "selected")
         }
 
+
+    })
+
+    $("#imSlide").on("input", function () {
+
+
+        let im = new Image();
+
+
+        im.onload = function () {
+
+            let can = document.getElementById("inVis")
+
+            let cont = can.getContext('2d');
+
+            let rate = fixRatio2([im.width, im.height], [400, 400])
+
+            can.width = rate[0]
+            can.height = rate[1]
+
+            cont.drawImage(im, 0, 0, rate[0], rate[1])
+
+
+        };
+
+        im.src = baseUrl + imgs[$(this).val()] + ".jpg"
 
     })
 
