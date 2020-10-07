@@ -38,4 +38,4 @@ python3 server.py
 
 
 
-Now you can access it at: http://0.0.0.0:5000
+The server is then accessible at: http://0.0.0.0:5000 (it may take a minute or two to launch).
