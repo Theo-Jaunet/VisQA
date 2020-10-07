@@ -1,7 +1,12 @@
 let curData = [];
+let imgs = [];
+let baseUrl = "static/assets/images/try/"
 
 let mod = {lang: 9, vis: 5, cross: 5, head: 12};
 let refKmean = {};
+
+let xscale;
+let yscale;
 
 load_data_light().then(r => init(r));
 
@@ -9,7 +14,79 @@ load_data_light().then(r => init(r));
 async function load_data_light() {
 
 
-    return [await d3.json('static/assets/data/data.json', d3.autoType), await d3.json('static/assets/data/k_median.json', d3.autoType)]
+    return [await d3.json('static/assets/data/data.json', d3.autoType), await d3.json('static/assets/data/k_median.json', d3.autoType), await d3.json('/firstProj', d3.autoType)]
+}
+
+
+d3.json('static/assets/data/images.json', d3.autoType).then(d => {
+
+    imgs = d["images"];
+
+
+    let slide = $("#imSlide");
+
+    slide.attr("max", imgs.length - 1);
+
+
+    let im = new Image();
+
+
+    im.onload = function () {
+
+        let can = document.getElementById("inVis")
+
+        let cont = can.getContext('2d');
+
+        let rate = fixRatio2([im.width, im.height], [400, 400])
+
+        can.width = rate[0]
+        can.height = rate[1]
+
+        cont.drawImage(im, 0, 0, rate[0], rate[1])
+
+    };
+
+    im.src = baseUrl + imgs[0] + ".jpg"
+
+    // d3.select("#inVis").append("svg:image")
+    //     .attr('x', 0)
+    //     .attr('y', 0)
+    //     .attr('width', 400)
+    //     .attr('height', 350)
+    //     .attr("preserveAspectRatio", 'xMidYMid meet')
+    //     .attr("xlink:href", )
+
+
+    return d
+})
+
+
+function fixRatio2(im, sv) {
+
+    //size based
+    let aspr = im[0] / im[1];
+    let svAspr = sv[0] / sv[1];
+
+    if (im[0] < sv[0] && im[1] < sv[1]) {
+        // Image plus petite
+        return [im[0], im[1], aspr];
+    }
+
+    if (im[0] > sv[0] || im[1] > sv[1]) {
+        // Image plus grande
+        let vr = sv[1] / im[1];
+        let hr = sv[0] / im[0];
+
+        if (vr < hr) {
+            // Image Horizontale
+            return [(sv[1] * im[0]) / im[1], sv[1]];
+        } else if (vr > hr) {
+            // Image Verticale
+            return [sv[0], (sv[0] * im[1]) / im[0]];
+        } else {
+            return [sv[0], (sv[0] * im[1]) / im[0]];
+        }
+    }
 }
 
 
@@ -239,7 +316,15 @@ function drawHeads(svg, nb, x, y, width, height, name) {
 function init(dat) {
 
 
-    let data = dat[0]
+    let data = dat[0].map((d, i) => {
+        d.k_dist = dat[2]['proj'][i];
+        return d
+    })
+
+    // data.lo
+
+
+    // console.log(dat[2]);
     //
     // let form = new FormData();
     // form.append("units", []);
@@ -346,6 +431,7 @@ function plotter_init(data) {
 
     svg.selectAll("circle").remove();
 
+
     let svg1 = document.getElementById('proj');
 
     let bBox = svg1.getBBox();
@@ -355,14 +441,15 @@ function plotter_init(data) {
     let yrange = d3.extent(data.map(d => d['k_dist'][1]));
     console.log(bBox.width);
 
-    let xscale = d3.scaleLinear().domain(xrange).range([0, 960]);
-    let yscale = d3.scaleLinear().domain(yrange).range([0, 642]);
+    xscale = d3.scaleLinear().domain(xrange).range([0, 960]);
+    yscale = d3.scaleLinear().domain(yrange).range([0, 642]);
 
 
     svg.selectAll("circle")
         .data(data)
         .enter()
         .append("circle")
+        .attr("class","umapDot")
         .attr("cx", d => {
             return xscale(d['k_dist'][0])
         })
@@ -376,3 +463,34 @@ function plotter_init(data) {
 }
 
 
+function filler(data) {
+
+    let col = d3.scaleOrdinal(d3.schemeCategory10);
+
+    let dat = Object.keys(data);
+
+    let can = document.getElementById("inVis")
+    let cont = can.getContext('2d');
+
+    console.log(dat);
+    console.log(data);
+    cont.beginPath();
+    for (let i = 0; i < dat.length; i++) {
+        // cont
+        console.log(data[dat[i]].xywh[0]);
+
+        cont.strokeStyle = col(i);
+        cont.fillStyle = col(i);
+        cont.lineWidth = "5"
+        cont.strokeRect(can.width * data[dat[i]].xywh[0], can.height * data[dat[i]].xywh[1], can.width * (data[dat[i]].xywh[2] - data[dat[i]].xywh[0]), can.height * (data[dat[i]].xywh[3] - data[dat[i]].xywh[1]));
+
+        cont.font = '24px serif';
+        cont.fillText(dat[i], can.width * data[dat[i]].xywh[0], can.height * data[dat[i]].xywh[1]);
+
+        cont.font = '24px serif';
+        cont.fillText(data[dat[i]].class, can.width * data[dat[i]].xywh[2], can.height * data[dat[i]].xywh[3]);
+
+    }
+    cont.closePath();
+
+}
