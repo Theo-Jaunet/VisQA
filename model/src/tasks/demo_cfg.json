@@ -5,7 +5,7 @@
     "pretrained_model_lxmert": "model/src/pretrain/lxmert",
     "answers_dict": "model/trainval_label2ans.json",
     "object_classes": "model/objects_vocab.txt",
-    "images_dir": "model/images",
+    "images_dir": "static/assets/images/try/",
     "feats_dir": "model/gqa_testdev_obj36/vg_gqa_imgfeat/",
     "data_split": "testdev"
 }
