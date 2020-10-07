@@ -18,6 +18,15 @@ Then, you must copy the model downloaded from the given Google Drive into "model
 mv ~/Downloads/lxmert.pth model/src/pretrain/lxmert.pth
 ```
 
+And the TSV, also in the drive:
+
+```
+mkdir -p model/gqa_testdev_obj36/vg_gqa_imgfeat; mv ~/Downloads/gqa_testdev_obj36.tsv $_
+```
+
+This command creates non-existant Dirs, and moves the tsv, you may need to change it based on your OS (in linux **$_** at the end is needed)
+
+
 
 You can launch the server with the script 'server.py' at the root of this repo:
 
