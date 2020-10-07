@@ -19,7 +19,7 @@ mv ~/Downloads/lxmert.pth model/src/pretrain/lxmert.pth
 ```
 
 
-The server should be able to run, using the script server.py at the root of this repo, as it follows:
+You can launch the server with the script 'server.py' at the root of this repo:
 
 
 ```
