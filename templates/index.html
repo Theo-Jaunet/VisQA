@@ -108,6 +108,7 @@
                 <div style="display: inline-block">
                     <button class="button-primary" id="go"> Make Proj</button>
                     <button class="button-primary" id="ask">Ask</button>
+
                     <button class="button" id="resetMod"> reset Selection</button>
                 </div>
             </div>
@@ -244,10 +245,10 @@
                     .attr("cx", xscale(d.coords[0][0]))
                     .attr("cy", yscale(d.coords[0][1]))
                     .attr("r", "10")
-                    .attr("id","askDot")
+                    .attr("id", "askDot")
                     .attr("fill", "steelblue")
-                    .attr("stroke","#555555")
-                    .attr("stroke-width","3")
+                    .attr("stroke", "#555555")
+                    .attr("stroke-width", "3")
 
             }
         })
