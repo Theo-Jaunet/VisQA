@@ -172,7 +172,6 @@ def set_visual_config(args):
     VISUAL_CONFIG.x_layers = args.xlayers
     VISUAL_CONFIG.r_layers = args.rlayers
     VISUAL_CONFIG.visual_feat_dim = args.visual_feat_dim
-    input(args)
 
 class LXRTEncoder(nn.Module):
     def __init__(self, args, max_seq_length, mode='x', already_converted=False):

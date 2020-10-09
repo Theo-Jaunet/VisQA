@@ -349,7 +349,6 @@ class Demo():
             args.visual_feat_dim=2320
             self.cfg['data_split'] = 'val'
             args.from_scratch=True
-        print(args)
         print("Config loaded!")
 
     def load_model(self):
