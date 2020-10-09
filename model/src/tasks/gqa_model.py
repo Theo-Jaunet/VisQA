@@ -16,6 +16,9 @@ MAX_GQA_LENGTH = 20
 class GQAModel(nn.Module):
     def __init__(self, num_answers):
         super().__init__()
+
+        input(args)
+
         self.lxrt_encoder = LXRTEncoder(
             args,
             max_seq_length=MAX_GQA_LENGTH

@@ -119,9 +119,10 @@ class Demo_data():
     Load all the data in RAM.
     """
 
-    def __init__(self):
+    def __init__(self, cfg):
         self.img_dst = {}  # {img_id: features, ...}
         self.gqa_buffer_loader = GQABufferLoader()
+        self.cfg = cfg
 
     def load_all(self, cfg):
         """
@@ -150,8 +151,16 @@ class Demo_data():
         Get features of image 'img_id'.
         Also do some pre-processing.
         """
+        
+        if self.cfg['oracle']:  # load from pickle file
+            load_path = os.path.join(self.cfg['oracle_dir'], "%s.pickle"%img_id)
+            with open(load_path, 'rb') as handle:
+                img_info = pickle.load(handle)
+                img_info['boxes'] = img_info['boxes'][:2320].astype(np.float32)
+                img_info['features'] = img_info['features'][:2320].astype(np.float32)
+        else:
+            img_info = self.img_dst[img_id]  # load from RAM
 
-        img_info = self.img_dst[img_id]
         obj_num = img_info['num_boxes']
         boxes = img_info['boxes'].copy()
         feats = img_info['features'].copy()
@@ -314,7 +323,7 @@ class Demo():
         self.model = None  # pretrained VQA model
         self.cfg = None # demo configs
         self.load_config()
-        self.data_loader = Demo_data() # my data loader (not pytorch one)
+        self.data_loader = Demo_data(self.cfg) # my data loader (not pytorch one)
         self.label_to_ans = {}  # add dictionnary mapping ans_id to answer
         self.displayer = Demo_display(data_path=self.cfg['images_dir'])
 
@@ -336,7 +345,11 @@ class Demo():
             args.n_head=4
             args.hidden_size=128
             args.from_scratch=True
-
+        if self.cfg['oracle']:
+            args.visual_feat_dim=2320
+            self.cfg['data_split'] = 'val'
+            args.from_scratch=True
+        print(args)
         print("Config loaded!")
 
     def load_model(self):
@@ -365,9 +378,16 @@ class Demo():
             print(self.cfg)
             # Load finetuned model
             if self.cfg['tiny_lxmert']:
-                path = self.cfg['pretrained_model_tiny_lxmert']
+                if self.cfg['oracle']:
+                    path = self.cfg['pretrained_model_tiny_lxmert_oracle']
+                else:
+                    path = self.cfg['pretrained_model_tiny_lxmert']
             else:
-                path = self.cfg['pretrained_model_lxmert']
+                if self.cfg['oracle']:
+                    print('Oracle model is only available in tiny version!')
+                    exit(0)
+                else:
+                    path = self.cfg['pretrained_model_lxmert']
             print("Load model's weights from %s" % path)
             state_dict = torch.load("%s.pth" % path)
             for key in list(state_dict.keys()):
@@ -385,7 +405,10 @@ class Demo():
         """
         Load all the data (GQA testdev) in RAM
         """
-        self.data_loader.load_all(self.cfg)
+        if self.cfg['oracle']:
+            print('Oracle data do not need to be loaded in RAM')
+        else:
+            self.data_loader.load_all(self.cfg)
         
     def img_available(self, image):
 
