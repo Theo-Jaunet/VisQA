@@ -91,7 +91,7 @@ def select(data):
 dataset = load_data("lxmert_gqaval_reasbias.pickle")
 
 to_map = select(dataset)
-print(to_map[0])
+# print(to_map[0])
 print('making Umap  ....')
 
 umaper = umap.UMAP(n_neighbors=20, min_dist=0.3).fit(to_map[:])
@@ -125,9 +125,9 @@ def saver():
 
 def filter(fil, data):
     idxs = toKeepIdx(fil)
-    print(len(order))
-    print(len(idxs))
-    print(len(data))
+    # print(len(order))
+    # print(len(idxs))
+    # print(len(data))
     for i in range(len(data)):
         data[i] = [data[i][j] for j in idxs]
 
@@ -138,7 +138,7 @@ def toKeepIdx(fil):
     res = []
     for elem in fil:
         res.append(order.index(elem))
-    print(len(res))
+    # print(len(res))
     return np.setdiff1d(range(len(order)), res)
 
 
@@ -170,12 +170,12 @@ def make_colors():
     res_len = len(res)
 
     for u in range(res_len):
-        print(u)
+        # print(u)
         # val = np.median(res[u])
         # print(val)
         val = res[u] / nb
-        if val < 20:
-            print(val)
+        # if val < 20:
+        # print(val)
         res[u] = val
 
     return res
@@ -192,7 +192,7 @@ def median(l):
 @app.route('/proj', methods=["POST"])
 def projector():
     units = request.form['units'].split(",")
-    print(units)
+    # print(units)
     return ujson.dumps({"proj": make_umap(units)})
 
 
@@ -210,6 +210,29 @@ def formatK_dist(k_dist):
 @app.route('/firstProj', methods=["GET"])
 def fproj():
     return ujson.dumps({"proj": umaper.transform(to_map[:]).tolist()})
+
+
+def toSliptDict(data):
+    res = {}
+
+    for elem in order:
+        temp = elem.split("_")
+        res[elem] = round(np.median(data[temp[0]][int(temp[1])][int(temp[2])]))
+
+    # print(res[order[0]])
+
+    return res
+
+
+def AtttoSliptDict(data):
+    res = {}
+
+    for elem in order:
+        temp = elem.split("_")
+
+        res[elem] = data[temp[0]][int(temp[1])].squeeze()[int(temp[2])].cpu().numpy().tolist()
+
+    return res
 
 
 @app.route('/ask', methods=["POST"])
@@ -232,21 +255,29 @@ def ask():
 
     top_prediction, five_predictions, attention_heads, alignment, k_dist = my_demo.ask(question, image, head_mask)
 
+    # print(five_predictions)
+
+    k_vals = toSliptDict(k_dist)
+
     for k, v in alignment.items():
         alignment[k]["xywh"] = alignment[k]["xywh"].tolist()
 
     return ujson.dumps({"pred": top_prediction[0],
                         "confidence": top_prediction[1].item(),
                         "alignment": alignment,
-                        "coords": umaper.transform([formatK_dist(k_dist)]).tolist()
+                        "coords": umaper.transform([formatK_dist(k_dist)]).tolist(),
+                        "k_dist": k_vals,
+                        "heatmaps": AtttoSliptDict(attention_heads)
                         })
 
 
 if __name__ == '__main__':
     # * Display config
+
     display_k_dist = True
     compact_k_dist = True  # compact=False will display all the k ditribution
     display_alignment = False
+
     # * /
 
     my_demo.load_data()
