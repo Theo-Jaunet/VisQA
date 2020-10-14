@@ -12,11 +12,8 @@ function block2names(name, nb) {
             for (let j = 0; j < mod.head; j++) {
 
                 names.push(name + "_" + i + "_" + j)
-
             }
         }
-
-
     } else {
         console.log(nb);
         for (let j = 0; j < mod.head; j++) {

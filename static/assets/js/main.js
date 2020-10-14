@@ -1,8 +1,22 @@
 let curData = [];
+let imgs = [];
+let baseUrl = "static/assets/images/try/"
 
 let mod = {lang: 9, vis: 5, cross: 5, head: 12};
 
 let refKmean = {};
+
+let xscale;
+let yscale;
+
+let currKmean = {};
+
+let currHeatmaps = {};
+
+let mono_col = d3.scaleLinear().domain([0, 0.35, 1]).range(['#ffffe1', '#FEEAA9', '#cf582f']).interpolate(d3.interpolateHcl);
+
+
+let asked = false;
 
 load_data_light().then(r => init(r));
 
@@ -10,7 +24,79 @@ load_data_light().then(r => init(r));
 async function load_data_light() {
 
 
-    return [await d3.json('static/assets/data/data.json', d3.autoType), await d3.json('static/assets/data/k_median.json', d3.autoType)]
+    return [await d3.json('static/assets/data/data.json', d3.autoType), await d3.json('static/assets/data/k_median.json', d3.autoType), await d3.json('/firstProj', d3.autoType)]
+}
+
+
+d3.json('static/assets/data/images.json', d3.autoType).then(d => {
+
+    imgs = d["images"];
+
+
+    let slide = $("#imSlide");
+
+    slide.attr("max", imgs.length - 1);
+
+
+    let im = new Image();
+
+
+    im.onload = function () {
+
+        let can = document.getElementById("inVis")
+
+        let cont = can.getContext('2d');
+
+        let rate = fixRatio2([im.width, im.height], [300, 300])
+
+        can.width = rate[0]
+        can.height = rate[1]
+
+        cont.drawImage(im, 0, 0, rate[0], rate[1])
+
+    };
+
+    im.src = baseUrl + imgs[0] + ".jpg"
+
+    // d3.select("#inVis").append("svg:image")
+    //     .attr('x', 0)
+    //     .attr('y', 0)
+    //     .attr('width', 400)
+    //     .attr('height', 350)
+    //     .attr("preserveAspectRatio", 'xMidYMid meet')
+    //     .attr("xlink:href", )
+
+
+    return d
+})
+
+
+function fixRatio2(im, sv) {
+
+    //size based
+    let aspr = im[0] / im[1];
+    let svAspr = sv[0] / sv[1];
+
+    if (im[0] < sv[0] && im[1] < sv[1]) {
+        // Image plus petite
+        return [im[0], im[1], aspr];
+    }
+
+    if (im[0] > sv[0] || im[1] > sv[1]) {
+        // Image plus grande
+        let vr = sv[1] / im[1];
+        let hr = sv[0] / im[0];
+
+        if (vr < hr) {
+            // Image Horizontale
+            return [(sv[1] * im[0]) / im[1], sv[1]];
+        } else if (vr > hr) {
+            // Image Verticale
+            return [sv[0], (sv[0] * im[1]) / im[0]];
+        } else {
+            return [sv[0], (sv[0] * im[1]) / im[0]];
+        }
+    }
 }
 
 
@@ -20,16 +106,26 @@ function drawModel(mod) {
     let mlen = mod.lang + mod.vis + (mod.cross * 2);
     let pad = 5
 
-    let sqSize = (960 / mlen)
-
-    let blockHeight = (210 - pad * 4) / 2
-
-    let top_marg = 20;
+    let xinter = 5; // RECT (STEELBLUE)
+    let yinter = 5;
 
 
-    let headSize = sqSize - (mod.head * 2) / mod.head;
+    let top_marg = 15; // BLOCK
 
-    let crossSt = Math.max((((sqSize + pad) * mod.lang)), (((sqSize + pad) * mod.vis)))
+
+    let blockHeight = ((300 - top_marg * 3) - ((yinter * 2) + top_marg)) / 2
+
+
+    let block_xinter = 10;
+
+    let rectHeight = blockHeight - yinter * 2
+    let rectWidth = ((960) / mlen)
+
+    let sqSize = rectWidth
+
+
+    let crossSt = Math.max((((rectWidth + pad) * mod.lang)), (((rectWidth + pad) * mod.vis)))
+
 
     crossSt += pad * 6;
 
@@ -39,26 +135,27 @@ function drawModel(mod) {
         .attr("name", "lang")
         .attr("type", "0")
         .attr("nb", "0")
-        .attr("x", pad)
-        .attr("y", top_marg + pad)
-        .attr("width", ((sqSize + pad) * mod.lang) + pad)
+        .attr("x", block_xinter)
+        .attr("y", top_marg)
+        .attr("width", (xinter+(rectWidth + xinter) * mod.lang))
         .attr("height", blockHeight)
-        .attr("fill", '#e1964b')
+        // .attr("fill", '#e1964b')
+        .attr("fill", "#fff")
         .attr("stroke", '#555555')
         .attr("stroke-width", '1');
 
 
     svg.append("text")
-        .attr("x", ((((sqSize + pad) * mod.lang) + pad) / 2) - 85)
-        .attr("y", 15)
+        .attr("x", (block_xinter + ((xinter + ((rectWidth + xinter) * mod.lang)) / 2)) - 85)
+        .attr("y", top_marg-4)
         .text("Language Self-Attention")
         .style("font-family", '"Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif')
         .style("color", "#222")
         .style("font-weight", "500")
 
 
-    let x = pad
-    let y = top_marg + pad * 2
+    let x = block_xinter
+    let y = top_marg + yinter
     for (let i = 0; i < mod.lang; i++) {
         x += pad;
         svg.append("rect")
@@ -67,14 +164,15 @@ function drawModel(mod) {
             .attr("nb", i)
             .attr("x", x)
             .attr("y", y)
-            .attr("width", sqSize)
-            .attr("height", blockHeight - pad * 2)
+            .attr("width", rectWidth)
+            .attr("height", rectHeight)
             .attr("fill", 'steelblue')
+            // .attr("fill", 'steelblue')
             .attr("stroke", '#555555')
             .attr("stroke-width", '1');
 
         // function drawHeads(svg, nb, x, y, width, height)
-        drawHeads(svg, 12, x, y, sqSize, blockHeight - (pad * 2), "lang_" + i)
+        drawHeads(svg, mod.head, x, y, rectWidth, rectHeight, "lang_" + i)
 
         x += sqSize
     }
@@ -85,25 +183,28 @@ function drawModel(mod) {
         .attr("name", "vis")
         .attr("type", "0")
         .attr("nb", "0")
-        .attr("x", pad)
-        .attr("y", top_marg + blockHeight + pad * 3)
-        .attr("width", ((sqSize + pad) * mod.vis) + pad)
+        .attr("x", block_xinter)
+        .attr("y", top_marg + blockHeight + top_marg)
+        .attr("width", (xinter + ((rectWidth + xinter) * mod.vis)))
         .attr("height", blockHeight)
-        .attr("fill", '#a5bb60')
+        .attr("fill", "#fff")
+        // .attr("fill", '#a5bb60')
         .attr("stroke", '#555555')
         .attr("stroke-width", '1')
 
     svg.append("text")
-        .attr("x", ((((sqSize + pad) * mod.vis) + pad) / 2) - 70)
-        .attr("y", 245)
+        .attr("x", (block_xinter + ((xinter + ((rectWidth + xinter) * mod.vis)) / 2)) - 70)
+        .attr("y", (blockHeight*2 + (top_marg*3)))
         .text("Vision Self-Attention")
         .style("font-family", '"Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif')
         .style("color", "#222")
         .style("font-weight", "500")
 
 
-    x = pad
-    y = top_marg + (blockHeight + pad * 3) + pad
+    x = block_xinter
+    y = top_marg + (blockHeight + top_marg) + yinter
+
+
     for (let i = 0; i < mod.vis; i++) {
         x += pad;
         svg.append("rect")
@@ -112,19 +213,24 @@ function drawModel(mod) {
             .attr("nb", i)
             .attr("x", x)
             .attr("y", y)
-            .attr("width", sqSize)
-            .attr("height", blockHeight - pad * 2)
+            .attr("width", rectWidth)
+            .attr("height", rectHeight)
             .attr("fill", 'steelblue')
             .attr("stroke", '#555555')
             .attr("stroke-width", '1');
 
 
-        drawHeads(svg, 12, x, y, sqSize, blockHeight - (pad * 2), "vis_" + i)
-        x += sqSize
+        drawHeads(svg, mod.head, x, y, rectWidth, rectHeight, "vis_" + i)
+        x += rectWidth
 
     }
 
     // cross
+
+    let crossWidth = rectWidth * 2 + xinter * 3
+    let crossHeight = rectHeight * 2 + xinter * 3
+
+    let crossySt = (300 - crossHeight) / 2
 
     for (let i = 0; i < mod.cross; i++) {
 
@@ -132,44 +238,46 @@ function drawModel(mod) {
             .attr("name", "cross")
             .attr("type", "0")
             .attr("nb", i)
-            .attr("x", crossSt + ((pad + (sqSize + pad * 2) * 2) * i) + pad)
-            .attr("y", top_marg + pad)
-            .attr("width", ((sqSize + pad) * 2) + pad)
-            .attr("height", (blockHeight * 2) - pad * 2)
-            .attr("fill", '#7964a0')
+            .attr("x", crossSt + (crossWidth * i) + (block_xinter * i))
+            .attr("y", crossySt)
+            .attr("width", (crossWidth))
+            .attr("height", (crossHeight))
+            .attr("fill", "#fff")
+            // .attr("fill", '#7964a0')
             .attr("stroke", '#555555')
             .attr("stroke-width", '1')
 
 
-        x = crossSt + ((pad + (sqSize + pad * 2) * 2) * i) + (pad)
-        y = top_marg + pad * 2
-        let names = [["lv", "vl"], ["ll", "vv"]];
+        // x = crossSt + ((pad + (sqSize + pad * 2) * 2) * i) + (pad)
+        x = (crossSt + (crossWidth * i) + (block_xinter * i)) + xinter
+        y = crossySt + yinter
+        let names = [["ll", "vv"], ["vl", "lv"]];
 
         for (let j = 0; j < 2; j++) {
-            x += pad;
+
             svg.append("rect")
                 .attr("name", names[j][0])
                 .attr("type", "1")
                 .attr("nb", i)
                 .attr("x", x)
                 .attr("y", y)
-                .attr("width", sqSize * 0.9)
-                .attr("height", blockHeight * 0.9 - pad * 2)
+                .attr("width", rectWidth)
+                .attr("height", rectHeight)
                 .attr("fill", 'steelblue')
                 .attr("stroke", '#555555')
                 .attr("stroke-width", '1');
 
 
             svg.append("text")
-                .attr("x", x + ((sqSize * 0.9) / 2) - 6)
-                .attr("y", 15)
+                .attr("x", x + (rectWidth / 2) - 6)
+                .attr("y", y-10)
                 .text(names[j][0])
                 .style("font-family", '"Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif')
                 .style("color", "#222")
                 .style("font-weight", "500")
 
 
-            drawHeads(svg, 12, x, y, sqSize, blockHeight * 0.9 - pad * 2, names[j][0] + "_" + i)
+            drawHeads(svg, mod.head, x, y, rectWidth, rectHeight, names[j][0] + "_" + i)
 
             svg.append("rect")
                 .attr("name", names[j][1])
@@ -177,27 +285,27 @@ function drawModel(mod) {
                 .attr("nb", i)
                 .attr("x", x)
                 // .attr("x", x+(i==1?pad:0))
-                .attr("y", y + (blockHeight))
-                .attr("width", sqSize * 0.9)
-                .attr("height", blockHeight * 0.9 - pad * 2)
+                .attr("y", y + (rectHeight) + yinter)
+                .attr("width", rectWidth)
+                .attr("height", rectHeight)
                 .attr("fill", 'steelblue')
                 .attr("stroke", '#555555')
                 .attr("stroke-width", '1');
 
 
             svg.append("text")
-                .attr("x", x + ((sqSize * 0.9) / 2) - 6)
-                .attr("y", 225)
+                .attr("x", x + (rectWidth / 2) - 6)
+                .attr("y", (y + (rectHeight*2) + yinter*2)+13)
                 .text(names[j][1])
                 .style("font-family", '"Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif')
                 .style("color", "#222")
                 .style("font-weight", "500")
 
 
-            drawHeads(svg, 12, x, y + (blockHeight), sqSize, blockHeight * 0.9 - pad * 2, names[j][1] + "_" +
+            drawHeads(svg, mod.head, x, y + (rectHeight) + yinter, rectWidth, rectHeight, names[j][1] + "_" +
                 i)
 
-            x += sqSize + pad
+            x += rectWidth+xinter
         }
     }
 }
@@ -205,42 +313,86 @@ function drawModel(mod) {
 
 function drawHeads(svg, nb, x, y, width, height, name) {
 
-    let pad = 2;
+    let attxInter = 4;
+    let attyInter = 4;
 
-    let headSize = ((height - pad) - ((pad * (nb / 2)) + pad)) / (nb / 2)
+    let attWidth = (width - (attxInter * 3)) / 2;
+    let attHeight = (height - (attyInter * (nb / 2) + attyInter)) / (nb / 2)
+
+    // let headSize = Math.min(((height - pad) - ((pad * (nb / 2)) + pad)) / (nb / 2), ((width - pad) - ((pad * (nb / 2)) + pad)) / (nb / 2))
+
 
     // console.log(headSize);
 
-    y += pad;
+    y += attyInter;
     for (let i = 0; i < nb; i++) {
-        let offx = (i < 6 ? pad : headSize + pad * 4);
-        let col = "#f3cfdb"
-        if (refKmean[name + "_" + i] < 20) {
-            col = "#bbd8e6" // blue
-        } else if (refKmean[name + "_" + i] < 35) {
-            col = "#cbecaf"
-        } else if (refKmean[name + "_" + i] < 70) {
-            col = "#f8e4c5"
-        }
+        let offx = (i < (nb / 2) ? attxInter : attWidth + attxInter * 2);
+        let offy = (attHeight + attyInter) * (i % (nb / 2))
+
+
+        let col = getCol(refKmean[name + "_" + i])
 
         svg.append("rect")
+            .attr("type", "2")
             .attr("id", name + "_" + i)
-            .attr("x", x + pad + offx)
-            .attr("y", y + (headSize + pad) * (i % (nb / 2)))
-            .attr("width", headSize)
-            .attr("height", headSize)
+            .attr("x", x + offx)
+            .attr("y", y + offy)
+            .attr("width", attWidth)
+            .attr("height", attHeight)
             .attr("fill", col)
-            .attr("stroke", "#555555")
+            .attr("stroke", "rgba(19,19,19,0.82)")
             .attr("stroke-width", '1');
 
     }
 }
 
 
+function getCol(val) {
+
+
+    let col = "#ffb3ba"
+    if (val < 20) {
+        col = "#bae1ff" // blue
+    } else if (val < 35) {
+        col = "#baffc9"
+    } else if (val < 70) {
+        col = "#ffdfbb"
+    }
+
+    return col
+}
+
+function findElems(data, thresh, base) {
+
+
+    let names = Object.keys(data)
+
+    let res = [];
+
+    for (let i = 0; i < names.length; i++) {
+
+        if (data[names[i]] < thresh && data[names[i]] >= base) {
+            res.push(names[i])
+        }
+    }
+
+    return res
+
+}
+
+
 function init(dat) {
 
 
-    let data = dat[0]
+    let data = dat[0].map((d, i) => {
+        d.k_dist = dat[2]['proj'][i];
+        return d
+    })
+
+    // data.lo
+
+
+    // console.log(dat[2]);
     //
     // let form = new FormData();
     // form.append("units", []);
@@ -260,10 +412,14 @@ function init(dat) {
     console.log(data);
     curData = data;
     refKmean = dat[1]
+    currKmean = refKmean;
     // data = JSON.parse(data)
 
-    drawModel(mod);
 
+    $("#counter").html("Masked Heads: " + 0 + "/" + Object.keys(refKmean).length)
+
+    drawModel(mod);
+    setDPI(document.getElementById("heatm"), 960)
     plotter_init(data);
     fillSelect(data.map(d => d.global_group), "#ggroup")
     fillSelect2(data.map(d => d.functions), "#function")
@@ -273,6 +429,24 @@ function init(dat) {
     //         }
     //     }
     // });
+}
+
+function fillHeads(data) {
+
+    let names = Object.keys(data);
+
+    let svg = d3.select("#model")
+    console.time("Coloring Squares")
+    for (let i = 0; i < names.length; i++) {
+
+
+        // console.log("Making name _: #" + names[i] + " Of value: " + data[names[i]]);
+        let col = getCol(data[names[i]])
+
+
+        svg.select("#" + names[i]).attr("fill", col);
+    }
+    console.timeEnd("Coloring Squares")
 }
 
 
@@ -347,6 +521,7 @@ function plotter_init(data) {
 
     svg.selectAll("circle").remove();
 
+
     let svg1 = document.getElementById('proj');
 
     let bBox = svg1.getBBox();
@@ -356,14 +531,15 @@ function plotter_init(data) {
     let yrange = d3.extent(data.map(d => d['k_dist'][1]));
     console.log(bBox.width);
 
-    let xscale = d3.scaleLinear().domain(xrange).range([0, 960]);
-    let yscale = d3.scaleLinear().domain(yrange).range([0, 642]);
+    xscale = d3.scaleLinear().domain(xrange).range([0, 960]);
+    yscale = d3.scaleLinear().domain(yrange).range([0, 642]);
 
 
     svg.selectAll("circle")
         .data(data)
         .enter()
         .append("circle")
+        .attr("class", "umapDot")
         .attr("cx", d => {
             return xscale(d['k_dist'][0])
         })
@@ -377,3 +553,115 @@ function plotter_init(data) {
 }
 
 
+function filler(data) {
+
+    let col = d3.scaleOrdinal(d3.schemeCategory10);
+
+    let dat = Object.keys(data);
+
+    let can = document.getElementById("inVis")
+    let cont = can.getContext('2d');
+
+    console.log(dat);
+    console.log(data);
+    cont.beginPath();
+
+    for (let i = 0; i < dat.length; i++) {
+        // cont
+        console.log(data[dat[i]].xywh[0]);
+        cont.save()
+        cont.strokeStyle = col(i);
+        cont.fillStyle = col(i);
+        cont.lineWidth = "5"
+        cont.strokeRect(can.width * data[dat[i]].xywh[0], can.height * data[dat[i]].xywh[1], can.width * (data[dat[i]].xywh[2] - data[dat[i]].xywh[0]), can.height * (data[dat[i]].xywh[3] - data[dat[i]].xywh[1]));
+
+        cont.shadowColor = "#000";
+        cont.shadowOffsetX = 0;
+        cont.shadowOffsetY = 0;
+        cont.shadowBlur = 5;
+
+        cont.font = '24px serif';
+        cont.fillText(dat[i], can.width * data[dat[i]].xywh[0], can.height * data[dat[i]].xywh[1]);
+
+        cont.font = '24px serif';
+        cont.fillText(data[dat[i]].class, can.width * data[dat[i]].xywh[2], can.height * data[dat[i]].xywh[3]);
+        cont.restore()
+    }
+    cont.closePath();
+}
+
+
+function UpdateCounter() {
+
+    let nb = attsMaps.length;
+    let total = Object.keys(currKmean).length
+
+    $("#counter").html("Masked Heads: " + nb + "/" + total)
+}
+
+
+function drawHeat(data) {
+
+
+    console.log("Drawing");
+
+    let can = document.getElementById("heatm");
+
+
+    let cont = can.getContext('2d');
+
+
+    cont.clearRect(0, 0, 1900, 1900)
+
+
+    let marg = 15;
+    let pad = 5;
+
+    let cw = ((can.width - (marg * 2)) - (pad * data[0].length)) / data[0].length;
+    let ch = ((can.height - (marg * 2)) - (pad * data.length)) / data.length
+
+    console.log(cw);
+
+    for (let i = 0; i < data.length; i++) { // Iter Horizontally
+        for (let j = 0; j < data[i].length; j++) { // Iter vertically
+            cont.fillStyle = mono_col(data[i][j]);
+
+            cont.fillRect(marg + ((cw + pad) * j), marg + ((ch + pad) * i) + pad, cw, ch)
+
+        }
+
+    }
+
+
+}
+
+
+function setDPI(canvas, dpi) {
+    // Set up CSS size.
+    canvas.style.width = canvas.style.width || canvas.width + 'px';
+    canvas.style.height = canvas.style.height || canvas.height + 'px';
+
+    // Get size information.
+    var scaleFactor = dpi / 96;
+    var width = parseFloat(canvas.style.width);
+    var height = parseFloat(canvas.style.height);
+
+    // Backup the canvas contents.
+    var oldScale = canvas.width / width;
+    var backupScale = scaleFactor / oldScale;
+    var backup = canvas.cloneNode(false);
+    backup.getContext('2d').drawImage(canvas, 0, 0);
+
+    // Resize the canvas.
+    var ctx = canvas.getContext('2d');
+    canvas.width = Math.ceil(width * scaleFactor);
+    canvas.height = Math.ceil(height * scaleFactor);
+
+    // Redraw the canvas image and scale future draws.
+    ctx.setTransform(backupScale, 0, 0, backupScale, 0, 0);
+    ctx.drawImage(backup, 0, 0);
+    ctx.setTransform(scaleFactor, 0, 0, scaleFactor, 0, 0);
+    // let cont = can.getContext('2d');
+
+    ctx.scale(0.1, 0.1)
+}

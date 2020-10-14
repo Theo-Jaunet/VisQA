@@ -1,0 +1,15 @@
+{
+    "num_answers": 1842,
+    "tiny_lxmert": 0,
+    "ecai_lxmert": 0,
+    "oracle": 0,
+    "pretrained_model_lxmert": "model/src/pretrain/lxmert",
+    "pretrained_model_tiny_lxmert_oracle": "model/src/pretrain/oracle",
+    "answers_dict": "model/trainval_label2ans.json",
+    "object_classes": "model/objects_vocab.txt",
+    "images_dir": "static/assets/images/try/",
+    "feats_dir": "model/gqa_testdev_obj36/vg_gqa_imgfeat/",
+    "oracle_dir": "model/gqa_val_obj36/oracle_data",
+    "data_split": "testdev"
+}
+
