@@ -47,9 +47,10 @@ def get_alignment_from_attmap(att_map, boxes, obj_class, tkn_sent):
         'xywh' and its class)
     """
     alignment = torch.argmax(att_map, dim=-1).numpy()
-    word2bbox = {wrd:{'xywh':boxes[0,alignment[w_i]].cpu().numpy(), 'class':obj_class[alignment[w_i]]}\
-         for w_i, wrd in enumerate(tkn_sent)}
+    word2bbox = {wrd: {'xywh': boxes[0, alignment[w_i]].cpu().numpy(), 'class': obj_class[alignment[w_i]]} \
+                 for w_i, wrd in enumerate(tkn_sent)}
     return word2bbox
+
 
 def get_k_dist_from_attmaps(att_maps, lang_mask, vis_mask):
     """
@@ -59,7 +60,7 @@ def get_k_dist_from_attmaps(att_maps, lang_mask, vis_mask):
     k_dist = {}
     for maptype in ['lang', 'vis', 'vl', 'lv', 'vv', 'll']:
         n_layers = len(att_maps[maptype])
-        k_dist[maptype] = [None]*n_layers
+        k_dist[maptype] = [None] * n_layers
         # Set order of masks (it depends of the direction of the attention)
         if maptype in ['lang', 'll']:
             mask_send = lang_mask
@@ -75,7 +76,7 @@ def get_k_dist_from_attmaps(att_maps, lang_mask, vis_mask):
             mask_receive = lang_mask
         for l_i in range(n_layers):
             n_heads = len(att_maps[maptype][l_i].squeeze())
-            k_dist[maptype][l_i] = [None]*n_heads
+            k_dist[maptype][l_i] = [None] * n_heads
             for n_i in range(n_heads):
                 this_map = att_maps[maptype][l_i].squeeze()[n_i]  # squeeze because batch size is one
                 d_1, d_2 = this_map.shape
@@ -90,12 +91,13 @@ def get_k_dist_from_attmaps(att_maps, lang_mask, vis_mask):
                 cumsum = (triang_mask * tkn_exp).sum(-1)  # [d_1, d_2]
                 k = (cumsum <= treshold).sum(-1) + 1  # [d_1, 1]
                 # normalize k with the number of non masked tokens
-                true_n_tkn = mask_send.sum(-1)# number of tokens after masking
+                true_n_tkn = mask_send.sum(-1)  # number of tokens after masking
                 k = k.view((d_1, 1)).float() / true_n_tkn.unsqueeze(-1).float() * 100
                 # remove masked tokens
                 k = torch.masked_select(k.squeeze(), mask_receive.byte())
                 k_dist[maptype][l_i][n_i] = k.numpy()
     return k_dist
+
 
 def empty_mask():
     head_mask = {}
@@ -110,6 +112,7 @@ def empty_mask():
 
         head_mask[maptype] = torch.zeros((n_layers, args.n_head))
     return head_mask
+
 
 # demo class ------------------------------------------
 
@@ -141,9 +144,9 @@ class Demo_data():
 
     def check_img(self, img_id):
         return img_id in self.img_dst
-    
+
     def get_random(self):
-        return random.choice(list(self.img_dst.keys()))#+'.jpg'
+        return random.choice(list(self.img_dst.keys()))  # +'.jpg'
 
     def get_feats(self, img_id):
         """
@@ -167,10 +170,11 @@ class Demo_data():
         boxes = boxes.copy()
         boxes[:, (0, 2)] /= img_w
         boxes[:, (1, 3)] /= img_h
-        np.testing.assert_array_less(boxes, 1+1e-5)
-        np.testing.assert_array_less(-boxes, 0+1e-5)
+        np.testing.assert_array_less(boxes, 1 + 1e-5)
+        np.testing.assert_array_less(-boxes, 0 + 1e-5)
 
         return feats, boxes, obj_class
+
 
 class Demo_display():
     """
@@ -183,47 +187,49 @@ class Demo_display():
         self.data_path = data_path
         self.img_displayed = None  # display one images one by one
         self.ignore_tkn = ["[SEP]", "?"] + list(stopwords.words('english'))
-    
+
     def draw_k_dist(self, k_dist):
-        n_heads  = len(k_dist['lang'][0])
+        n_heads = len(k_dist['lang'][0])
         for maptype in ['lang', 'vis', 'vl', 'lv', 'vv', 'll']:
-            
-            n_layers  = len(k_dist[maptype])
-            fig, axes =  plt.subplots(nrows=n_layers, ncols=n_heads, figsize=(50,35))
+
+            n_layers = len(k_dist[maptype])
+            fig, axes = plt.subplots(nrows=n_layers, ncols=n_heads, figsize=(50, 35))
             for layer_id in range(len(k_dist[maptype])):
                 for head_id, head_dist in enumerate(k_dist[maptype][layer_id]):
-                    #print("Plotting layer %d head %d..." % (layer_id, head_id))
+                    # print("Plotting layer %d head %d..." % (layer_id, head_id))
                     timer = time.time()
                     # display med k
                     median_k = np.median(head_dist)
                     props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-                    axes[layer_id, head_id].text(0.05, 0.95, 'median_k: %.2f$'%median_k, transform=axes[layer_id, head_id].transAxes, fontsize=6, verticalalignment='top', bbox=props)
+                    axes[layer_id, head_id].text(0.05, 0.95, 'median_k: %.2f$' % median_k,
+                                                 transform=axes[layer_id, head_id].transAxes, fontsize=6,
+                                                 verticalalignment='top', bbox=props)
                     # compute metastable state
-                    n_tokens = 100 #range_bins[maptype][1]  # max nb of tokens
-                    if median_k < (1/8 * n_tokens):
+                    n_tokens = 100  # range_bins[maptype][1]  # max nb of tokens
+                    if median_k < (1 / 8 * n_tokens):
                         # class IV
                         color = 'b'
-                    elif median_k < (1/4 * n_tokens):
+                    elif median_k < (1 / 4 * n_tokens):
                         # class III
                         color = 'g'
-                    elif median_k < (1/2 * n_tokens):
+                    elif median_k < (1 / 2 * n_tokens):
                         # class II
                         color = 'orange'
-                    elif median_k >= (1/2 * n_tokens):
+                    elif median_k >= (1 / 2 * n_tokens):
                         color = 'r'
                         # class I
                     # plot dist
-                    x_data, y_data = sn.distplot(head_dist,\
-                                                hist_kws={'range':(0, 100)},\
-                                                bins=10,\
-                                                rug=False,\
-                                                hist=False,\
-                                                ax=axes[layer_id, head_id],\
-                                                kde_kws={"shade": True},\
-                                                color=color).get_lines()[0].get_data() #range_bins[maptype]
-                    axes[layer_id, head_id].set_title('%s_%d_%d'%(maptype, layer_id, head_id))
-                                
-                    #print("Done in %.2f seconds!"%(time.time() - timer))
+                    x_data, y_data = sn.distplot(head_dist, \
+                                                 hist_kws={'range': (0, 100)}, \
+                                                 bins=10, \
+                                                 rug=False, \
+                                                 hist=False, \
+                                                 ax=axes[layer_id, head_id], \
+                                                 kde_kws={"shade": True}, \
+                                                 color=color).get_lines()[0].get_data()  # range_bins[maptype]
+                    axes[layer_id, head_id].set_title('%s_%d_%d' % (maptype, layer_id, head_id))
+
+                    # print("Done in %.2f seconds!"%(time.time() - timer))
             plt.suptitle(maptype)
             plt.show(block=False)
 
@@ -231,13 +237,13 @@ class Demo_display():
 
         all_k_median = []
         maps_label = []
-        n_heads  = len(k_dist['lang'][0])
+        n_heads = len(k_dist['lang'][0])
 
         count_layer = 0
         for maptype in ['lang', 'vis', 'vl', 'lv', 'vv', 'll']:
-            n_layers  = len(k_dist[maptype])
+            n_layers = len(k_dist[maptype])
             for layer_id in range(len(k_dist[maptype])):
-                maps_label.append('%s_%d'%(maptype, layer_id))
+                maps_label.append('%s_%d' % (maptype, layer_id))
                 all_k_median.append([None] * n_heads)
                 for head_id, head_dist in enumerate(k_dist[maptype][layer_id]):
                     # display med k
@@ -246,16 +252,15 @@ class Demo_display():
                 count_layer += 1
         all_k_median = np.array(all_k_median)
 
-        sn.heatmap(all_k_median.transpose(),  annot=False, xticklabels=maps_label, center=50.0, vmin=0, vmax=100)
+        sn.heatmap(all_k_median.transpose(), annot=False, xticklabels=maps_label, center=50.0, vmin=0, vmax=100)
 
         plt.tight_layout()
         plt.suptitle("Attention head activation (measured with k_median)")
         plt.title("Row are heads, columns are layers")
         plt.show(block=False)
 
-
     def show_image(self, img_id, word2box=None):
-        
+
         img_path = os.path.join(self.data_path, img_id)
         if os.path.exists(img_path):
             if (img_path == self.img_displayed) and (word2box is None):
@@ -266,7 +271,7 @@ class Demo_display():
                 # load image
                 im = np.array(Image.open(img_path), dtype=np.uint8)
                 # Create figure and axes
-                fig,ax = plt.subplots(1)
+                fig, ax = plt.subplots(1)
                 # Display the image
                 ax.imshow(im)
 
@@ -274,7 +279,7 @@ class Demo_display():
                     width = im.shape[0]
                     height = im.shape[1]
                     already_written = []
-                    for word, roi in word2box.items():        
+                    for word, roi in word2box.items():
                         box = roi['xywh']
                         obj_class = roi['class']
 
@@ -282,27 +287,26 @@ class Demo_display():
                             continue
 
                         # get coordinates in pixel            
-                        box_xy = (box[0]*width, box[1]*height)
-                        box_w  = box[2] * width
+                        box_xy = (box[0] * width, box[1] * height)
+                        box_w = box[2] * width
                         box_h = box[3] * height
                         # Create a Rectangle patch
-                        c = np.random.rand(3,)
-                        rect = patches.Rectangle(box_xy,box_w,box_h,linewidth=2,edgecolor=c,facecolor='none')
+                        c = np.random.rand(3, )
+                        rect = patches.Rectangle(box_xy, box_w, box_h, linewidth=2, edgecolor=c, facecolor='none')
                         # Add the patch to the Axes
                         ax.add_patch(rect)
                         # write label
                         text_xy = (box_xy[0] + 5, box_xy[1] + 5)
                         while text_xy in already_written:
                             text_xy = (text_xy[0] + 50, text_xy[1])
-                        ax.annotate("%s/%s"%(word, obj_class), text_xy, color=c, weight='bold', 
+                        ax.annotate("%s/%s" % (word, obj_class), text_xy, color=c, weight='bold',
                                     fontsize=12)
                         already_written.append(text_xy)
-
 
                 plt.show(block=False)
                 self.img_displayed = img_path
         else:
-            print("%s does not exist... I cannot display the image!"%img_path)
+            print("%s does not exist... I cannot display the image!" % img_path)
 
 
 class Demo():
@@ -312,9 +316,9 @@ class Demo():
 
     def __init__(self):
         self.model = None  # pretrained VQA model
-        self.cfg = None # demo configs
+        self.cfg = None  # demo configs
         self.load_config()
-        self.data_loader = Demo_data() # my data loader (not pytorch one)
+        self.data_loader = Demo_data()  # my data loader (not pytorch one)
         self.label_to_ans = {}  # add dictionnary mapping ans_id to answer
         self.displayer = Demo_display(data_path=self.cfg['images_dir'])
 
@@ -325,7 +329,7 @@ class Demo():
         """
         with open('model/src/tasks/demo_cfg.json', 'r') as f:
             self.cfg = json.load(f)
-        
+
         # modify LXMERT config accoring to the demo cfg:
         # (manually modify argument in args)
         if self.cfg['ecai_lxmert']:
@@ -333,9 +337,9 @@ class Demo():
         else:
             args.task_pointer = 'none'
         if self.cfg['tiny_lxmert']:
-            args.n_head=4
-            args.hidden_size=128
-            args.from_scratch=True
+            args.n_head = 4
+            args.hidden_size = 128
+            args.from_scratch = True
 
         print("Config loaded!")
 
@@ -359,8 +363,8 @@ class Demo():
             # Load raw pretrained model
             path = self.cfg['pretrained_model_ecai']
             _ = load_lxmert_qa(path, self.model,
-                              label2ans=self.label_to_ans)
-            
+                               label2ans=self.label_to_ans)
+
         else:
             print(self.cfg)
             # Load finetuned model
@@ -374,11 +378,10 @@ class Demo():
                 if '.module' in key:
                     state_dict[key.replace('.module', '')] = state_dict.pop(key)
             self.model.load_state_dict(state_dict, strict=False)
-        
 
         # To GPU
         self.model = self.model.cuda()
-        
+
         print("Model loaded!")
 
     def load_data(self):
@@ -386,17 +389,17 @@ class Demo():
         Load all the data (GQA testdev) in RAM
         """
         self.data_loader.load_all(self.cfg)
-        
+
     def img_available(self, image):
 
         img_id = image.split('.')[0]
         return self.data_loader.check_img(img_id)
-    
+
     def get_random_img(self):
         return self.data_loader.get_random()
 
     def display_image(self, img_id, word2box=None):
-        self.displayer.show_image(img_id+'.jpg', word2box)
+        self.displayer.show_image(img_id + '.jpg', word2box)
 
     def display_k_dist(self, k_dist, compact):
         if compact:
@@ -439,7 +442,7 @@ class Demo():
         sem_question_words = torch.zeros((1, 20, 36))
         sem_answer_words = torch.zeros((1, 1, 36))
         bboxes_words = torch.zeros((1, 20 + 1, 4))
-        vis_mask = torch.from_numpy(np.concatenate((np.ones(min(obj_num, 36)), np.zeros(max(0, 36-obj_num)))))
+        vis_mask = torch.from_numpy(np.concatenate((np.ones(min(obj_num, 36)), np.zeros(max(0, 36 - obj_num)))))
 
         # To GPU
         feats, boxes = feats.cuda(), boxes.cuda()
@@ -453,32 +456,36 @@ class Demo():
             tkn_sent: tokenized sentence
             att_maps: attention maps
             """
-            logit, _, _, _, _, tkn_sent, att_maps, lang_mask = self.model(feats, boxes, question, iou_question, iou_answer,
-                                                         sem_question_words, sem_answer_words, bboxes_words, verbose=True, head_mask=head_mask)
+            logit, _, _, _, _, tkn_sent, att_maps, lang_mask = self.model(feats, boxes, question, iou_question,
+                                                                          iou_answer,
+                                                                          sem_question_words, sem_answer_words,
+                                                                          bboxes_words, verbose=True,
+                                                                          head_mask=head_mask)
 
         # Extract alignment for attention map 'vl' layer 3 head 0
         word2bbox = get_alignment_from_attmap(
             att_maps['vl'][3].cpu().squeeze().sum(0),
             boxes, obj_class, tkn_sent[0])
-        
+
         # Extract k_dist
         k_dist = get_k_dist_from_attmaps(att_maps, lang_mask.cpu().squeeze(), vis_mask)
-        
+
         # compute prediction
         logit = torch.softmax(logit, dim=-1)
         score, label = logit.max(1)
         top_prediction = (self.label_to_ans[label[0].cpu().numpy()], score[0])
-        
+        # print(self.label_to_ans[label])
         five_predictions = None
         attention_heads = att_maps
-        
+
         return top_prediction, five_predictions, attention_heads, word2bbox, k_dist
+
 
 if __name__ == "__main__":
 
     # * Display config
     display_k_dist = True
-    compact_k_dist = True # compact=False will display all the k ditribution
+    compact_k_dist = True  # compact=False will display all the k ditribution
     display_alignment = False
     # * /
 
@@ -488,32 +495,32 @@ if __name__ == "__main__":
 
     image = None
 
-    while(True):
-        
+    while (True):
+
         if image == None:
             image = input("Image? (ex:'n520071.jpg').......")
         else:
             keep = input("Keep the same image? [y/n]")
             if keep in "no":
                 image = input("Image?.......")
-        
+
         while not my_demo.img_available(image):
             if image == 'random':
                 image = my_demo.get_random_img()
-                print("Random image is %s"%image)
+                print("Random image is %s" % image)
                 break
-            image = input("%s is not available, please provide a new image:"%image)
+            image = input("%s is not available, please provide a new image:" % image)
 
         my_demo.display_image(image)
         question = input("Question?.......")
 
         head_mask = empty_mask()
         # uncomment to allow head masking
-        #head_mask['vl'] += 1  # mask all vl layers
-        #head_mask['lang'][3,3] += 1# mask the head 3 in lang layer 3
+        # head_mask['vl'] += 1  # mask all vl layers
+        # head_mask['lang'][3,3] += 1# mask the head 3 in lang layer 3
 
         top_prediction, five_predictions, attention_heads, alignment, k_dist = my_demo.ask(question, image, head_mask)
-        
+
         # display
         if display_alignment:
             my_demo.display_image(image, word2box=alignment)
