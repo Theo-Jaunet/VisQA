@@ -503,11 +503,14 @@ class Demo():
         logit = torch.softmax(logit, dim=-1)
         score, label = logit.max(1)
         top_prediction = (self.label_to_ans[label[0].cpu().numpy()], score[0])
-        # print(self.label_to_ans[label])
-        five_predictions = None
+        score_srt, label_srt = torch.sort(logit.squeeze(), descending=True, dim=-1)
+        five_predictions = [(self.label_to_ans[label_srt[i].cpu().numpy()], score_srt[i]) for i in range(5)]
         attention_heads = att_maps
 
-        return top_prediction, five_predictions, attention_heads, word2bbox, k_dist
+        # textual and visual input labels
+        input_labels = {'textual': tkn_sent[0], 'visual': obj_class}
+
+        return top_prediction, five_predictions, attention_heads, word2bbox, k_dist, input_labels
 
 
 if __name__ == "__main__":
@@ -548,7 +551,7 @@ if __name__ == "__main__":
         # head_mask['vl'] += 1  # mask all vl layers
         # head_mask['lang'][3,3] += 1# mask the head 3 in lang layer 3
 
-        top_prediction, five_predictions, attention_heads, alignment, k_dist = my_demo.ask(question, image, head_mask)
+        top_prediction, five_predictions, attention_heads, alignment, k_dist, input_labels = my_demo.ask(question, image, head_mask)
 
         # display
         if display_alignment:

@@ -254,8 +254,9 @@ def ask():
     # head_mask['lv'] += 1
 
 
-    print(head_mask)
-    top_prediction, five_predictions, attention_heads, alignment, k_dist = my_demo.ask(question, image, head_mask)
+    top_prediction, five_predictions, attention_heads, alignment, k_dist, input_labels = my_demo.ask(question, image, head_mask)
+
+    print(input_labels)
 
     print(five_predictions)
 
