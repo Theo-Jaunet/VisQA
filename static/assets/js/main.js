@@ -1,6 +1,6 @@
 let curData = [];
 let imgs = [];
-let baseUrl = "static/assets/images/try/"
+let baseUrl = "static/assets/images/oracle/"
 
 let mod = {lang: 9, vis: 5, cross: 5, head: 12};
 
@@ -30,7 +30,7 @@ async function load_data_light() {
 
 d3.json('static/assets/data/images.json', d3.autoType).then(d => {
 
-    imgs = d["images"];
+    imgs = d["oracle"];
 
 
     let slide = $("#imSlide");

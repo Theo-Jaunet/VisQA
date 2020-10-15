@@ -1,8 +1,8 @@
 {
     "num_answers": 1842,
-    "tiny_lxmert": 0,
+    "tiny_lxmert": 1,
     "ecai_lxmert": 0,
-    "oracle": 0,
+    "oracle": 1,
     "pretrained_model_lxmert": "model/src/pretrain/lxmert",
     "pretrained_model_tiny_lxmert_oracle": "model/src/pretrain/oracle",
     "answers_dict": "model/trainval_label2ans.json",

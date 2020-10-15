@@ -14,7 +14,7 @@ import time
 import argparse
 import random
 import os
-
+import pickle
 # python plot
 import tkinter
 import matplotlib.pyplot as plt
@@ -126,6 +126,8 @@ class Demo_data():
         self.img_dst = {}  # {img_id: features, ...}
         self.gqa_buffer_loader = GQABufferLoader()
         self.cfg = cfg
+        with open(cfg["object_classes"], 'r') as f:
+            self.object_classes = f.read().split('\n')
 
     def load_all(self, cfg):
         """
@@ -154,9 +156,9 @@ class Demo_data():
         Get features of image 'img_id'.
         Also do some pre-processing.
         """
-        
+
         if self.cfg['oracle']:  # load from pickle file
-            load_path = os.path.join(self.cfg['oracle_dir'], "%s.pickle"%img_id)
+            load_path = os.path.join(self.cfg['oracle_dir'], "%s.pickle" % img_id)
             with open(load_path, 'rb') as handle:
                 img_info = pickle.load(handle)
                 img_info['boxes'] = img_info['boxes'][:2320].astype(np.float32)
@@ -172,7 +174,11 @@ class Demo_data():
         objects_id = img_info['objects_id'].copy()
         obj_class = []
         for obj_id in objects_id:
-            obj_class.append(self.object_classes[obj_id])
+            print(obj_id)
+            if obj_id < 1599:
+                obj_class.append(self.object_classes[obj_id])
+            else:
+                obj_class.append("nani?")
 
         # Normalize the boxes (to 0 ~ 1)
         img_h, img_w = img_info['img_h'], img_info['img_w']
@@ -327,7 +333,7 @@ class Demo():
         self.model = None  # pretrained VQA model
         self.cfg = None  # demo configs
         self.load_config()
-        self.data_loader = Demo_data(self.cfg) # my data loader (not pytorch one)
+        self.data_loader = Demo_data(self.cfg)  # my data loader (not pytorch one)
         self.label_to_ans = {}  # add dictionnary mapping ans_id to answer
         self.displayer = Demo_display(data_path=self.cfg['images_dir'])
 
@@ -346,13 +352,13 @@ class Demo():
         else:
             args.task_pointer = 'none'
         if self.cfg['tiny_lxmert']:
-            args.n_head=4
-            args.hidden_size=128
-            args.from_scratch=True
+            args.n_head = 4
+            args.hidden_size = 128
+            args.from_scratch = True
         if self.cfg['oracle']:
-            args.visual_feat_dim=2320
+            args.visual_feat_dim = 2320
             self.cfg['data_split'] = 'val'
-            args.from_scratch=True
+            args.from_scratch = True
         print("Config loaded!")
 
     def load_model(self):
@@ -412,7 +418,7 @@ class Demo():
             print('Oracle data do not need to be loaded in RAM')
         else:
             self.data_loader.load_all(self.cfg)
-        
+
     def img_available(self, image):
 
         img_id = image.split('.')[0]

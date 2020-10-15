@@ -253,9 +253,11 @@ def ask():
     # head_mask['ll'] += 1
     # head_mask['lv'] += 1
 
+
+    print(head_mask)
     top_prediction, five_predictions, attention_heads, alignment, k_dist = my_demo.ask(question, image, head_mask)
 
-    # print(five_predictions)
+    print(five_predictions)
 
     k_vals = toSliptDict(k_dist)
 
@@ -271,6 +273,19 @@ def ask():
                         })
 
 
+def getfilext(path):
+    files = []
+    file = [".pickle"]
+    fl = os.listdir(path)
+    for f in fl:
+        ext = os.path.splitext(f)[1]
+        if ext.lower() not in file:
+            continue
+        files.append(f)
+
+    return files
+
+
 if __name__ == '__main__':
     # * Display config
 
@@ -280,15 +295,22 @@ if __name__ == '__main__':
 
     # * /
 
-    my_demo.load_data()
+    # my_demo.load_data()
     my_demo.load_model()
-    # imgs = list(my_demo.data_loader.img_dst)
+    # imgs = list(my_demo.data_loader.img_dst) # FOR The rest
 
-    # for i in range(len(imgs)):
-    #     copyfile("model/images/" + imgs[i] + ".jpg", "static/assets/images/try/" + imgs[i] + ".jpg")
+    # imgs = getfilext("model/gqa_testdev_obj36/oracle_data")  # FOR ORACLE
     #
-    # with open('%s.json' % "images", 'w') as fjson:
-    #     ujson.dump({"images":list(my_demo.data_loader.img_dst)}, fjson, ensure_ascii=False, sort_keys=True, indent=4)
+    # imgs = np.random.choice(imgs, 300, replace=False)
+    #
+    # for i in range(len(imgs)):
+    #     imgs[i] = imgs[i].replace(".pickle", "")
+    #     copyfile("model/images/" + (imgs[i]) + ".jpg",
+    #              "static/assets/images/oracle/" + (imgs[i]) + ".jpg")
+    # print(imgs[0])
+    #
+    # with open('%s.json' % "images_oracle", 'w') as fjson:
+    #     ujson.dump({"images": list(imgs)}, fjson, ensure_ascii=False, sort_keys=True, indent=4)
 
     app.run(host='0.0.0.0', port=5000, debug=False)
     # temp = make_colors()
