@@ -174,11 +174,7 @@ class Demo_data():
         objects_id = img_info['objects_id'].copy()
         obj_class = []
         for obj_id in objects_id:
-            print(obj_id)
-            if obj_id < 1599:
-                obj_class.append(self.object_classes[obj_id])
-            else:
-                obj_class.append("nani?")
+            obj_class.append(self.object_classes[obj_id])
 
         # Normalize the boxes (to 0 ~ 1)
         img_h, img_w = img_info['img_h'], img_info['img_w']
