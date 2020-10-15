@@ -253,9 +253,10 @@ def ask():
     # head_mask['ll'] += 1
     # head_mask['lv'] += 1
 
-    top_prediction, five_predictions, attention_heads, alignment, k_dist = my_demo.ask(question, image, head_mask)
+    top_prediction, five_predictions, attention_heads, alignment, k_dist, input_labels = my_demo.ask(question, image, head_mask)
 
-    # print(five_predictions)
+    print(input_labels)
+    print(five_predictions)
 
     k_vals = toSliptDict(k_dist)
 
