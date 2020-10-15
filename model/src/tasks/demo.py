@@ -126,7 +126,9 @@ class Demo_data():
         self.img_dst = {}  # {img_id: features, ...}
         self.gqa_buffer_loader = GQABufferLoader()
         self.cfg = cfg
-        with open(cfg["object_classes"], 'r') as f:
+
+        vocab_path = cfg["object_classes_oracle"] if cfg["oracle"] else cfg["object_classes"]
+        with open(vocab_path, 'r') as f:
             self.object_classes = f.read().split('\n')
 
     def load_all(self, cfg):
@@ -151,6 +153,19 @@ class Demo_data():
     def get_random(self):
         return random.choice(list(self.img_dst.keys()))  # +'.jpg'
 
+    def proc_img_feat(self, img_feat, img_feat_pad_size):
+        if img_feat.shape[0] > img_feat_pad_size:
+            img_feat = img_feat[:img_feat_pad_size]
+
+        img_feat = np.pad(
+            img_feat,
+            ((0, img_feat_pad_size - img_feat.shape[0]), (0, 0)),
+            mode='constant',
+            constant_values=0
+        )
+
+        return img_feat
+
     def get_feats(self, img_id):
         """
         Get features of image 'img_id'.
@@ -161,8 +176,8 @@ class Demo_data():
             load_path = os.path.join(self.cfg['oracle_dir'], "%s.pickle" % img_id)
             with open(load_path, 'rb') as handle:
                 img_info = pickle.load(handle)
-                img_info['boxes'] = img_info['boxes'][:2320].astype(np.float32)
-                img_info['features'] = img_info['features'][:2320].astype(np.float32)
+                img_info['boxes'] = img_info['boxes'][:, :2320].astype(np.float32)
+                img_info['features'] = img_info['features'][:, :2320].astype(np.float32)
         else:
             img_info = self.img_dst[img_id]  # load from RAM
 
@@ -184,7 +199,15 @@ class Demo_data():
         np.testing.assert_array_less(boxes, 1 + 1e-5)
         np.testing.assert_array_less(-boxes, 0 + 1e-5)
 
-        return feats, boxes, obj_class
+        # Padding, because each image does not necessary have same amount of
+        # object (e.g. oracle)
+        visual_attention_mask = np.concatenate((np.ones(min(obj_num, 36)), np.zeros(max(0, 36-obj_num))))
+        boxes = self.proc_img_feat(boxes, 36)
+        feats = self.proc_img_feat(feats, 36)
+        obj_num = 36
+
+
+        return feats, boxes, obj_class, visual_attention_mask
 
 
 class Demo_display():
@@ -453,12 +476,13 @@ class Demo():
 
         # Load image features
         img_id = image.split('.')[0]
-        feats, boxes, obj_class = self.data_loader.get_feats(img_id)
+        feats, boxes, obj_class, visual_attention_mask = self.data_loader.get_feats(img_id)
         obj_num = len(obj_class)
 
         # Reshape data in a batch of size 1 and turn them to tensor
         feats = torch.from_numpy(feats).unsqueeze(0)
         boxes = torch.from_numpy(boxes).unsqueeze(0)
+        visual_attention_mask = torch.from_numpy(visual_attention_mask).unsqueeze(0)
         question = [question]
 
         # We do not use these variables, so we define dummy values
@@ -470,7 +494,7 @@ class Demo():
         vis_mask = torch.from_numpy(np.concatenate((np.ones(min(obj_num, 36)), np.zeros(max(0, 36 - obj_num)))))
 
         # To GPU
-        feats, boxes = feats.cuda(), boxes.cuda()
+        feats, boxes, visual_attention_mask = feats.cuda(), boxes.cuda(), visual_attention_mask.cuda()
         iou_question, iou_answer = iou_question.cuda(), iou_answer.cuda()
         sem_question_words, sem_answer_words, bboxes_words = sem_question_words.cuda(), sem_answer_words.cuda(), bboxes_words.cuda()
 
@@ -484,8 +508,9 @@ class Demo():
             logit, _, _, _, _, tkn_sent, att_maps, lang_mask = self.model(feats, boxes, question, iou_question,
                                                                           iou_answer,
                                                                           sem_question_words, sem_answer_words,
-                                                                          bboxes_words, verbose=True,
-                                                                          head_mask=head_mask)
+                                                                          bboxes_words, visual_attention_mask,
+                                                                          verbose=True,
+                                                                          head_mask=head_mask,)
 
         # Extract alignment for attention map 'vl' layer 3 head 0
         word2bbox = get_alignment_from_attmap(
