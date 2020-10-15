@@ -324,22 +324,22 @@
                 $("#result").html("Answer: <br> " + d.pred + " at " + (Math.round(d.confidence * 10000) / 100) + "%")
                 console.log(d);
                 filler(d.alignment)
-                let svg = d3.select("#proj");
+                // let svg = d3.select("#proj");
 
-                console.log("-----------------")
-                console.log(d.coords);
-                console.log(xscale(d.coords[0]));
+                // console.log("-----------------")
+                // console.log(d.coords);
+                // console.log(xscale(d.coords[0]));
 
-                svg.select("#askDot").remove()
+                // svg.select("#askDot").remove()
 
-                svg.append("circle")
-                    .attr("cx", xscale(d.coords[0][0]))
-                    .attr("cy", yscale(d.coords[0][1]))
-                    .attr("r", "10")
-                    .attr("id", "askDot")
-                    .attr("fill", "steelblue")
-                    .attr("stroke", "#555555")
-                    .attr("stroke-width", "3")
+                // svg.append("circle")
+                //     .attr("cx", xscale(d.coords[0][0]))
+                //     .attr("cy", yscale(d.coords[0][1]))
+                //     .attr("r", "10")
+                //     .attr("id", "askDot")
+                //     .attr("fill", "steelblue")
+                //     .attr("stroke", "#555555")
+                //     .attr("stroke-width", "3")
 
                 fillHeads(d.k_dist)
                 currKmean = d.k_dist
@@ -371,22 +371,22 @@
                 $("#result").html("Answer: <br>" + d.pred + " at " + (Math.round(d.confidence * 10000) / 100) + "%")
                 console.log(d);
                 filler(d.alignment)
-                let svg = d3.select("#proj");
+                // let svg = d3.select("#proj");
 
-                console.log("-----------------")
-                console.log(d.coords);
-                console.log(xscale(d.coords[0]));
-
-                svg.select("#askDot").remove()
-
-                svg.append("circle")
-                    .attr("cx", xscale(d.coords[0][0]))
-                    .attr("cy", yscale(d.coords[0][1]))
-                    .attr("r", "10")
-                    .attr("id", "askDot")
-                    .attr("fill", "steelblue")
-                    .attr("stroke", "#555555")
-                    .attr("stroke-width", "3")
+                // console.log("-----------------")
+                // console.log(d.coords);
+                // console.log(xscale(d.coords[0]));
+                //
+                // svg.select("#askDot").remove()
+                //
+                // svg.append("circle")
+                //     .attr("cx", xscale(d.coords[0][0]))
+                //     .attr("cy", yscale(d.coords[0][1]))
+                //     .attr("r", "10")
+                //     .attr("id", "askDot")
+                //     .attr("fill", "steelblue")
+                //     .attr("stroke", "#555555")
+                //     .attr("stroke-width", "3")
 
                 asked = true;
                 fillHeads(d.k_dist)
