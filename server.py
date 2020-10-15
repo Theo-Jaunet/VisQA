@@ -50,6 +50,8 @@ def makeOrder(layout):
 order = makeOrder(mod)
 
 
+# print(order)
+
 def load_data(file_path):
     with open(file_path, 'rb') as fpkl:
         data = pickle.load(fpkl)

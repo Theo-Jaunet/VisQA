@@ -529,7 +529,7 @@ function plotter_init(data) {
 
     let xrange = d3.extent(data.map(d => d['k_dist'][0]));
     let yrange = d3.extent(data.map(d => d['k_dist'][1]));
-    console.log(bBox.width);
+    // console.log(bBox.width);
 
     xscale = d3.scaleLinear().domain(xrange).range([0, 960]);
     yscale = d3.scaleLinear().domain(yrange).range([0, 642]);
@@ -562,13 +562,13 @@ function filler(data) {
     let can = document.getElementById("inVis")
     let cont = can.getContext('2d');
 
-    console.log(dat);
-    console.log(data);
+    // console.log(dat);
+    // console.log(data);
     cont.beginPath();
 
     for (let i = 0; i < dat.length; i++) {
         // cont
-        console.log(data[dat[i]].xywh[0]);
+        // console.log(data[dat[i]].xywh[0]);
         cont.save()
         cont.strokeStyle = col(i);
         cont.fillStyle = col(i);
@@ -603,7 +603,7 @@ function UpdateCounter() {
 function drawHeat(data) {
 
 
-    console.log("Drawing");
+    // console.log("Drawing");
 
     let can = document.getElementById("heatm");
 
@@ -620,7 +620,7 @@ function drawHeat(data) {
     let cw = ((can.width - (marg * 2)) - (pad * data[0].length)) / data[0].length;
     let ch = ((can.height - (marg * 2)) - (pad * data.length)) / data.length
 
-    console.log(cw);
+    // console.log(cw);
 
     for (let i = 0; i < data.length; i++) { // Iter Horizontally
         for (let j = 0; j < data[i].length; j++) { // Iter vertically
