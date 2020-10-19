@@ -90,11 +90,11 @@ def select(data):
 
 dataset = load_data("lxmert_gqaval_reasbias.pickle")
 
-to_map = select(dataset)
+# to_map = select(dataset)
 # print(to_map[0])
 print('making Umap  ....')
 
-umaper = umap.UMAP(n_neighbors=20, min_dist=0.3).fit(to_map[:])
+# umaper = umap.UMAP(n_neighbors=20, min_dist=0.3).fit(to_map[:])
 
 
 def make_proj(data):
@@ -206,10 +206,10 @@ def formatK_dist(k_dist):
                 res.append(np.median(v[i][j]))
     return res
 
-
-@app.route('/firstProj', methods=["GET"])
-def fproj():
-    return ujson.dumps({"proj": umaper.transform(to_map[:]).tolist()})
+#
+# @app.route('/firstProj', methods=["GET"])
+# def fproj():
+#     return ujson.dumps({"proj": umaper.transform(to_map[:]).tolist()})
 
 
 def toSliptDict(data):
@@ -291,6 +291,7 @@ def getfilext(path):
         files.append(f)
 
     return files
+
 
 
 if __name__ == '__main__':
