@@ -507,7 +507,7 @@ function DrawRes(data) {
             .attr("y", 5 + (barHeight + barPad) * i)
             .attr("height", barHeight)
             .attr("width", lscale(ordered[i][1]))
-            .attr("fill", "steelblue")
+            .attr("fill", (i === 0 ? "#a92234" : "steelblue"))
         // .attr("stroke", "#f3f3f3")
         // .attr("strokeWidth", "1px")
 
