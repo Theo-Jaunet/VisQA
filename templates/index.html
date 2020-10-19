@@ -113,8 +113,13 @@
             </div>
 
             <div style="position: absolute;left: 1020px;top: 32%">
-                <p id="result"
-                   style="text-align: center;display:block;margin-top: 5px;margin-bottom: 5px;font-weight: 600;background-color: #fafafa;border: thin solid #f3f3f3;padding: 1.125em;"></p>
+
+
+                <svg width="150" id="res" style=";background-color: #fafafa;border: thin solid #f3f3f3;padding: 1.125em;">
+
+                </svg>
+                <!--                <p id="result"-->
+                <!--                   style="text-align: center;display:block;margin-top: 5px;margin-bottom: 5px;font-weight: 600;background-color: #fafafa;border: thin solid #f3f3f3;padding: 1.125em;"></p>-->
             </div>
 
 
@@ -178,12 +183,12 @@
                     <img src="static/assets/images/load.gif" style="width: 75px"/>
                     <h3> Loading ... </h3>
                 </div>
-                <div style="width:58%;height: 58%;border: #555555 solid 1px;position: relative;display:inline-block">
+                <div style="width:48%;height: 68%;border: #555555 solid 1px;position: relative;display:inline-block">
                     <svg id="proj" style="height: 100%;width:100%" viewBox="0 0 960 642">
 
                     </svg>
                 </div>
-                <div style="width:40%;height: 58%;border: #555555 solid 1px;position: relative;display: inline-block">
+                <div style="width:50%;height: 68%;border: #555555 solid 1px;position: relative;display: inline-block">
                     <canvas style="width: 100%;height: 100%" id="heatm"></canvas>
                 </div>
             </div>
@@ -319,35 +324,7 @@
             contentType: false,
             data: form,
             success: function (d) {
-                d = JSON.parse(d);
-
-                $("#result").html("Answer: <br> " + d.pred + " at " + (Math.round(d.confidence * 10000) / 100) + "%")
-                console.log(d);
-                filler(d.alignment)
-                let svg = d3.select("#proj");
-
-                console.log("-----------------")
-                console.log(d.coords);
-                console.log(xscale(d.coords[0]));
-
-                svg.select("#askDot").remove()
-
-                svg.append("circle")
-                    .attr("cx", xscale(d.coords[0][0]))
-                    .attr("cy", yscale(d.coords[0][1]))
-                    .attr("r", "10")
-                    .attr("id", "askDot")
-                    .attr("fill", "steelblue")
-                    .attr("stroke", "#555555")
-                    .attr("stroke-width", "3")
-
-                fillHeads(d.k_dist)
-                currKmean = d.k_dist
-                $(".kmeanSelected").toggleClass("kmeanSelected")
-                UpdateCounter()
-                asked = true;
-                currHeatmaps = d.heatmaps
-                //
+                ask(d)
 
             }
         })
@@ -366,34 +343,7 @@
             contentType: false,
             data: form,
             success: function (d) {
-                d = JSON.parse(d);
-
-                $("#result").html("Answer: <br>" + d.pred + " at " + (Math.round(d.confidence * 10000) / 100) + "%")
-                console.log(d);
-                filler(d.alignment)
-                let svg = d3.select("#proj");
-
-                console.log("-----------------")
-                console.log(d.coords);
-                console.log(xscale(d.coords[0]));
-
-                svg.select("#askDot").remove()
-
-                svg.append("circle")
-                    .attr("cx", xscale(d.coords[0][0]))
-                    .attr("cy", yscale(d.coords[0][1]))
-                    .attr("r", "10")
-                    .attr("id", "askDot")
-                    .attr("fill", "steelblue")
-                    .attr("stroke", "#555555")
-                    .attr("stroke-width", "3")
-
-                asked = true;
-                fillHeads(d.k_dist)
-                currKmean = d.k_dist
-                $(".kmeanSelected").toggleClass("kmeanSelected")
-                UpdateCounter()
-                currHeatmaps = d.heatmaps
+                ask(d)
 
             }
         })

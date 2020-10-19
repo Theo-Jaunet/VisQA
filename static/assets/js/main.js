@@ -1,6 +1,6 @@
 let curData = [];
 let imgs = [];
-let baseUrl = "static/assets/images/oracle/"
+let baseUrl = "static/assets/images/try/"
 
 let mod = {lang: 9, vis: 5, cross: 5, head: 12};
 
@@ -12,6 +12,8 @@ let yscale;
 let currKmean = {};
 
 let currHeatmaps = {};
+
+let currHeatLabels = {};
 
 let mono_col = d3.scaleLinear().domain([0, 0.35, 1]).range(['#ffffe1', '#FEEAA9', '#cf582f']).interpolate(d3.interpolateHcl);
 
@@ -30,7 +32,7 @@ async function load_data_light() {
 
 d3.json('static/assets/data/images.json', d3.autoType).then(d => {
 
-    imgs = d["oracle"];
+    imgs = d["default"];
 
 
     let slide = $("#imSlide");
@@ -137,7 +139,7 @@ function drawModel(mod) {
         .attr("nb", "0")
         .attr("x", block_xinter)
         .attr("y", top_marg)
-        .attr("width", (xinter+(rectWidth + xinter) * mod.lang))
+        .attr("width", (xinter + (rectWidth + xinter) * mod.lang))
         .attr("height", blockHeight)
         // .attr("fill", '#e1964b')
         .attr("fill", "#fff")
@@ -147,7 +149,7 @@ function drawModel(mod) {
 
     svg.append("text")
         .attr("x", (block_xinter + ((xinter + ((rectWidth + xinter) * mod.lang)) / 2)) - 85)
-        .attr("y", top_marg-4)
+        .attr("y", top_marg - 4)
         .text("Language Self-Attention")
         .style("font-family", '"Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif')
         .style("color", "#222")
@@ -194,7 +196,7 @@ function drawModel(mod) {
 
     svg.append("text")
         .attr("x", (block_xinter + ((xinter + ((rectWidth + xinter) * mod.vis)) / 2)) - 70)
-        .attr("y", (blockHeight*2 + (top_marg*3)))
+        .attr("y", (blockHeight * 2 + (top_marg * 3)))
         .text("Vision Self-Attention")
         .style("font-family", '"Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif')
         .style("color", "#222")
@@ -270,7 +272,7 @@ function drawModel(mod) {
 
             svg.append("text")
                 .attr("x", x + (rectWidth / 2) - 6)
-                .attr("y", y-10)
+                .attr("y", y - 10)
                 .text(names[j][0])
                 .style("font-family", '"Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif')
                 .style("color", "#222")
@@ -295,7 +297,7 @@ function drawModel(mod) {
 
             svg.append("text")
                 .attr("x", x + (rectWidth / 2) - 6)
-                .attr("y", (y + (rectHeight*2) + yinter*2)+13)
+                .attr("y", (y + (rectHeight * 2) + yinter * 2) + 13)
                 .text(names[j][1])
                 .style("font-family", '"Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif')
                 .style("color", "#222")
@@ -305,7 +307,7 @@ function drawModel(mod) {
             drawHeads(svg, mod.head, x, y + (rectHeight) + yinter, rectWidth, rectHeight, names[j][1] + "_" +
                 i)
 
-            x += rectWidth+xinter
+            x += rectWidth + xinter
         }
     }
 }
@@ -409,7 +411,7 @@ function init(dat) {
     //
     //             console.log(d);
 
-    console.log(data);
+    // console.log(data);
     curData = data;
     refKmean = dat[1]
     currKmean = refKmean;
@@ -430,6 +432,97 @@ function init(dat) {
     //     }
     // });
 }
+
+
+function ask(data) {
+    d = JSON.parse(data);
+
+    // $("#result").html("Answer: <br> " + d.pred + " at " + (Math.round(d.confidence * 10000) / 100) + "%")
+    console.log(d);
+
+    DrawRes(d.five)
+    filler(d.alignment)
+    let svg = d3.select("#proj");
+
+    // console.log("-----------------")
+    // console.log(d.coords);
+    // console.log(xscale(d.coords[0]));
+
+    svg.select("#askDot").remove()
+
+    svg.append("circle")
+        .attr("cx", xscale(d.coords[0][0]))
+        .attr("cy", yscale(d.coords[0][1]))
+        .attr("r", "10")
+        .attr("id", "askDot")
+        .attr("fill", "steelblue")
+        .attr("stroke", "#555555")
+        .attr("stroke-width", "3")
+
+    fillHeads(d.k_dist)
+    currKmean = d.k_dist
+    $(".kmeanSelected").toggleClass("kmeanSelected")
+    UpdateCounter()
+    asked = true;
+    currHeatmaps = d.heatmaps
+    currHeatLabels = d.labels
+    //
+}
+
+function DrawRes(data) {
+
+    let svg = d3.select("#res")
+
+    svg.selectAll("*").remove()
+
+    let barHeight = 15
+    let barPad = 17
+
+    let textPad = 10
+
+
+    const sortable = Object.fromEntries(
+        Object.entries(data).sort(([, a], [, b]) => a - b)
+    );
+
+    let ordered = Object.entries(data)
+
+    let lscale = d3.scaleLinear().domain([0, 1]).range([3, 40]);
+
+    for (let i = 0; i < ordered.length; i++) {
+
+
+        svg.append("rect")
+            .attr("x", 2)
+            .attr("y", 5 + (((barHeight + barPad) * i)))
+            .attr("height", barHeight)
+            .attr("width", lscale(1))
+            .attr("fill", "#f3f3f3")
+            .attr("stroke", "#a9a9a9")
+            .attr("strokeWidth", "1px")
+
+
+        svg.append("rect")
+            .attr("x", 2)
+            .attr("y", 5 + (barHeight + barPad) * i)
+            .attr("height", barHeight)
+            .attr("width", lscale(ordered[i][1]))
+            .attr("fill", "steelblue")
+        // .attr("stroke", "#f3f3f3")
+        // .attr("strokeWidth", "1px")
+
+
+        svg.append("text")
+            .attr("x", lscale(1) + textPad)
+            .attr("y", 5 + ((barHeight + barPad) * i) + (barHeight / 2) + 3)
+            .text(ordered[i][0])
+
+
+    }
+    // console.log(sortable);
+
+}
+
 
 function fillHeads(data) {
 
@@ -529,7 +622,7 @@ function plotter_init(data) {
 
     let xrange = d3.extent(data.map(d => d['k_dist'][0]));
     let yrange = d3.extent(data.map(d => d['k_dist'][1]));
-    console.log(bBox.width);
+    // console.log(bBox.width);
 
     xscale = d3.scaleLinear().domain(xrange).range([0, 960]);
     yscale = d3.scaleLinear().domain(yrange).range([0, 642]);
@@ -562,13 +655,13 @@ function filler(data) {
     let can = document.getElementById("inVis")
     let cont = can.getContext('2d');
 
-    console.log(dat);
-    console.log(data);
+    // console.log(dat);
+    // console.log(data);
     cont.beginPath();
 
     for (let i = 0; i < dat.length; i++) {
         // cont
-        console.log(data[dat[i]].xywh[0]);
+        // console.log(data[dat[i]].xywh[0]);
         cont.save()
         cont.strokeStyle = col(i);
         cont.fillStyle = col(i);
@@ -603,7 +696,7 @@ function UpdateCounter() {
 function drawHeat(data) {
 
 
-    console.log("Drawing");
+    // console.log("Drawing");
 
     let can = document.getElementById("heatm");
 
@@ -616,23 +709,40 @@ function drawHeat(data) {
 
     let marg = 15;
     let pad = 5;
+    let st = 100;
 
-    let cw = ((can.width - (marg * 2)) - (pad * data[0].length)) / data[0].length;
-    let ch = ((can.height - (marg * 2)) - (pad * data.length)) / data.length
+    let cw = (((can.width - st) - (marg * 2)) - (pad * data[0].length)) / data[0].length;
+    let ch = (((can.height - st) - (marg * 2)) - (pad * data.length)) / data.length
 
-    console.log(cw);
+    // console.log(cw);
 
     for (let i = 0; i < data.length; i++) { // Iter Horizontally
+
+        cont.save();
+        cont.font = ' 500 24px Arial';
+        cont.translate(st + marg + (cw / 2) + ((cw + pad) * i), st + marg);
+        cont.rotate(-Math.PI / 4);
+        cont.textAlign = "left";
+        cont.fillStyle = "#1e1e1e"
+        cont.fillText(currHeatLabels.textual[i % currHeatLabels.textual.length], 0, 0);
+        cont.restore();
+
+        cont.save();
+        cont.font = ' 400 24px Arial';
+        cont.textAlign = "right";
+        cont.fillStyle = "#1e1e1e"
+        cont.fillText(currHeatLabels.visual[i % currHeatLabels.visual.length], 100, st + marg + (ch / 2) + ((ch + pad) * i) + pad);
+        cont.restore();
+
+
         for (let j = 0; j < data[i].length; j++) { // Iter vertically
             cont.fillStyle = mono_col(data[i][j]);
 
-            cont.fillRect(marg + ((cw + pad) * j), marg + ((ch + pad) * i) + pad, cw, ch)
+            cont.fillRect(st + marg + ((cw + pad) * j), st + marg + ((ch + pad) * i) + pad, cw, ch)
+
 
         }
-
     }
-
-
 }
 
 

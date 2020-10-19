@@ -253,14 +253,18 @@ def ask():
     # head_mask['ll'] += 1
     # head_mask['lv'] += 1
 
-
-    top_prediction, five_predictions, attention_heads, alignment, k_dist, input_labels = my_demo.ask(question, image, head_mask)
+    top_prediction, five_predictions, attention_heads, alignment, k_dist, input_labels = my_demo.ask(question, image,
+                                                                                                     head_mask)
 
     print(input_labels)
 
-    print(five_predictions)
-
     k_vals = toSliptDict(k_dist)
+
+    five = {}
+    for u in range(len(five_predictions)):
+        five[five_predictions[u][0]] = five_predictions[u][1].item()
+
+    print(five)
 
     for k, v in alignment.items():
         alignment[k]["xywh"] = alignment[k]["xywh"].tolist()
@@ -270,6 +274,8 @@ def ask():
                         "alignment": alignment,
                         "coords": umaper.transform([formatK_dist(k_dist)]).tolist(),
                         "k_dist": k_vals,
+                        "five": five,
+                        "labels": input_labels,
                         "heatmaps": AtttoSliptDict(attention_heads)
                         })
 
@@ -296,7 +302,7 @@ if __name__ == '__main__':
 
     # * /
 
-    # my_demo.load_data()
+    my_demo.load_data()
     my_demo.load_model()
     # imgs = list(my_demo.data_loader.img_dst) # FOR The rest
 
@@ -313,7 +319,7 @@ if __name__ == '__main__':
     # with open('%s.json' % "images_oracle", 'w') as fjson:
     #     ujson.dump({"images": list(imgs)}, fjson, ensure_ascii=False, sort_keys=True, indent=4)
 
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=True)
     # temp = make_colors()
     # res = {}
 
