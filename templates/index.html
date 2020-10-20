@@ -91,11 +91,11 @@
 –––––––––––––––––––––––––––––––––––––––––––––––––– -->
 
 
-<div class="container" style="margin-bottom: 5%;margin-left: 40%">
+<div class="container" style="margin-bottom: 5%;margin-left: auto">
 
 
     <div class="row">
-        <div class="twelve column" style="text-align: center;margin-top: 10%;position: relative">
+        <div class="twelve column" style="text-align: center;margin-top: 4%;position: relative">
 
             <div id="asker" style="position: absolute;left:-420px;top:5%">
                 <div style=";background-color: #fafafa;border: thin solid #f3f3f3;padding: 1.125em;">
@@ -115,7 +115,8 @@
             <div style="position: absolute;left: 1020px;top: 32%">
 
 
-                <svg width="150" id="res" style=";background-color: #fafafa;border: thin solid #f3f3f3;padding: 1.125em;">
+                <svg width="150" id="res"
+                     style=";background-color: #fafafa;border: thin solid #f3f3f3;padding: 1.125em;">
 
                 </svg>
                 <!--                <p id="result"-->
@@ -127,10 +128,16 @@
 
                 <svg id="model"
                      style="width: 100%;height: 280px;margin-top: 30px;background-color: #fafafa;border: thin solid #f3f3f3;padding: 1.125em;"></svg>
-
+                <div style="position: absolute;left: 50%;top: 32%;visibility: hidden" id="loader">
+                    <img src="static/assets/images/load.gif" style="width: 85px"/>
+                    <h3> Loading ... </h3>
+                </div>
                 <div style="display: inline-block;position: absolute;left: 23%;bottom: -85px">
 
                     <div style="position: relative;display: inline-block;left: 0">
+                        <select style="display: inline-block;margin-right: 25px" class="one-half" id="models">
+
+                        </select>
                         <span style="margin-top: -20%">K-Median 0</span>
                         <div style="display: inline-block;vertical-align: middle">
                             <div style="background-color: #bbd8e6;width: 30px;height: 30px" class="actFilted"
@@ -161,34 +168,31 @@
         <div class="twelve column" style="margin-top: 0.2%">
 
             <div style="width:100%;height: 640px;position: relative">
-                <div style="width: 100%;text-align: center;margin-bottom: 10px">
-                    <button class="button-primary" id="go" style="padding: 0 15px"> Make Proj</button>
-                    <label style="display: inline-block" for="ggroup">
-                        Global Group
-                    </label>
-                    <select class="one-half" id="ggroup" style="display: inline-block">
-                    </select>
-                    <label style="display: inline-block" for="function">
-                        Function</label>
-                    <select style="display: inline-block" class="one-half" id="function">
+                <!--                <div style="width: 100%;text-align: center;margin-bottom: 10px">-->
+                <!--                    <button class="button-primary" id="go" style="padding: 0 15px"> Make Proj</button>-->
+                <!--                    <label style="display: inline-block" for="ggroup">-->
+                <!--                        Global Group-->
+                <!--                    </label>-->
+                <!--                    <select class="one-half" id="ggroup" style="display: inline-block">-->
+                <!--                    </select>-->
+                <!--                    <label style="display: inline-block" for="function">-->
+                <!--                        Function</label>-->
+                <!--                    <select style="display: inline-block" class="one-half" id="function">-->
 
-                    </select>
+                <!--                    </select>-->
 
-                    <label style="display: inline-block" for="question">Question</label>
-                    <input style="display: inline-block" type="text" class="one-half" id="question">
-                    <button class="button-primary" id="reset" style="padding: 0 15px"> reset</button>
-                </div>
+                <!--                    <label style="display: inline-block" for="question">Question</label>-->
+                <!--                    <input style="display: inline-block" type="text" class="one-half" id="question">-->
+                <!--                    <button class="button-primary" id="reset" style="padding: 0 15px"> reset</button>-->
+                <!--                </div>-->
 
-                <div style="position: absolute;left: 22%;top: 21%;visibility: hidden" id="loader">
-                    <img src="static/assets/images/load.gif" style="width: 75px"/>
-                    <h3> Loading ... </h3>
-                </div>
-                <div style="width:48%;height: 68%;border: #555555 solid 1px;position: relative;display:inline-block">
-                    <svg id="proj" style="height: 100%;width:100%" viewBox="0 0 960 642">
 
-                    </svg>
-                </div>
-                <div style="width:50%;height: 68%;border: #555555 solid 1px;position: relative;display: inline-block">
+                <!--                <div style="width:48%;height: 68%;border: #555555 solid 1px;position: relative;display:inline-block">-->
+                <!--                    <svg id="proj" style="height: 100%;width:100%" viewBox="0 0 960 642">-->
+
+                <!--                    </svg>-->
+                <!--                </div>-->
+                <div style="width:60%;height: 78%;border: #555555 solid 1px;position: relative;display: inline-block">
                     <canvas style="width: 100%;height: 100%" id="heatm"></canvas>
                 </div>
             </div>
@@ -325,7 +329,6 @@
             data: form,
             success: function (d) {
                 ask(d)
-
             }
         })
     })
@@ -344,7 +347,6 @@
             data: form,
             success: function (d) {
                 ask(d)
-
             }
         })
 
@@ -439,6 +441,21 @@
 
 
     });
+
+    $("#models").on("input", function () {
+        let elem = $(this)
+        // console.log()
+        let dis = elem.val()
+
+        let mode = models.filter(d => d.display == dis)[0]
+        console.log(mode);
+
+        d3.select("#model").transition().duration(470).style("opacity", "0.2")
+        $("#loader").css("visibility", "visible")
+
+        switchMod(mode)
+
+    })
 
 
 </script>

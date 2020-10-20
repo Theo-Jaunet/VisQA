@@ -1,8 +1,10 @@
 let curData = [];
 let imgs = [];
-let baseUrl = "static/assets/images/try/"
+let baseUrl = "static/assets/images/oracle/"
 
-let mod = {lang: 9, vis: 5, cross: 5, head: 12};
+let imgsBlock = {}
+let mod = {lang: 9, vis: 5, cross: 5, head: 4};
+// let mod = {lang: 9, vis: 5, cross: 5, head: 12};
 
 let refKmean = {};
 
@@ -16,9 +18,9 @@ let currHeatmaps = {};
 let currHeatLabels = {};
 
 let mono_col = d3.scaleLinear().domain([0, 0.35, 1]).range(['#ffffe1', '#FEEAA9', '#cf582f']).interpolate(d3.interpolateHcl);
-
-
 let asked = false;
+
+let models = {}
 
 load_data_light().then(r => init(r));
 
@@ -26,19 +28,59 @@ load_data_light().then(r => init(r));
 async function load_data_light() {
 
 
-    return [await d3.json('static/assets/data/data.json', d3.autoType), await d3.json('static/assets/data/k_median.json', d3.autoType), await d3.json('/firstProj', d3.autoType)]
+    return [await d3.json('static/assets/data/data.json', d3.autoType), await d3.json('static/assets/data/k_median.json', d3.autoType), await d3.json('static/assets/data/mods.json', d3.autoType)]
+}
+
+function switchMod(dat) {
+
+
+    let form = new FormData();
+    form.append("name", dat.name);
+    form.append("mod", JSON.stringify(dat.mod));
+
+    $.ajax({
+        type: "POST",
+        url: "/switchMod",
+        processData: false,
+        contentType: false,
+        data: form,
+        success: function (d) {
+            baseUrl = "static/assets/images/" + (dat.name === 'default' ? 'try' : dat.name) + "/"
+            imgs = imgsBlock[dat.name]
+            let slide = $("#imSlide");
+
+            slide.attr("max", imgs.length - 1);
+            loadImg(baseUrl + imgs[0] + ".jpg")
+
+            mod = dat.mod
+            UpdateCounter()
+            drawModel(mod)
+            d3.select("#model").transition().duration(470).style("opacity", "1")
+            $("#loader").css("visibility", "hidden")
+
+        }
+    })
+
+
 }
 
 
 d3.json('static/assets/data/images.json', d3.autoType).then(d => {
 
-    imgs = d["default"];
+    imgs = d["oracle"];
 
-
+    imgsBlock = d
     let slide = $("#imSlide");
 
     slide.attr("max", imgs.length - 1);
 
+    loadImg(baseUrl + imgs[0] + ".jpg")
+
+    return d
+})
+
+
+function loadImg(src) {
 
     let im = new Image();
 
@@ -60,17 +102,7 @@ d3.json('static/assets/data/images.json', d3.autoType).then(d => {
 
     im.src = baseUrl + imgs[0] + ".jpg"
 
-    // d3.select("#inVis").append("svg:image")
-    //     .attr('x', 0)
-    //     .attr('y', 0)
-    //     .attr('width', 400)
-    //     .attr('height', 350)
-    //     .attr("preserveAspectRatio", 'xMidYMid meet')
-    //     .attr("xlink:href", )
-
-
-    return d
-})
+}
 
 
 function fixRatio2(im, sv) {
@@ -105,6 +137,8 @@ function fixRatio2(im, sv) {
 function drawModel(mod) {
 
     let svg = d3.select("#model")
+
+    svg.selectAll("*").remove();
     let mlen = mod.lang + mod.vis + (mod.cross * 2);
     let pad = 5
 
@@ -377,60 +411,68 @@ function findElems(data, thresh, base) {
             res.push(names[i])
         }
     }
-
     return res
-
 }
 
 
 function init(dat) {
 
 
-    let data = dat[0].map((d, i) => {
-        d.k_dist = dat[2]['proj'][i];
-        return d
-    })
+    models = dat[2];
+    console.log(models);
 
-    // data.lo
+    let sel = $("#models");
+
+    for (let i = 0; i < models.length; i++) {
+        sel.append(new Option(models[i].display, models[i].display))
+    }
 
 
-    // console.log(dat[2]);
-    //
-    // let form = new FormData();
-    // form.append("units", []);
-    //
-    //
-    // $.ajax({
-    //     type: "POST",
-    //     url: "/proj",
-    //     processData: false,
-    //     contentType: false,
-    //     data: form,
-    //     success: function (d) {
-    //         if (d !== "over") {
-    //
-    //             console.log(d);
+// let data = dat[0].map((d, i) => {
+//     d.k_dist = dat[2]['proj'][i];
+//     return d
+// })
 
-    // console.log(data);
-    curData = data;
+// data.lo
+
+
+// console.log(dat[2]);
+//
+// let form = new FormData();
+// form.append("units", []);
+//
+//
+// $.ajax({
+//     type: "POST",
+//     url: "/proj",
+//     processData: false,
+//     contentType: false,
+//     data: form,
+//     success: function (d) {
+//         if (d !== "over") {
+//
+//             console.log(d);
+
+// console.log(data);
+// curData = data;
     refKmean = dat[1]
     currKmean = refKmean;
-    // data = JSON.parse(data)
+// data = JSON.parse(data)
 
 
     $("#counter").html("Masked Heads: " + 0 + "/" + Object.keys(refKmean).length)
 
     drawModel(mod);
     setDPI(document.getElementById("heatm"), 960)
-    // plotter_init(data);
-    // fillSelect(data.map(d => d.global_group), "#ggroup")
-    // fillSelect2(data.map(d => d.functions), "#function")
+// plotter_init(data);
+// fillSelect(data.map(d => d.global_group), "#ggroup")
+// fillSelect2(data.map(d => d.functions), "#function")
 
 
-    //do STUFF
-    //         }
-    //     }
-    // });
+//do STUFF
+//         }
+//     }
+// });
 }
 
 
@@ -710,6 +752,8 @@ function drawHeat(data) {
     let marg = 15;
     let pad = 5;
     let st = 100;
+
+    // console.log(data[0]);
 
     let cw = (((can.width - st) - (marg * 2)) - (pad * data[0].length)) / data[0].length;
     let ch = (((can.height - st) - (marg * 2)) - (pad * data.length)) / data.length

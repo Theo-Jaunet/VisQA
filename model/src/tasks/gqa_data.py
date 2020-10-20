@@ -27,6 +27,7 @@ class GQABufferLoader():
         self.key2data = {}
 
     def load_data(self, name, number, path):
+        print(name)
         if name == 'testdev':
             path = os.path.join(path, "gqa_testdev_obj36.tsv")
         else:
