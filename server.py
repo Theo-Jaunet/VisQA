@@ -92,7 +92,7 @@ dataset = load_data("lxmert_gqaval_reasbias.pickle")
 
 # to_map = select(dataset)
 # print(to_map[0])
-print('making Umap  ....')
+# print('making Umap  ....')
 
 # umaper = umap.UMAP(n_neighbors=20, min_dist=0.3).fit(to_map[:])
 
@@ -240,7 +240,16 @@ def ask():
     units = request.form['units'].split(",")
     question = request.form['question']
     image = request.form['image']
-    head_mask = empty_mask()
+    head_mask = empty_mask()    svg.select("#askDot").remove()
+
+    svg.append("circle")
+        .attr("cx", xscale(d.coords[0][0]))
+        .attr("cy", yscale(d.coords[0][1]))
+        .attr("r", "10")
+        .attr("id", "askDot")
+        .attr("fill", "steelblue")
+        .attr("stroke", "#555555")
+        .attr("stroke-width", "3")
 
     if units is not None and not units == ['']:
         for elem in units:
@@ -272,7 +281,7 @@ def ask():
     return ujson.dumps({"pred": top_prediction[0],
                         "confidence": top_prediction[1].item(),
                         "alignment": alignment,
-                        "coords": umaper.transform([formatK_dist(k_dist)]).tolist(),
+                        # "coords": umaper.transform([formatK_dist(k_dist)]).tolist(),
                         "k_dist": k_vals,
                         "five": five,
                         "labels": input_labels,

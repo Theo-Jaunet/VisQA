@@ -422,9 +422,9 @@ function init(dat) {
 
     drawModel(mod);
     setDPI(document.getElementById("heatm"), 960)
-    plotter_init(data);
-    fillSelect(data.map(d => d.global_group), "#ggroup")
-    fillSelect2(data.map(d => d.functions), "#function")
+    // plotter_init(data);
+    // fillSelect(data.map(d => d.global_group), "#ggroup")
+    // fillSelect2(data.map(d => d.functions), "#function")
 
 
     //do STUFF
@@ -442,26 +442,26 @@ function ask(data) {
 
     DrawRes(d.five)
     filler(d.alignment)
-    let svg = d3.select("#proj");
+    // let svg = d3.select("#proj");
 
     // console.log("-----------------")
     // console.log(d.coords);
     // console.log(xscale(d.coords[0]));
 
-    svg.select("#askDot").remove()
-
-    svg.append("circle")
-        .attr("cx", xscale(d.coords[0][0]))
-        .attr("cy", yscale(d.coords[0][1]))
-        .attr("r", "10")
-        .attr("id", "askDot")
-        .attr("fill", "steelblue")
-        .attr("stroke", "#555555")
-        .attr("stroke-width", "3")
+    // svg.select("#askDot").remove()
+    //
+    // svg.append("circle")
+    //     .attr("cx", xscale(d.coords[0][0]))
+    //     .attr("cy", yscale(d.coords[0][1]))
+    //     .attr("r", "10")
+    //     .attr("id", "askDot")
+    //     .attr("fill", "steelblue")
+    //     .attr("stroke", "#555555")
+    //     .attr("stroke-width", "3")
 
     fillHeads(d.k_dist)
     currKmean = d.k_dist
-    $(".kmeanSelected").toggleClass("kmeanSelected")
+    $(".kmeanSelected").toggleClass("kmeanSelected");
     UpdateCounter()
     asked = true;
     currHeatmaps = d.heatmaps
