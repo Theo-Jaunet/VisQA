@@ -100,7 +100,10 @@
             <div id="asker" style="position: absolute;left:-420px;top:5%">
                 <div style=";background-color: #fafafa;border: thin solid #f3f3f3;padding: 1.125em;">
                     <input type="text" id="ask-quest" style="width: 250px"
-                           placeholder="Ask a question about the picture">
+                           placeholder="Ask a question about the picture" list="productName">
+                    <datalist id="productName">
+                        <option value="bob">bob</option>
+                    </datalist>
                     <button class="button-primary" style="display:inline-block;" id="ask">Ask</button>
                 </div>
                 <div style="width: 300px;height: 320px;margin-top:40px">
@@ -408,7 +411,7 @@
 
 
         let im = new Image();
-
+        let val = imgs[$(this).val()]
 
         im.onload = function () {
 
@@ -426,7 +429,11 @@
 
         };
 
-        im.src = baseUrl + imgs[$(this).val()] + ".jpg"
+        im.src = baseUrl + val + ".jpg"
+        if (modType === 'oracle') {
+            fillQuest(val)
+        }
+
 
     })
 

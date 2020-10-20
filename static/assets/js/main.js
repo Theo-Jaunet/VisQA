@@ -22,13 +22,17 @@ let asked = false;
 
 let models = {}
 
+let metaDat = {}
+
+let modType = "oracle";
+
 load_data_light().then(r => init(r));
 
 
 async function load_data_light() {
 
 
-    return [await d3.json('static/assets/data/data.json', d3.autoType), await d3.json('static/assets/data/k_median.json', d3.autoType), await d3.json('static/assets/data/mods.json', d3.autoType)]
+    return [await d3.json('static/assets/data/data.json', d3.autoType), await d3.json('static/assets/data/k_median.json', d3.autoType), await d3.json('static/assets/data/mods.json', d3.autoType), await d3.json('static/assets/data/info.json', d3.autoType)]
 }
 
 function switchMod(dat) {
@@ -37,6 +41,12 @@ function switchMod(dat) {
     let form = new FormData();
     form.append("name", dat.name);
     form.append("mod", JSON.stringify(dat.mod));
+    modType = dat.name;
+    asked= false;
+
+    if(dat.name !=='oracle') {
+        $("#productName").html('')
+    }
 
     $.ajax({
         type: "POST",
@@ -75,6 +85,7 @@ d3.json('static/assets/data/images.json', d3.autoType).then(d => {
     slide.attr("max", imgs.length - 1);
 
     loadImg(baseUrl + imgs[0] + ".jpg")
+
 
     return d
 })
@@ -421,6 +432,10 @@ function init(dat) {
     models = dat[2];
     console.log(models);
 
+    metaDat = dat[3]
+
+    console.log(metaDat);
+
     let sel = $("#models");
 
     for (let i = 0; i < models.length; i++) {
@@ -459,6 +474,7 @@ function init(dat) {
     currKmean = refKmean;
 // data = JSON.parse(data)
 
+    fillQuest(imgs[0]);
 
     $("#counter").html("Masked Heads: " + 0 + "/" + Object.keys(refKmean).length)
 
@@ -476,6 +492,23 @@ function init(dat) {
 }
 
 
+function fillQuest(id) {
+
+    let quests = Object.keys(metaDat[id]["questions"]);
+    // console.log(quests);
+    let elem = $("#productName");
+
+    elem.html('');
+
+    for (let i = 0; i < quests.length; i++) {
+        let temp = metaDat[id]["questions"][quests[i]]
+
+        elem.append(new Option(temp.question, temp.question))
+
+    }
+
+}
+
 function ask(data) {
     d = JSON.parse(data);
 
@@ -483,7 +516,7 @@ function ask(data) {
     console.log(d);
 
     DrawRes(d.five)
-    filler(d.alignment)
+    // filler(d.alignment)
     // let svg = d3.select("#proj");
 
     // console.log("-----------------")

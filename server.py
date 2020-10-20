@@ -271,6 +271,34 @@ def getfilext(path):
     return files
 
 
+def merger():
+    res = {}
+    with open("static/assets/data/images.json", 'r') as fjson:
+        imgs = ujson.load(fjson)
+
+        with open("/home/theo/Downloads/orac/sceneGraphs/val_sceneGraphs.json", 'r') as fjson2:
+            scene = ujson.load(fjson2)
+
+            with open("/home/theo/Downloads/orac/questions1.2/val_balanced_questions.json", 'r') as fjson3:
+                quest = ujson.load(fjson3)
+
+                for im in imgs["oracle"]:
+                    res[im] = {"questions": getQuests(quest, im), "scene": scene[im]}
+
+                with open('%s.json' % "info", 'w') as wjson:
+                    ujson.dump(res, wjson, ensure_ascii=False, sort_keys=True, indent=4)
+
+def getQuests(data, id):
+    res = {}
+    i = 0
+    for line in data:
+
+        if data[line]['imageId'] == id:
+            res[i] = data[line]
+            i += 1
+    return res
+
+
 @app.route('/switchMod', methods=["POST"])
 def switchMod():
     global order
@@ -311,14 +339,18 @@ def switchMod():
 if __name__ == '__main__':
     # * Display config
 
-    display_k_dist = True
-    compact_k_dist = True  # compact=False will display all the k ditribution
-    display_alignment = False
-
-    # * /
-
+    # display_k_dist = True
+    # compact_k_dist = True  # compact=False will display all the k ditribution
+    # display_alignment = False
+    #
+    # # * /
+    #
     my_demo.load_data()
     my_demo.load_model()
+    app.run(host='0.0.0.0', port=5000, debug=True)
+
+    # merger()
+
     # imgs = list(my_demo.data_loader.img_dst) # FOR The rest
 
     # imgs = getfilext("model/gqa_testdev_obj36/oracle_data")  # FOR ORACLE
@@ -334,8 +366,8 @@ if __name__ == '__main__':
     # with open('%s.json' % "images_oracle", 'w') as fjson:
     #     ujson.dump({"images": list(imgs)}, fjson, ensure_ascii=False, sort_keys=True, indent=4)
 
-    app.run(host='0.0.0.0', port=5000, debug=True)
     # temp = make_colors()
+
     # res = {}
 
     # for i in range(len(temp)):
