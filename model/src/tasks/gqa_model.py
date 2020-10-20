@@ -34,7 +34,7 @@ class GQAModel(nn.Module):
             self.matching_decoder = MatchingDecoderLV(metric='sdp')
 
     def forward(self, feat, pos, sent, iou_question, iou_answer, sem_question_words, sem_answer_words, bboxes_words,
-                head_mask=None, verbose=False):
+                visual_attention_mask, head_mask=None, verbose=False):
         """
         b -- batch_size, o -- object_number, f -- visual_feature_size
 
@@ -50,7 +50,7 @@ class GQAModel(nn.Module):
             iou_question=iou_question, iou_answer=iou_answer,
             sem_question_words=sem_question_words,
             sem_answer_words=sem_answer_words,
-            bboxes_words=bboxes_words,)
+            bboxes_words=bboxes_words, visual_attention_mask=visual_attention_mask)
         logit = self.logit_fc(x)
 
         iou_pred = None

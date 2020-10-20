@@ -2,7 +2,7 @@ let curData = [];
 let imgs = [];
 let baseUrl = "static/assets/images/try/"
 
-let mod = {lang: 9, vis: 5, cross: 5, head: 12};
+let mod = {lang: 9, vis: 5, cross: 5, head: 4};
 
 let refKmean = {};
 
