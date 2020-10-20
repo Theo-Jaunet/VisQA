@@ -26,6 +26,8 @@ let metaDat = {}
 
 let modType = "oracle";
 
+
+let ogSize = [];
 load_data_light().then(r => init(r));
 
 
@@ -42,11 +44,8 @@ function switchMod(dat) {
     form.append("name", dat.name);
     form.append("mod", JSON.stringify(dat.mod));
     modType = dat.name;
-    asked= false;
+    asked = false;
 
-    if(dat.name !=='oracle') {
-        $("#productName").html('')
-    }
 
     $.ajax({
         type: "POST",
@@ -59,9 +58,15 @@ function switchMod(dat) {
             imgs = imgsBlock[dat.name]
             let slide = $("#imSlide");
 
+            d3.select("#sceneGraph").selectAll("*").remove()
+
             slide.attr("max", imgs.length - 1);
             loadImg(baseUrl + imgs[0] + ".jpg")
-
+            if (dat.name !== 'oracle') {
+                $("#productName").html('')
+            } else {
+                fillQuest(imgs[0])
+            }
             mod = dat.mod
             UpdateCounter()
             drawModel(mod)
@@ -112,6 +117,49 @@ function loadImg(src) {
     };
 
     im.src = baseUrl + imgs[0] + ".jpg"
+
+}
+
+
+function loadImg2(src, x, y, w, h, name, wr, hr) {
+
+    let im = new Image();
+
+
+    im.onload = function () {
+
+        let can = document.getElementById("inVis")
+
+        let cont = can.getContext('2d');
+
+        let rate = fixRatio2([im.width, im.height], [300, 300])
+
+        can.width = rate[0]
+        can.height = rate[1]
+    cont.strokeStyle = "red";
+        cont.drawImage(im, 0, 0, rate[0], rate[1])
+
+        cont.fillStyle = "red";
+        cont.lineWidth = "2"
+        cont.strokeRect(x * wr, y * hr, w * wr, h * hr)
+
+        cont.font = '24px serif';
+        let tx = 5
+        let ty = 20
+        cont.shadowColor = "#000";
+        cont.shadowOffsetX = 0;
+        cont.shadowOffsetY = 0;
+        cont.shadowBlur = 1;
+
+        if (x * wr < 60 && y * hr < 40) {
+            ty = can.height - 20
+        }
+        cont.fillText(name, tx, ty);
+
+
+    };
+
+    im.src = src
 
 }
 
@@ -499,6 +547,9 @@ function fillQuest(id) {
     let elem = $("#productName");
 
     elem.html('');
+    console.log(metaDat[id]["scene"]);
+
+    fillScene(metaDat[id]["scene"])
 
     for (let i = 0; i < quests.length; i++) {
         let temp = metaDat[id]["questions"][quests[i]]
@@ -508,6 +559,124 @@ function fillQuest(id) {
     }
 
 }
+
+function fillScene(data) {
+
+
+    let heads = Object.keys(data.objects);
+
+    ogSize = [data.width, data.height]
+    let nodes = heads.map(d => {
+        return {"id": d, "item": data.objects[d]}
+    });
+
+    let links = [];
+    for (let i = 0; i < heads.length; i++) {
+        for (let j = 0; j < data.objects[heads[i]].relations.length; j++) {
+            let el = data.objects[heads[i]].relations[j]
+            links.push({source: heads[i], target: el.object, name: el.name})
+        }
+    }
+
+    const simulation = d3.forceSimulation(nodes)
+        .force("charge", d3.forceManyBody())
+        .force("center", d3.forceCenter(400 / 2, 400 / 2))
+        .force("link", d3.forceLink(links).id(d => d.id))
+
+    let svg = d3.select("#sceneGraph");
+
+    svg.selectAll("*").remove();
+    console.log(links);
+
+    const link = svg.append("g")
+        .attr("stroke", "#999")
+        .attr("stroke-opacity", 0.6)
+        .selectAll("line")
+        .data(links)
+        .join("line")
+    // .attr("stroke-width", d => Math.sqrt(d.value));
+
+    const node = svg.append("g")
+        .attr("stroke", "#fff")
+        .attr("stroke-width", 1.5)
+        .selectAll("circle")
+        .data(nodes)
+        .join("circle")
+        .attr("r", 6)
+        .attr("fill", "steelblue")
+        .on("mouseover", handleNodeOver)
+        .on("mouseout", handleNodeOut)
+    // .call(drag(simulation));
+
+    simulation.on("tick", () => {
+        link
+            .attr("x1", d => d.source.x)
+            .attr("y1", d => d.source.y)
+            .attr("x2", d => d.target.x)
+            .attr("y2", d => d.target.y);
+
+        node
+            .attr("cx", d => (d.x > 6 ? (d.x > 300 ? 295 : d.x) : 6))
+            .attr("cy", d => (d.y > 6 ? (d.y > 400 ? 395 : d.y) : 6));
+    });
+}
+
+
+function handleNodeOver() {
+
+    let nd = d3.select(this);
+    nd.transition().duration(50).attr("r", 10).attr("fill", "red")
+
+    let dat = nd.datum().item;
+
+    showItem(document.getElementById("inVis"), ogSize, dat.x, dat.y, dat.w, dat.h, dat.name)
+}
+
+
+function showItem(can, ref, x, y, w, h, name) {
+
+    let cont = can.getContext("2d");
+    let wr = can.width / ref[0]
+    let hr = can.height / ref[1]
+    cont.strokeStyle = "red";
+
+    let val = $("#imSlide").val();
+    console.log(val);
+
+    loadImg2(baseUrl + imgs[val] + ".jpg", x, y, w, h, name, wr, hr)
+
+
+}
+
+function handleNodeOut() {
+    let nd = d3.select(this);
+    nd.transition().duration(50).attr("r", 6).attr("fill", "rgb(124,101,148)")
+}
+
+// drag = simulation => {
+//
+//     function dragstarted(event) {
+//         if (!event.active) simulation.alphaTarget(0.3).restart();
+//         event.subject.fx = event.subject.x;
+//         event.subject.fy = event.subject.y;
+//     }
+//
+//     function dragged(event) {
+//         event.subject.fx = event.x;
+//         event.subject.fy = event.y;
+//     }
+//
+//     function dragended(event) {
+//         if (!event.active) simulation.alphaTarget(0);
+//         event.subject.fx = null;
+//         event.subject.fy = null;
+//     }
+//
+//     return d3.drag()
+//         .on("start", dragstarted)
+//         .on("drag", dragged)
+//         .on("end", dragended);
+// }
 
 function ask(data) {
     d = JSON.parse(data);
@@ -553,7 +722,7 @@ function DrawRes(data) {
     let barHeight = 15
     let barPad = 17
 
-    let textPad = 10
+    let textPad = 10;
 
 
     const sortable = Object.fromEntries(
