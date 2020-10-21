@@ -606,7 +606,7 @@ function fillScene(data) {
             } else if (d.name == "behind") {
                 col = "#e8991d"
             }
-            console.log(col);
+            // console.log(col);
             return col
         })
     // .attr("stroke-width", d => Math.sqrt(d.value));
@@ -1021,8 +1021,33 @@ function UpdateCounter() {
 }
 
 
-function drawHeat(data) {
+function drawHearLabH(cont, txt1, x1, y1) {
 
+    cont.save();
+    cont.font = ' 400 24px Arial';
+    cont.textAlign = "right";
+    cont.fillStyle = "#1e1e1e"
+    cont.fillText(txt1, x1, y1);
+    cont.restore();
+
+}
+
+
+function drawHearLabV(cont, txt1, x1, y1) {
+    cont.save();
+    cont.font = ' 500 24px Arial';
+    cont.translate(x1, y1);
+    cont.rotate(-Math.PI / 4);
+    cont.textAlign = "left";
+    cont.fillStyle = "#1e1e1e"
+    cont.fillText(txt1, 0, 0);
+    cont.restore();
+
+}
+
+function drawHeat(data, name) {
+
+    let type = name.split("_")[0]
 
     // console.log("Drawing");
 
@@ -1037,35 +1062,36 @@ function drawHeat(data) {
 
     let marg = 15;
     let pad = 5;
-    let st = 100;
-
-    // console.log(data[0]);
+    let st = 130;
 
     let cw = (((can.width - st) - (marg * 2)) - (pad * data[0].length)) / data[0].length;
     let ch = (((can.height - st) - (marg * 2)) - (pad * data.length)) / data.length
 
-    // console.log(cw);
-
     for (let i = 0; i < data.length; i++) { // Iter Horizontally
 
-        cont.save();
-        cont.font = ' 500 24px Arial';
-        cont.translate(st + marg + (cw / 2) + ((cw + pad) * i), st + marg);
-        cont.rotate(-Math.PI / 4);
-        cont.textAlign = "left";
-        cont.fillStyle = "#1e1e1e"
-        cont.fillText(currHeatLabels.textual[i % currHeatLabels.textual.length], 0, 0);
-        cont.restore();
 
-        cont.save();
-        cont.font = ' 400 24px Arial';
-        cont.textAlign = "right";
-        cont.fillStyle = "#1e1e1e"
-        cont.fillText(currHeatLabels.visual[i % currHeatLabels.visual.length], 100, st + marg + (ch / 2) + ((ch + pad) * i) + pad);
-        cont.restore();
-
+        if (type == "lang" || type == "ll") {
+            drawHearLabH(cont, currHeatLabels.textual[i % currHeatLabels.textual.length], st, st + marg + (ch / 2) + ((ch + pad) * i) + pad)
+        } else if (type == "vis" || type == "vv") {
+            drawHearLabH(cont, currHeatLabels.visual[i % currHeatLabels.visual.length], st, st + marg + (ch / 2) + ((ch + pad) * i) + pad)
+        } else if (type == "vl") {
+            drawHearLabH(cont, currHeatLabels.textual[i % currHeatLabels.textual.length], st, st + marg + (ch / 2) + ((ch + pad) * i) + pad)
+        } else if (type == "lv") {
+            drawHearLabH(cont, currHeatLabels.visual[i % currHeatLabels.visual.length], st, st + marg + (ch / 2) + ((ch + pad) * i) + pad)
+        } else {
+            drawHearLabH(cont, currHeatLabels.visual[i % currHeatLabels.visual.length], st, st + marg + (ch / 2) + ((ch + pad) * i) + pad)
+        }
 
         for (let j = 0; j < data[i].length; j++) { // Iter vertically
+
+            if (i == 0) {
+                if (type != "vl" && type != "vis" && type != "vv") {
+                    drawHearLabV(cont, currHeatLabels.textual[j % currHeatLabels.textual.length], st + marg + (cw / 2) + ((cw + pad) * j), st + marg)
+                } else {
+                    drawHearLabV(cont, currHeatLabels.visual[j % currHeatLabels.visual.length], st + marg + (cw / 2) + ((cw + pad) * j), st + marg)
+                }
+            }
+
             cont.fillStyle = mono_col(data[i][j]);
 
             cont.fillRect(st + marg + ((cw + pad) * j), st + marg + ((ch + pad) * i) + pad, cw, ch)

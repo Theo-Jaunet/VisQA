@@ -215,6 +215,26 @@ def AtttoSliptDict(data):
     return res
 
 
+def purgeHeats(data, size):
+    global order
+    for elem in order:
+        temp = elem.split("_")
+        tres = []
+        if temp[0] == "lang" or temp[0] == "ll":
+
+            tres = [x[:size["textual"]] for x in data[elem][:size["textual"]]]
+
+        elif temp[0] == "vis" or temp[0] == "vv":
+
+            tres = [x[:size["visual"]] for x in data[elem][:size["visual"]]]
+        elif temp[0] == "vl":
+            tres = [x[:size["visual"]] for x in data[elem][:size["textual"]]]
+        elif temp[0] == "lv":
+            tres = [x[:size["textual"]] for x in data[elem][:size["visual"]]]
+        data[elem] = tres
+    return data
+
+
 @app.route('/ask', methods=["POST"])
 def ask():
     global my_demo
@@ -229,13 +249,10 @@ def ask():
             # print(temp)
             head_mask[temp[0]][int(temp[1])][int(temp[2])] = 1
 
-    # head_mask['vis'] += 1
-    # head_mask['vv'] += 1
-    # head_mask['ll'] += 1
-    # head_mask['lv'] += 1
+    top_prediction, five_predictions, attention_heads, alignment, k_dist, input_labels, input_size \
+        = my_demo.ask(question, image, head_mask)
 
-    top_prediction, five_predictions, attention_heads, alignment, k_dist, input_labels, input_size\
-            = my_demo.ask(question, image, head_mask)
+    print(input_size["textual"])
     k_vals = toSliptDict(k_dist)
 
     five = {}
@@ -247,7 +264,7 @@ def ask():
     for k, v in alignment.items():
         alignment[k]["xywh"] = alignment[k]["xywh"].tolist()
 
-    print(input_size)
+    print(input_labels)
 
     return ujson.dumps({"pred": top_prediction[0],
                         "confidence": top_prediction[1].item(),
@@ -256,7 +273,7 @@ def ask():
                         "k_dist": k_vals,
                         "five": five,
                         "labels": input_labels,
-                        "heatmaps": AtttoSliptDict(attention_heads)
+                        "heatmaps": purgeHeats(AtttoSliptDict(attention_heads), input_size)
                         })
 
 
@@ -289,6 +306,7 @@ def merger():
 
                 with open('%s.json' % "info", 'w') as wjson:
                     ujson.dump(res, wjson, ensure_ascii=False, sort_keys=True, indent=4)
+
 
 def getQuests(data, id):
     res = {}
@@ -349,7 +367,7 @@ if __name__ == '__main__':
     #
     my_demo.load_data()
     my_demo.load_model()
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)
 
     # merger()
 

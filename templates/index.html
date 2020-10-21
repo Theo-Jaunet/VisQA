@@ -454,7 +454,7 @@
         let elem = $(this)
 
         if (asked && elem.attr("type") == 2) {
-            drawHeat(currHeatmaps[$(this).attr("id")])
+            drawHeat(currHeatmaps[$(this).attr("id")], $(this).attr("id"))
         }
 
 
