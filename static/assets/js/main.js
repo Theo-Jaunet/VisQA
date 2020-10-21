@@ -58,10 +58,10 @@ function switchMod(dat) {
             imgs = imgsBlock[dat.name]
             let slide = $("#imSlide");
 
-            d3.select("#sceneGraph").selectAll("*").remove()
+            d3.select("#sceneGraph").selectAll("*").remove();
 
             slide.attr("max", imgs.length - 1);
-            loadImg(baseUrl + imgs[0] + ".jpg")
+            loadImg(baseUrl + imgs[0] + ".jpg");
             if (dat.name !== 'oracle') {
                 $("#productName").html('')
             } else {
@@ -70,7 +70,7 @@ function switchMod(dat) {
             mod = dat.mod
             UpdateCounter()
             drawModel(mod)
-            d3.select("#model").transition().duration(470).style("opacity", "1")
+            d3.select("#model").transition().duration(470).style("opacity", "1");
             $("#loader").css("visibility", "hidden")
 
         }
@@ -136,7 +136,7 @@ function loadImg2(src, x, y, w, h, name, wr, hr) {
 
         can.width = rate[0]
         can.height = rate[1]
-    cont.strokeStyle = "red";
+        cont.strokeStyle = "red";
         cont.drawImage(im, 0, 0, rate[0], rate[1])
 
         cont.fillStyle = "red";
@@ -589,11 +589,26 @@ function fillScene(data) {
     console.log(links);
 
     const link = svg.append("g")
-        .attr("stroke", "#999")
-        .attr("stroke-opacity", 0.6)
+        // .attr("stroke", "#999")
+        .attr("stroke-opacity", 0.9)
+        .attr("stroke-width", 2)
         .selectAll("line")
         .data(links)
         .join("line")
+        .attr("stroke", d => {
+            let col = "#999"
+            if (d.name == "to the right of") {
+                col = "red"
+            } else if (d.name == "to the left of") {
+                col = "green"
+            } else if (d.name == "in front of") {
+                col = "purple"
+            } else if (d.name == "behind") {
+                col = "#e8991d"
+            }
+            console.log(col);
+            return col
+        })
     // .attr("stroke-width", d => Math.sqrt(d.value));
 
     const node = svg.append("g")
@@ -602,7 +617,7 @@ function fillScene(data) {
         .selectAll("circle")
         .data(nodes)
         .join("circle")
-        .attr("r", 6)
+        .attr("r", 7)
         .attr("fill", "steelblue")
         .on("mouseover", handleNodeOver)
         .on("mouseout", handleNodeOut)
@@ -610,15 +625,84 @@ function fillScene(data) {
 
     simulation.on("tick", () => {
         link
-            .attr("x1", d => d.source.x)
-            .attr("y1", d => d.source.y)
-            .attr("x2", d => d.target.x)
-            .attr("y2", d => d.target.y);
+            .attr("x1", d => (d.source.x > 6 ? (d.source.x > 300 ? 295 : d.source.x) : 6))
+            .attr("y1", d => (d.source.y > 6 ? (d.source.y > 348 ? 348 : d.source.y) : 6))
+            .attr("x2", d => (d.target.x > 6 ? (d.target.x > 300 ? 295 : d.target.x) : 6))
+            .attr("y2", d => (d.target.y > 6 ? (d.target.y > 348 ? 348 : d.target.y) : 6));
 
         node
             .attr("cx", d => (d.x > 6 ? (d.x > 300 ? 295 : d.x) : 6))
-            .attr("cy", d => (d.y > 6 ? (d.y > 400 ? 395 : d.y) : 6));
+            .attr("cy", d => (d.y > 6 ? (d.y > 348 ? 348 : d.y) : 6));
     });
+
+
+    svg.append("circle")
+        .attr("cx", 20)
+        .attr("cy", 375)
+        .attr("r", 5)
+        .attr("fill", "green")
+
+    svg.append("text")
+        .attr("x", 5)
+        .attr("y", 396)
+        .text("Left")
+
+
+    svg.append("circle")
+        .attr("cx", 65)
+        .attr("cy", 375)
+        .attr("r", 5)
+        .attr("fill", "red")
+
+    svg.append("text")
+        .attr("x", 45)
+        .attr("y", 396)
+        .text("Right")
+
+
+    svg.append("circle")
+        .attr("cx", 115)
+        .attr("cy", 375)
+        .attr("r", 5)
+        .attr("fill", "purple")
+
+    svg.append("text")
+        .attr("x", 90)
+        .attr("y", 396)
+        .text("In Front")
+
+
+    svg.append("circle")
+        .attr("cx", 180)
+        .attr("cy", 375)
+        .attr("r", 5)
+        .attr("fill", "#e8991d")
+
+    svg.append("text")
+        .attr("x", 155)
+        .attr("y", 396)
+        .text("Behind")
+
+
+    svg.append("circle")
+        .attr("cx", 230)
+        .attr("cy", 375)
+        .attr("r", 5)
+        .attr("fill", "#999")
+
+    svg.append("text")
+        .attr("x", 215)
+        .attr("y", 396)
+        .text("Other")
+
+
+    svg.append("line")
+        .attr("x1", 2)
+        .attr("y1", 356)
+        .attr("x2", 398)
+        .attr("y2", 356)
+        .attr("stroke", "#555555")
+
 }
 
 
@@ -641,7 +725,7 @@ function showItem(can, ref, x, y, w, h, name) {
     cont.strokeStyle = "red";
 
     let val = $("#imSlide").val();
-    console.log(val);
+    // console.log(val);
 
     loadImg2(baseUrl + imgs[val] + ".jpg", x, y, w, h, name, wr, hr)
 
@@ -650,7 +734,7 @@ function showItem(can, ref, x, y, w, h, name) {
 
 function handleNodeOut() {
     let nd = d3.select(this);
-    nd.transition().duration(50).attr("r", 6).attr("fill", "rgb(124,101,148)")
+    nd.transition().duration(50).attr("r", 7).attr("fill", "rgb(124,101,148)")
 }
 
 // drag = simulation => {
