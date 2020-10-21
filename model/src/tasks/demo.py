@@ -553,7 +553,10 @@ class Demo():
         # textual and visual input labels
         input_labels = {'textual': tkn_sent[0], 'visual': obj_class}
 
-        return top_prediction, five_predictions, attention_heads, word2bbox, k_dist, input_labels
+        # Input size
+        input_size = {'textual': len(tkn_sent[0]), 'visual': obj_num}
+
+        return top_prediction, five_predictions, attention_heads, word2bbox, k_dist, input_labels, input_size
 
 
 if __name__ == "__main__":
@@ -594,9 +597,8 @@ if __name__ == "__main__":
         # head_mask['vl'] += 1  # mask all vl layers
         # head_mask['lang'][3,3] += 1# mask the head 3 in lang layer 3
 
-        top_prediction, five_predictions, attention_heads, alignment, k_dist, input_labels = my_demo.ask(question,
-                                                                                                         image,
-                                                                                                         head_mask)
+        top_prediction, five_predictions, attention_heads, alignment, k_dist, input_labels, input_size\
+                = my_demo.ask(question, image, head_mask)
 
         # display
         if display_alignment:

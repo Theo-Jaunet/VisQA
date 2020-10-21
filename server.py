@@ -234,8 +234,8 @@ def ask():
     # head_mask['ll'] += 1
     # head_mask['lv'] += 1
 
-    top_prediction, five_predictions, attention_heads, alignment, k_dist, input_labels = my_demo.ask(question, image,
-                                                                                                     head_mask)
+    top_prediction, five_predictions, attention_heads, alignment, k_dist, input_labels, input_size\
+            = my_demo.ask(question, image, head_mask)
     k_vals = toSliptDict(k_dist)
 
     five = {}
@@ -246,6 +246,8 @@ def ask():
 
     for k, v in alignment.items():
         alignment[k]["xywh"] = alignment[k]["xywh"].tolist()
+
+    print(input_size)
 
     return ujson.dumps({"pred": top_prediction[0],
                         "confidence": top_prediction[1].item(),
