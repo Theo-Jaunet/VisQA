@@ -17,9 +17,9 @@ Then, you must copy the models downloaded from the given Google Drive into "mode
 ```
 mv ~/Downloads/lxmert.pth model/src/pretrain/lxmert.pth
 
-mv ~/Downloads/lxmert.pth model/src/pretrain/oracle.pth
+mv ~/Downloads/oracle.pth model/src/pretrain/oracle.pth
 
-mv ~/Downloads/lxmert.pth model/src/pretrain/tiny_lxmert.pth
+mv ~/Downloads/tiny_lxmert.pth model/src/pretrain/tiny_lxmert.pth
 ```
 
 And the TSV, also in the drive:
