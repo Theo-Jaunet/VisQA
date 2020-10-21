@@ -12,10 +12,14 @@ Clone this repo and install Python dependecies as it follows (you may want to us
 pip install -r requirements.txt
 ```
 
-Then, you must copy the model downloaded from the given Google Drive into "model/src/pretrain":
+Then, you must copy the models downloaded from the given Google Drive into "model/src/pretrain":
 
 ```
 mv ~/Downloads/lxmert.pth model/src/pretrain/lxmert.pth
+
+mv ~/Downloads/lxmert.pth model/src/pretrain/oracle.pth
+
+mv ~/Downloads/lxmert.pth model/src/pretrain/tiny_lxmert.pth
 ```
 
 And the TSV, also in the drive:
