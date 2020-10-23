@@ -247,7 +247,7 @@ def ask():
     for k, v in alignment.items():
         alignment[k]["xywh"] = alignment[k]["xywh"].tolist()
 
-    print(input_size)
+    print(input_labels)
 
     return ujson.dumps({"pred": top_prediction[0],
                         "confidence": top_prediction[1].item(),

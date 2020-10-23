@@ -204,9 +204,8 @@ class Demo_data():
         visual_attention_mask = np.concatenate((np.ones(min(obj_num, 36)), np.zeros(max(0, 36 - obj_num))))
         boxes = self.proc_img_feat(boxes, 36)
         feats = self.proc_img_feat(feats, 36)
-        obj_num = 36
 
-        return feats, boxes, obj_class, visual_attention_mask
+        return feats, boxes, obj_class, visual_attention_mask, obj_num, img_w, img_h
 
 
 class Demo_display():
@@ -498,8 +497,7 @@ class Demo():
 
         # Load image features
         img_id = image.split('.')[0]
-        feats, boxes, obj_class, visual_attention_mask = self.data_loader.get_feats(img_id)
-        obj_num = len(obj_class)
+        feats, boxes, obj_class, visual_attention_mask, obj_num, width, height = self.data_loader.get_feats(img_id)
 
         # Reshape data in a batch of size 1 and turn them to tensor
         feats = torch.from_numpy(feats).unsqueeze(0)
@@ -551,7 +549,8 @@ class Demo():
         attention_heads = att_maps
 
         # textual and visual input labels
-        input_labels = {'textual': tkn_sent[0], 'visual': obj_class}
+        bboxes_pxl = (boxes.squeeze()[:obj_num].cpu() * torch.tensor([width, height, width, height]).unsqueeze(0).float()).short().tolist()
+        input_labels = {'textual': tkn_sent[0], 'visual': obj_class, 'bboxes': bboxes_pxl}
 
         # Input size
         input_size = {'textual': len(tkn_sent[0]), 'visual': obj_num}
