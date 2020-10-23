@@ -26,12 +26,14 @@ let metaDat = {}
 
 let modType = "oracle";
 
-
 let ogSize = [];
 
+let imShown;
 
 let curHeat;
 let curname;
+
+
 load_data_light().then(r => init(r));
 
 
@@ -118,6 +120,8 @@ function loadImg(src) {
 
         cont.drawImage(im, 0, 0, rate[0], rate[1])
 
+        imShown = im
+
     };
 
     im.src = baseUrl + imgs[0] + ".jpg"
@@ -127,43 +131,35 @@ function loadImg(src) {
 
 function loadImg2(src, x, y, w, h, name, wr, hr) {
 
-    let im = new Image();
 
+    let can = document.getElementById("inVis")
 
-    im.onload = function () {
+    let cont = can.getContext('2d');
 
-        let can = document.getElementById("inVis")
+    let rate = fixRatio2([imShown.width, imShown.height], [300, 300])
 
-        let cont = can.getContext('2d');
+    can.width = rate[0]
+    can.height = rate[1]
+    cont.strokeStyle = "red";
+    cont.drawImage(imShown, 0, 0, rate[0], rate[1])
 
-        let rate = fixRatio2([im.width, im.height], [300, 300])
+    cont.fillStyle = "red";
+    cont.lineWidth = "2"
+    cont.strokeRect(x * wr, y * hr, w * wr, h * hr)
 
-        can.width = rate[0]
-        can.height = rate[1]
-        cont.strokeStyle = "red";
-        cont.drawImage(im, 0, 0, rate[0], rate[1])
+    cont.font = '24px serif';
+    let tx = 5
+    let ty = 20
+    cont.shadowColor = "#000";
+    cont.shadowOffsetX = 0;
+    cont.shadowOffsetY = 0;
+    cont.shadowBlur = 1;
 
-        cont.fillStyle = "red";
-        cont.lineWidth = "2"
-        cont.strokeRect(x * wr, y * hr, w * wr, h * hr)
+    if (x * wr < 60 && y * hr < 40) {
+        ty = can.height - 20
+    }
+    cont.fillText(name, tx, ty);
 
-        cont.font = '24px serif';
-        let tx = 5
-        let ty = 20
-        cont.shadowColor = "#000";
-        cont.shadowOffsetX = 0;
-        cont.shadowOffsetY = 0;
-        cont.shadowBlur = 1;
-
-        if (x * wr < 60 && y * hr < 40) {
-            ty = can.height - 20
-        }
-        cont.fillText(name, tx, ty);
-
-
-    };
-
-    im.src = src
 
 }
 
@@ -1050,70 +1046,61 @@ function drawHearLabV(cont, txt1, x1, y1) {
 
 function highlightItem(items) {
 
-    let val = $("#imSlide").val();
-    let scenes = metaDat[imgs[val]]["scene"].objects;
-
-
     let can = document.getElementById("inVis")
     let cont = can.getContext("2d");
-    let wr = can.width / metaDat[imgs[val]]["scene"].width
-    let hr = can.height / metaDat[imgs[val]]["scene"].height
+
+
+    let wr = can.width / imShown.width
+    let hr = can.height / imShown.height
     cont.strokeStyle = "red";
 
     let colors = ["red", "blue"]
 
-    let ids = Object.keys(scenes)
 
     // console.log(val);
 
 
-    let im = new Image();
+    let rate = fixRatio2([imShown.width, imShown.height], [300, 300])
+
+    can.width = rate[0]
+    can.height = rate[1]
+    cont.strokeStyle = "red";
+    cont.drawImage(imShown, 0, 0, rate[0], rate[1])
+
+    for (let i = 0; i < items.length; i++) {
+
+        // let it = ids.filter(d => {
+        //     return scenes[d].name == currHeatLabels.visual[items[i]]
+        // })
+        //
+        // if (it.length > 1) {
+        //     it = scenes[it[i]]
+        // } else {
+        //     it = scenes[it[0]]
+        // }
+        let it = currHeatLabels.bboxes[items[i]]
+        cont.strokeStyle = colors[i];
 
 
-    im.onload = function () {
-        let rate = fixRatio2([im.width, im.height], [300, 300])
+        cont.fillStyle = colors[i];
+        cont.lineWidth = "2";
 
-        can.width = rate[0]
-        can.height = rate[1]
-        cont.strokeStyle = "red";
-        cont.drawImage(im, 0, 0, rate[0], rate[1])
+        cont.strokeRect(it[0] * wr, it[1] * hr, it[2] * wr, it[3] * hr)
 
-        for (let i = 0; i < items.length; i++) {
+        cont.font = '24px serif';
+        let tx = 5
+        let ty = 20
+        cont.shadowColor = "#000";
+        cont.shadowOffsetX = 0;
+        cont.shadowOffsetY = 0;
+        cont.shadowBlur = 1;
 
-            let it = ids.filter(d => {
-                return scenes[d].name == currHeatLabels.visual[items[i]]
-            })
-
-            if (it.length > 1) {
-                it = scenes[it[i]]
-            } else {
-                it = scenes[it[0]]
-            }
-            cont.strokeStyle = colors[i];
-
-
-            cont.fillStyle = colors[i];
-            cont.lineWidth = "2";
-
-            cont.strokeRect(it.x * wr, it.y * hr, it.w * wr, it.h * hr)
-
-            cont.font = '24px serif';
-            let tx = 5
-            let ty = 20
-            cont.shadowColor = "#000";
-            cont.shadowOffsetX = 0;
-            cont.shadowOffsetY = 0;
-            cont.shadowBlur = 1;
-
-            if (it.x * wr < 60 && it.y * hr < 40) {
-                ty = can.height - 20
-            }
-            cont.fillText(it.name, tx, ty);
-
+        if (it[0] * wr < 60 && it[1] * hr < 40) {
+            ty = can.height - 20
         }
-    };
+        cont.fillText(currHeatLabels.visual[items[i]], tx, ty);
 
-    im.src = baseUrl + imgs[val] + ".jpg";
+    }
 
 
     // loadImg2(baseUrl + imgs[val] + ".jpg", x, y, w, h, name, wr, hr)
