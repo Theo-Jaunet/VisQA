@@ -28,6 +28,10 @@ let modType = "oracle";
 
 
 let ogSize = [];
+
+
+let curHeat;
+let curname;
 load_data_light().then(r => init(r));
 
 
@@ -606,7 +610,7 @@ function fillScene(data) {
             } else if (d.name == "behind") {
                 col = "#e8991d"
             }
-            console.log(col);
+            // console.log(col);
             return col
         })
     // .attr("stroke-width", d => Math.sqrt(d.value));
@@ -723,17 +727,16 @@ function showItem(can, ref, x, y, w, h, name) {
     let wr = can.width / ref[0]
     let hr = can.height / ref[1]
     cont.strokeStyle = "red";
-
     let val = $("#imSlide").val();
     // console.log(val);
-
     loadImg2(baseUrl + imgs[val] + ".jpg", x, y, w, h, name, wr, hr)
-
 
 }
 
 function handleNodeOut() {
     let nd = d3.select(this);
+    let val = $("#imSlide").val();
+    loadImg(baseUrl + imgs[val] + ".jpg")
     nd.transition().duration(50).attr("r", 7).attr("fill", "rgb(124,101,148)")
 }
 
@@ -1021,8 +1024,105 @@ function UpdateCounter() {
 }
 
 
-function drawHeat(data) {
+function drawHearLabH(cont, txt1, x1, y1) {
 
+    cont.save();
+    cont.font = ' 400 24px Arial';
+    cont.textAlign = "right";
+    cont.fillStyle = "#1e1e1e"
+    cont.fillText(txt1, x1, y1);
+    cont.restore();
+
+}
+
+
+function drawHearLabV(cont, txt1, x1, y1) {
+    cont.save();
+    cont.font = ' 500 24px Arial';
+    cont.translate(x1, y1);
+    cont.rotate(-Math.PI / 4);
+    cont.textAlign = "left";
+    cont.fillStyle = "#1e1e1e"
+    cont.fillText(txt1, 0, 0);
+    cont.restore();
+
+}
+
+function highlightItem(items) {
+
+    let val = $("#imSlide").val();
+    let scenes = metaDat[imgs[val]]["scene"].objects;
+
+
+    let can = document.getElementById("inVis")
+    let cont = can.getContext("2d");
+    let wr = can.width / metaDat[imgs[val]]["scene"].width
+    let hr = can.height / metaDat[imgs[val]]["scene"].height
+    cont.strokeStyle = "red";
+
+    let colors = ["red", "blue"]
+
+    let ids = Object.keys(scenes)
+
+    // console.log(val);
+
+
+    let im = new Image();
+
+
+    im.onload = function () {
+        let rate = fixRatio2([im.width, im.height], [300, 300])
+
+        can.width = rate[0]
+        can.height = rate[1]
+        cont.strokeStyle = "red";
+        cont.drawImage(im, 0, 0, rate[0], rate[1])
+
+        for (let i = 0; i < items.length; i++) {
+
+            let it = ids.filter(d => {
+                return scenes[d].name == currHeatLabels.visual[items[i]]
+            })
+
+            if (it.length > 1) {
+                it = scenes[it[i]]
+            } else {
+                it = scenes[it[0]]
+            }
+            cont.strokeStyle = colors[i];
+
+
+            cont.fillStyle = colors[i];
+            cont.lineWidth = "2";
+
+            cont.strokeRect(it.x * wr, it.y * hr, it.w * wr, it.h * hr)
+
+            cont.font = '24px serif';
+            let tx = 5
+            let ty = 20
+            cont.shadowColor = "#000";
+            cont.shadowOffsetX = 0;
+            cont.shadowOffsetY = 0;
+            cont.shadowBlur = 1;
+
+            if (it.x * wr < 60 && it.y * hr < 40) {
+                ty = can.height - 20
+            }
+            cont.fillText(it.name, tx, ty);
+
+        }
+    };
+
+    im.src = baseUrl + imgs[val] + ".jpg";
+
+
+    // loadImg2(baseUrl + imgs[val] + ".jpg", x, y, w, h, name, wr, hr)
+
+}
+
+function drawHeat(data, name, coords) {
+
+    let type = name.split("_")[0]
 
     // console.log("Drawing");
 
@@ -1037,44 +1137,84 @@ function drawHeat(data) {
 
     let marg = 15;
     let pad = 5;
-    let st = 100;
-
-    // console.log(data[0]);
+    let st = 130;
 
     let cw = (((can.width - st) - (marg * 2)) - (pad * data[0].length)) / data[0].length;
     let ch = (((can.height - st) - (marg * 2)) - (pad * data.length)) / data.length
+    // cont.fillRect(st + marg + ((cw + pad) * j), st + marg + ((ch + pad) * i) + pad
 
-    // console.log(cw);
+    // if (coords[0] > st - marg - (cw / 2) + pad && coords[1] > st - marg - (cw / 2) + pad) {
+
+    let inds = findRC(coords, cw, ch, st, marg, pad)
+
+    if (inds[0] >= 0 && inds[1] >= 0) {
+        cont.fillStyle = "rgba(255,0,2,0.62)"
+        cont.fillRect(0, st + marg + ((ch + pad) * inds[1]), can.width, ch + pad * 2)
+        cont.fillRect(st + marg + ((cw + pad) * inds[0]) - pad, 0, cw + pad * 2, can.height)
+
+        if (type == "vis" || type == "vv") {
+            highlightItem(inds)
+        } else if (type == "vl") {
+            highlightItem([inds[0]])
+
+        } else if (type == "lv") {
+            highlightItem([inds[1]])
+        }
+
+    }
 
     for (let i = 0; i < data.length; i++) { // Iter Horizontally
 
-        cont.save();
-        cont.font = ' 500 24px Arial';
-        cont.translate(st + marg + (cw / 2) + ((cw + pad) * i), st + marg);
-        cont.rotate(-Math.PI / 4);
-        cont.textAlign = "left";
-        cont.fillStyle = "#1e1e1e"
-        cont.fillText(currHeatLabels.textual[i % currHeatLabels.textual.length], 0, 0);
-        cont.restore();
 
-        cont.save();
-        cont.font = ' 400 24px Arial';
-        cont.textAlign = "right";
-        cont.fillStyle = "#1e1e1e"
-        cont.fillText(currHeatLabels.visual[i % currHeatLabels.visual.length], 100, st + marg + (ch / 2) + ((ch + pad) * i) + pad);
-        cont.restore();
-
+        if (type == "lang" || type == "ll") {
+            drawHearLabH(cont, currHeatLabels.textual[i % currHeatLabels.textual.length], st, st + marg + (ch / 2) + ((ch + pad) * i) + pad)
+        } else if (type == "vis" || type == "vv") {
+            drawHearLabH(cont, currHeatLabels.visual[i % currHeatLabels.visual.length], st, st + marg + (ch / 2) + ((ch + pad) * i) + pad)
+        } else if (type == "vl") {
+            drawHearLabH(cont, currHeatLabels.textual[i % currHeatLabels.textual.length], st, st + marg + (ch / 2) + ((ch + pad) * i) + pad)
+        } else if (type == "lv") {
+            drawHearLabH(cont, currHeatLabels.visual[i % currHeatLabels.visual.length], st, st + marg + (ch / 2) + ((ch + pad) * i) + pad)
+        } else {
+            drawHearLabH(cont, currHeatLabels.visual[i % currHeatLabels.visual.length], st, st + marg + (ch / 2) + ((ch + pad) * i) + pad)
+        }
 
         for (let j = 0; j < data[i].length; j++) { // Iter vertically
+
+            if (i == 0) {
+                if (type != "vl" && type != "vis" && type != "vv") {
+                    drawHearLabV(cont, currHeatLabels.textual[j % currHeatLabels.textual.length], st + marg + (cw / 2) + ((cw + pad) * j), st + marg)
+                } else {
+                    drawHearLabV(cont, currHeatLabels.visual[j % currHeatLabels.visual.length], st + marg + (cw / 2) + ((cw + pad) * j), st + marg)
+                }
+            }
+
             cont.fillStyle = mono_col(data[i][j]);
 
             cont.fillRect(st + marg + ((cw + pad) * j), st + marg + ((ch + pad) * i) + pad, cw, ch)
-
-
         }
     }
 }
 
+
+function findRC(coords, cw, ch, st, marg, pad) {
+    let xscale = d3.scaleLinear().domain([88, 570]).range([145, 985])
+    let yscale = d3.scaleLinear().domain([75, 495]).range([150, 990])
+    // console.log(coords[1]);
+    // console.log('FIXXX');
+    // console.log(yscale(coords[1]));
+    let colx = (xscale(coords[0]) - (st)) / (pad + cw);
+    let coly = (yscale(coords[1]) - (st)) / (pad + ch);
+
+
+    if (colx > 0) {
+        colx = Math.floor(colx - 0.05)
+    }
+    if (coly > 0) {
+        coly = Math.floor(coly - 0.05)
+    }
+
+    return [colx, coly]
+}
 
 function setDPI(canvas, dpi) {
     // Set up CSS size.

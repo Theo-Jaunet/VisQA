@@ -206,7 +206,7 @@
 
                 <!--                    </svg>-->
                 <!--                </div>-->
-                <div style="width:60%;height: 78%;border: #555555 solid 1px;position: relative;display: inline-block">
+                <div style="width:60%;height: 78%;position: relative;display: inline-block;background-color: #fafafa;border: thin solid #f3f3f3;padding: 0.125em;">
                     <canvas style="width: 100%;height: 100%" id="heatm"></canvas>
                 </div>
             </div>
@@ -454,11 +454,19 @@
         let elem = $(this)
 
         if (asked && elem.attr("type") == 2) {
-            drawHeat(currHeatmaps[$(this).attr("id")])
+            drawHeat(currHeatmaps[$(this).attr("id")], $(this).attr("id"), [0, 0])
+            curHeat = currHeatmaps[$(this).attr("id")];
+            curname = $(this).attr("id");
         }
 
-
     });
+
+
+    d3.select("#heatm").on("mousemove", function () {
+        if (asked) {
+            drawHeat(curHeat, curname, d3.mouse(this))
+        }
+    })
 
     $("#models").on("input", function () {
         let elem = $(this)
@@ -470,7 +478,6 @@
 
         d3.select("#model").transition().duration(470).style("opacity", "0.2")
         $("#loader").css("visibility", "visible")
-
         switchMod(mode)
 
     })
