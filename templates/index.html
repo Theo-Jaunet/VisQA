@@ -149,6 +149,8 @@
                 <div style="display: inline-block;position: absolute;left: 23%;bottom: -85px">
 
                     <div style="position: relative;display: inline-block;left: 0">
+                        <button id="saveState"> Save</button>
+                        <button id="makeDiff"> Diff</button>
                         <select style="display: inline-block;margin-right: 25px" class="one-half" id="models">
 
                         </select>
@@ -234,6 +236,33 @@
 
     };
 
+
+    $("#saveState").on("click", function () {
+
+        oldKmean = JSON.parse(JSON.stringify(currKmean)) // DEEP COPY
+        oldHeatmaps = JSON.parse(JSON.stringify(currHeatmaps)) // DEEP COPY
+        oldHeatLabels = JSON.parse(JSON.stringify(currHeatLabels)) // DEEP COPY
+
+    });
+
+
+    $("#makeDiff").on("click", function () {
+
+        let hk = Object.keys(currHeatmaps)
+
+        $(this).toggleClass("button-primary")
+
+        let diffHeat = {};
+
+        for (let i = 0; i < hk.length; i++) {
+            diffHeat[hk[i]] = makeDiff(currHeatmaps[hk[i]], oldHeatmaps[hk[i]])
+        }
+
+        currDiffHeat = diffHeat
+
+        diff_bool = !diff_bool
+
+    });
 
     $("#ggroup").change(function () {
 
@@ -430,6 +459,7 @@
 
             let cont = can.getContext('2d');
 
+            imShown = im
             let rate = fixRatio2([im.width, im.height], [300, 300])
 
             can.width = rate[0]
@@ -454,11 +484,14 @@
         let elem = $(this)
 
         if (asked && elem.attr("type") == 2) {
-            drawHeat(currHeatmaps[$(this).attr("id")], $(this).attr("id"), [0, 0])
-            curHeat = currHeatmaps[$(this).attr("id")];
-            curname = $(this).attr("id");
-        }
 
+            let id = elem.attr("id")
+
+            let data = (diff_bool?oldHeatmaps[id]:currHeatmaps[id])
+            drawHeat(data, id, [0, 0]);
+            curHeat = data;
+            curname = id
+        }
     });
 
 

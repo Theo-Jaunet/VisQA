@@ -12,17 +12,26 @@ let xscale;
 let yscale;
 
 let currKmean = {};
-
 let currHeatmaps = {};
-
 let currHeatLabels = {};
 
+let currDiffHeat = {};
+
+
+let oldKmean = {};
+let oldHeatmaps = {};
+let oldHeatLabels = {};
+
+
 let mono_col = d3.scaleLinear().domain([0, 0.35, 1]).range(['#ffffe1', '#FEEAA9', '#cf582f']).interpolate(d3.interpolateHcl);
+let diff_col = d3.scaleLinear().domain([0, 0.08, 0.5, 0.9]).range(["EFF0E8", '#f2e7e9', "#aa5b65", "#6b111c"]).interpolate(d3.interpolateHcl);
+
 let asked = false;
+let diff_bool = false;
 
-let models = {}
+let models = {};
 
-let metaDat = {}
+let metaDat = {};
 
 let modType = "oracle";
 
@@ -51,6 +60,7 @@ function switchMod(dat) {
     form.append("mod", JSON.stringify(dat.mod));
     modType = dat.name;
     asked = false;
+    diff_bool = false;
 
 
     $.ajax({
@@ -731,8 +741,19 @@ function showItem(can, ref, x, y, w, h, name) {
 
 function handleNodeOut() {
     let nd = d3.select(this);
-    let val = $("#imSlide").val();
-    loadImg(baseUrl + imgs[val] + ".jpg")
+
+
+    let can = document.getElementById("inVis")
+
+    let cont = can.getContext('2d');
+
+    let rate = fixRatio2([imShown.width, imShown.height], [300, 300])
+
+    can.width = rate[0]
+    can.height = rate[1]
+
+    cont.drawImage(imShown, 0, 0, rate[0], rate[1])
+
     nd.transition().duration(50).attr("r", 7).attr("fill", "rgb(124,101,148)")
 }
 
@@ -791,6 +812,7 @@ function ask(data) {
     $(".kmeanSelected").toggleClass("kmeanSelected");
     UpdateCounter()
     asked = true;
+    diff_bool = false;
     currHeatmaps = d.heatmaps
     currHeatLabels = d.labels
     //
@@ -1089,6 +1111,9 @@ function highlightItem(items) {
 
         cont.font = '24px serif';
         let tx = 5
+        if (i == 1) {
+            tx = can.width - 20 - (currHeatLabels.visual[items[i]].length * 10)
+        }
         let ty = 20
         cont.shadowColor = "#000";
         cont.shadowOffsetX = 0;
@@ -1106,6 +1131,17 @@ function highlightItem(items) {
     // loadImg2(baseUrl + imgs[val] + ".jpg", x, y, w, h, name, wr, hr)
 
 }
+
+
+function findLab(name) {
+
+
+    if (currHeatLabels.textual.indexOf("name") !== -1) {
+
+    }
+
+}
+
 
 function drawHeat(data, name, coords) {
 
@@ -1134,7 +1170,7 @@ function drawHeat(data, name, coords) {
 
     let inds = findRC(coords, cw, ch, st, marg, pad)
 
-    if (inds[0] >= 0 && inds[1] >= 0) {
+    if ((inds[0] >= 0 && inds[1] >= 0) && (inds[0] < currHeatLabels.visual.length && inds[1] < currHeatLabels.visual.length)) {
         cont.fillStyle = "rgba(255,0,2,0.62)"
         cont.fillRect(0, st + marg + ((ch + pad) * inds[1]), can.width, ch + pad * 2)
         cont.fillRect(st + marg + ((cw + pad) * inds[0]) - pad, 0, cw + pad * 2, can.height)
@@ -1143,7 +1179,6 @@ function drawHeat(data, name, coords) {
             highlightItem(inds)
         } else if (type == "vl") {
             highlightItem([inds[0]])
-
         } else if (type == "lv") {
             highlightItem([inds[1]])
         }
@@ -1175,7 +1210,12 @@ function drawHeat(data, name, coords) {
                 }
             }
 
-            cont.fillStyle = mono_col(data[i][j]);
+            if (diff_bool) {
+                cont.fillStyle = diff_col(data[i][j]);
+            } else {
+                cont.fillStyle = mono_col(data[i][j]);
+            }
+
 
             cont.fillRect(st + marg + ((cw + pad) * j), st + marg + ((ch + pad) * i) + pad, cw, ch)
         }
@@ -1202,6 +1242,14 @@ function findRC(coords, cw, ch, st, marg, pad) {
 
     return [colx, coly]
 }
+
+function makeDiff(mat1, mat2) {
+
+
+    return mat1.map((d, i) => d.map((f, j) => Math.abs(f - mat2[i][j])));
+
+}
+
 
 function setDPI(canvas, dpi) {
     // Set up CSS size.

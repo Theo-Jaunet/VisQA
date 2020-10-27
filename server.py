@@ -367,7 +367,8 @@ if __name__ == '__main__':
     #
     my_demo.load_data()
     my_demo.load_model()
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=True)
+
 
     # merger()
 
