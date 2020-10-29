@@ -146,11 +146,14 @@
                     <img src="static/assets/images/load.gif" style="width: 85px"/>
                     <h3> Loading ... </h3>
                 </div>
-                <div style="display: inline-block;position: absolute;left: 23%;bottom: -85px">
+                <div style="display: inline-block;position: absolute;left: 13%;bottom: -85px">
 
                     <div style="position: relative;display: inline-block;left: 0">
                         <button id="saveState"> Save</button>
-                        <button id="makeDiff"> Diff</button>
+                        <button id="makeDiff"> AbsDiff</button>
+                        <button id="fullDiff">
+                            FDiff
+                        </button>
                         <select style="display: inline-block;margin-right: 25px" class="one-half" id="models">
 
                         </select>
@@ -253,14 +256,43 @@
         $(this).toggleClass("button-primary")
 
         let diffHeat = {};
-
+        let svg = d3.select("#model")
         for (let i = 0; i < hk.length; i++) {
             diffHeat[hk[i]] = makeDiff(currHeatmaps[hk[i]], oldHeatmaps[hk[i]])
+            svg.select("#" + hk[i]).attr("fill", diff_col(agDiff(diffHeat[hk[i]])));
+
         }
 
-        currDiffHeat = diffHeat
-
+        currDiffHeat = diffHeat;
         diff_bool = !diff_bool
+        fdiff_bool = !fdiff_bool
+
+
+    });
+
+
+    $("#fullDiff").on("click", function () {
+
+        let hk = Object.keys(currHeatmaps)
+
+        $(this).toggleClass("button-primary")
+
+        let diffHeat = {};
+        let svg = d3.select("#model")
+        for (let i = 0; i < hk.length; i++) {
+            diffHeat[hk[i]] = makeDiff2(currHeatmaps[hk[i]], oldHeatmaps[hk[i]])
+            console.log(hk[i]);
+            console.log(currHeatmaps[hk[i]]);
+            console.log(oldHeatmaps[hk[i]]);
+            console.log(diffHeat[hk[i]]);
+            console.log("-------------");
+            svg.select("#" + hk[i]).attr("fill", diff_col(agDiff(diffHeat[hk[i]])));
+
+        }
+
+        currDiffHeat = diffHeat;
+        fdiff_bool = !fdiff_bool;
+
 
     });
 
@@ -487,7 +519,12 @@
 
             let id = elem.attr("id")
 
-            let data = (diff_bool?oldHeatmaps[id]:currHeatmaps[id])
+            let data = currHeatmaps[id];
+
+            if(diff_bool || fdiff_bool) {
+                data = currDiffHeat[id]
+            }
+
             drawHeat(data, id, [0, 0]);
             curHeat = data;
             curname = id
@@ -496,8 +533,9 @@
 
 
     d3.select("#heatm").on("mousemove", function () {
-        if (asked) {
-            drawHeat(curHeat, curname, d3.mouse(this))
+        if (curname) {
+            let data = (diff_bool ? currDiffHeat[curname] : currHeatmaps[curname])
+            drawHeat(data, curname, d3.mouse(this))
         }
     })
 

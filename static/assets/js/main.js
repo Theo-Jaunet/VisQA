@@ -25,9 +25,11 @@ let oldHeatLabels = {};
 
 let mono_col = d3.scaleLinear().domain([0, 0.35, 1]).range(['#ffffe1', '#FEEAA9', '#cf582f']).interpolate(d3.interpolateHcl);
 let diff_col = d3.scaleLinear().domain([0, 0.08, 0.5, 0.9]).range(["EFF0E8", '#f2e7e9', "#aa5b65", "#6b111c"]).interpolate(d3.interpolateHcl);
+let fDuff_col = d3.scaleSequential(d3.interpolatePuOr).domain([-0.8, 0.8]);
 
 let asked = false;
 let diff_bool = false;
+let fdiff_bool = false;
 
 let models = {};
 
@@ -356,7 +358,7 @@ function drawModel(mod) {
         // x = crossSt + ((pad + (sqSize + pad * 2) * 2) * i) + (pad)
         x = (crossSt + (crossWidth * i) + (block_xinter * i)) + xinter
         y = crossySt + yinter
-        let names = [["ll", "vv"], ["vl", "lv"]];
+        let names = [["vl", "lv"], ["ll", "vv"]];
 
         for (let j = 0; j < 2; j++) {
 
@@ -881,7 +883,6 @@ function fillHeads(data) {
     console.time("Coloring Squares")
     for (let i = 0; i < names.length; i++) {
 
-
         // console.log("Making name _: #" + names[i] + " Of value: " + data[names[i]]);
         let col = getCol(data[names[i]])
 
@@ -1147,7 +1148,6 @@ function drawHeat(data, name, coords) {
 
     let type = name.split("_")[0]
 
-    // console.log("Drawing");
 
     let can = document.getElementById("heatm");
 
@@ -1212,16 +1212,25 @@ function drawHeat(data, name, coords) {
 
             if (diff_bool) {
                 cont.fillStyle = diff_col(data[i][j]);
+            } else if (fdiff_bool) {
+                cont.fillStyle = fDuff_col(data[i][j]);
             } else {
                 cont.fillStyle = mono_col(data[i][j]);
             }
 
 
+            // cont.fillRect(st + marg + ((cw + pad) * j), st + marg + ((ch + pad) * i) + pad, cw, ch)
             cont.fillRect(st + marg + ((cw + pad) * j), st + marg + ((ch + pad) * i) + pad, cw, ch)
         }
     }
 }
 
+
+function agDiff(data) {
+    let tres = data.map(d => Math.max(...d))
+    return tres.reduce((a, b) => a + b) / tres.length
+
+}
 
 function findRC(coords, cw, ch, st, marg, pad) {
     let xscale = d3.scaleLinear().domain([88, 570]).range([145, 985])
@@ -1248,6 +1257,12 @@ function makeDiff(mat1, mat2) {
 
     return mat1.map((d, i) => d.map((f, j) => Math.abs(f - mat2[i][j])));
 
+}
+
+
+function makeDiff2(mat1, mat2) {
+
+    return mat1.map((d, i) => d.map((f, j) => f - mat2[i][j]));
 }
 
 
