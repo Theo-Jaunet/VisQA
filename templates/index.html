@@ -475,12 +475,9 @@
             d3.select("#" + attsMaps[i]).attr("class", "selected")
         }
         UpdateCounter()
-
-
-    })
+    });
 
     $("#imSlide").on("input", function () {
-
 
         let im = new Image();
         let val = imgs[$(this).val()]
@@ -498,16 +495,12 @@
             can.height = rate[1]
 
             cont.drawImage(im, 0, 0, rate[0], rate[1])
-
-
         };
 
         im.src = baseUrl + val + ".jpg"
         if (modType === 'oracle') {
             fillQuest(val)
         }
-
-
     })
 
 
@@ -534,7 +527,14 @@
 
     d3.select("#heatm").on("mousemove", function () {
         if (curname) {
-            let data = (diff_bool ? currDiffHeat[curname] : currHeatmaps[curname])
+
+            let data = currHeatmaps[curname];
+
+            if(diff_bool || fdiff_bool) {
+                data = currDiffHeat[curname]
+            }
+
+            // let data = (diff_bool ? currDiffHeat[curname] : currHeatmaps[curname])
             drawHeat(data, curname, d3.mouse(this))
         }
     })

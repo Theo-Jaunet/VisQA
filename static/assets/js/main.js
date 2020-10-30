@@ -60,6 +60,7 @@ function switchMod(dat) {
     let form = new FormData();
     form.append("name", dat.name);
     form.append("mod", JSON.stringify(dat.mod));
+    form.append("disp", dat.display);
     modType = dat.name;
     asked = false;
     diff_bool = false;

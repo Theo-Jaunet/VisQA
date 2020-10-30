@@ -325,6 +325,7 @@ def switchMod():
     global my_demo
     name = request.form['name']
     mod = ujson.loads(request.form['mod'])
+    disp = request.form['disp']
     # mod = request.form['mod']
 
     print(my_demo.cfg)
@@ -348,7 +349,7 @@ def switchMod():
 
     # print(args)
 
-    my_demo.initConf()
+    my_demo.initConf("model/src/pretrain/"+disp)
 
     my_demo.load_data()
     my_demo.load_model()

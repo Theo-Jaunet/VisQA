@@ -4,7 +4,7 @@
     "ecai_lxmert": 0,
     "oracle": 1,
     "pretrained_model_lxmert": "model/src/pretrain/lxmert",
-    "pretrained_model_tiny_lxmert_oracle": "model/src/pretrain/oracle",
+    "pretrained_model_tiny_lxmert_oracle": "model/src/pretrain/tiny_oracle",
     "answers_dict": "model/trainval_label2ans.json",
     "object_classes": "model/objects_vocab.txt",
     "object_classes_oracle": "model/objects_vocab_oracle.txt",

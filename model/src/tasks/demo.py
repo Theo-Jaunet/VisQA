@@ -378,7 +378,7 @@ class Demo():
             args.from_scratch = True
         print("Config loaded!")
 
-    def initConf(self):
+    def initConf(self, path):
         self.data_loader = Demo_data(self.cfg)
 
         args.task_pointer = 'KLDiv'
@@ -400,6 +400,10 @@ class Demo():
             args.visual_feat_dim = 2320
             self.cfg['data_split'] = 'val'
             args.from_scratch = True
+
+        self.cfg["pretrained_model_lxmert"] = path
+        self.cfg["pretrained_model_tiny_lxmert"] = path
+        self.cfg["pretrained_model_tiny_lxmert_oracle"] = path
         print("Config loaded!")
 
     def load_model(self):
@@ -549,7 +553,8 @@ class Demo():
         attention_heads = att_maps
 
         # textual and visual input labels
-        bboxes_pxl = (boxes.squeeze()[:obj_num].cpu() * torch.tensor([width, height, width, height]).unsqueeze(0).float()).short().tolist()
+        bboxes_pxl = (boxes.squeeze()[:obj_num].cpu() * torch.tensor([width, height, width, height]).unsqueeze(
+            0).float()).short().tolist()
         input_labels = {'textual': tkn_sent[0], 'visual': obj_class, 'bboxes': bboxes_pxl}
 
         # Input size
@@ -596,8 +601,8 @@ if __name__ == "__main__":
         # head_mask['vl'] += 1  # mask all vl layers
         # head_mask['lang'][3,3] += 1# mask the head 3 in lang layer 3
 
-        top_prediction, five_predictions, attention_heads, alignment, k_dist, input_labels, input_size\
-                = my_demo.ask(question, image, head_mask)
+        top_prediction, five_predictions, attention_heads, alignment, k_dist, input_labels, input_size \
+            = my_demo.ask(question, image, head_mask)
 
         # display
         if display_alignment:
