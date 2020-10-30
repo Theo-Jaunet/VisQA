@@ -507,20 +507,22 @@
     $("#model").on("mouseover", "rect", function () {
 
         let elem = $(this)
+        if (keymap[17]) {
 
-        if (asked && elem.attr("type") == 2) {
+            if (asked && elem.attr("type") == 2) {
 
-            let id = elem.attr("id")
+                let id = elem.attr("id")
 
-            let data = currHeatmaps[id];
+                let data = currHeatmaps[id];
 
-            if(diff_bool || fdiff_bool) {
-                data = currDiffHeat[id]
+                if (diff_bool || fdiff_bool) {
+                    data = currDiffHeat[id]
+                }
+
+                drawHeat(data, id, [0, 0]);
+                curHeat = data;
+                curname = id
             }
-
-            drawHeat(data, id, [0, 0]);
-            curHeat = data;
-            curname = id
         }
     });
 
@@ -530,7 +532,7 @@
 
             let data = currHeatmaps[curname];
 
-            if(diff_bool || fdiff_bool) {
+            if (diff_bool || fdiff_bool) {
                 data = currDiffHeat[curname]
             }
 
