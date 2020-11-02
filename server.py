@@ -67,12 +67,72 @@ def select(data):
 
 dataset = load_data("lxmert_gqaval_reasbias.pickle")
 
+print(dataset[0])
+
 
 # to_map = select(dataset)
 # print(to_map[0])
 # print('making Umap  ....')
 
 # umaper = umap.UMAP(n_neighbors=20, min_dist=0.3).fit(to_map[:])
+
+
+def stater(mod, name, disp):
+    global order
+    global my_demo
+
+    if mod["head"] == 4:
+        my_demo.cfg["tiny_lxmert"] = 1
+    else:
+        my_demo.cfg["tiny_lxmert"] = 0
+
+    if name == "oracle":
+        my_demo.cfg["oracle"] = 1
+        my_demo.cfg['data_split'] = 'val'
+    else:
+        my_demo.cfg["oracle"] = 0
+        my_demo.cfg['data_split'] = 'testdev'
+
+    order = makeOrder(
+        [("lang", mod["lang"], mod["head"]), ("vis", mod["vis"], mod["head"]), ("vl", mod["cross"], mod["head"]),
+         ("lv", mod["cross"], mod["head"]),
+         ("vv", mod["cross"], mod["head"]), ("ll", mod["cross"], mod["head"])])
+
+    # print(args)
+
+    my_demo.initConf("model/src/pretrain/" + disp)
+
+    my_demo.load_data()
+    my_demo.load_model()
+
+    res = {}
+
+    for elem in order:
+        res[elem] = {"functs": {}, "groups": {
+        }
+                     }
+
+    with open("static/assets/data/images.json", 'r') as fjson:
+        imgs = ujson.load(fjson)
+
+        for im in range(len(imgs["default"])):
+            top_prediction, five_predictions, attention_heads, alignment, k_dist, input_labels, input_size \
+                = my_demo.ask(dataset[im].question, imgs["default"][im], empty_mask())
+            temp = toSliptD(k_dist)
+
+            for elem in order:
+                for func in dataset[im]["functions"]:
+                    if res[elem]["functs"][func] is not None:
+                        res[elem]["functs"][func]["median"].append(temp[0])
+                        res[elem]["functs"][func]["min"].append(temp[1])
+                        res[elem]["functs"][func]["max"].append(temp[2])
+                    else:
+                        res[elem]["functs"][func]["median"] = [temp[0]]
+                        res[elem]["functs"][func]["min"] = [temp[1]]
+                        res[elem]["functs"][func]["max"] = [temp[2]]
+
+    with open('%s.json' % "info2", 'w') as wjson:
+        ujson.dump(res, wjson, ensure_ascii=False, sort_keys=True, indent=4)
 
 
 def make_proj(data):
@@ -177,7 +237,6 @@ def median(l):
 
 def formatK_dist(k_dist):
     res = []
-
     for k, v in k_dist.items():
         for i in range(len(v)):
             for j in range(len(v[i])):
@@ -192,6 +251,19 @@ def formatK_dist(k_dist):
 #     return ujson.dumps({"proj": umaper.transform(to_map[:]).tolist()})
 
 
+def toSliptD(data):
+    res = {}
+    global order
+    print(data['lang'][0][0])
+    for elem in order:
+        temp = elem.split("_")
+        res[elem] = [round(np.median(data[temp[0]][int(temp[1])][int(temp[2])])),
+                     round(np.min(data[temp[0]][int(temp[1])][int(temp[2])])),
+                     round(np.max(data[temp[0]][int(temp[1])][int(temp[2])]))]
+
+    return res
+
+
 def toSliptDict(data):
     res = {}
     global order
@@ -199,8 +271,6 @@ def toSliptDict(data):
     for elem in order:
         temp = elem.split("_")
         res[elem] = round(np.median(data[temp[0]][int(temp[1])][int(temp[2])]))
-
-    # print(res[order[0]])
 
     return res
 
@@ -221,11 +291,8 @@ def purgeHeats(data, size):
         temp = elem.split("_")
         tres = []
         if temp[0] == "lang" or temp[0] == "ll":
-
             tres = [x[:size["textual"]] for x in data[elem][:size["textual"]]]
-
         elif temp[0] == "vis" or temp[0] == "vv":
-
             tres = [x[:size["visual"]] for x in data[elem][:size["visual"]]]
         elif temp[0] == "vl":
             tres = [x[:size["visual"]] for x in data[elem][:size["textual"]]]
@@ -276,7 +343,6 @@ def ask():
                         "heatmaps": purgeHeats(AtttoSliptDict(attention_heads), input_size)
                         })
 
-
 def getfilext(path):
     files = []
     file = [".pickle"]
@@ -308,11 +374,25 @@ def merger():
                     ujson.dump(res, wjson, ensure_ascii=False, sort_keys=True, indent=4)
 
 
+def merger2():
+    res = {}
+    with open("static/assets/data/images.json", 'r') as fjson:
+        imgs = ujson.load(fjson)
+
+        with open("/home/theo/Downloads/orac/questions1.2/val_balanced_questions.json", 'r') as fjson3:
+            quest = ujson.load(fjson3)
+
+            for im in imgs["default"]:
+                res[im] = {"questions": getQuests(quest, im.replace("n", ""))}
+
+            with open('%s.json' % "info2", 'w') as wjson:
+                ujson.dump(res, wjson, ensure_ascii=False, sort_keys=True, indent=4)
+
+
 def getQuests(data, id):
     res = {}
     i = 0
     for line in data:
-
         if data[line]['imageId'] == id:
             res[i] = data[line]
             i += 1
@@ -349,7 +429,7 @@ def switchMod():
 
     # print(args)
 
-    my_demo.initConf("model/src/pretrain/"+disp)
+    my_demo.initConf("model/src/pretrain/" + disp)
 
     my_demo.load_data()
     my_demo.load_model()
@@ -370,8 +450,9 @@ if __name__ == '__main__':
     my_demo.load_model()
     app.run(host='0.0.0.0', port=5000, debug=True)
 
-
     # merger()
+
+    # merger2()
 
     # imgs = list(my_demo.data_loader.img_dst) # FOR The rest
 
