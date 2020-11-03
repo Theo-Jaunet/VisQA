@@ -11,6 +11,7 @@
     "images_dir": "static/assets/images/try/",
     "feats_dir": "model/gqa_testdev_obj36/vg_gqa_imgfeat/",
     "oracle_dir": "model/gqa_val_obj36/oracle_data",
+    "rcnn_dir": "model/rcnn_data",
     "data_split": "testdev"
 }
 
