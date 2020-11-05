@@ -135,6 +135,11 @@ class Demo_data():
         """
         Load all pre-trained Faster-RCNN embeddings for all images.
         """
+
+        #
+        #   DEPRECATED
+        #
+
         timer = time.time()
         img_data = []
         img_data.extend(self.gqa_buffer_loader.load_data(cfg['data_split'], -1, path=cfg['feats_dir']))
@@ -179,7 +184,12 @@ class Demo_data():
                 img_info['boxes'] = img_info['boxes'][:, :2320].astype(np.float32)
                 img_info['features'] = img_info['features'][:, :2320].astype(np.float32)
         else:
-            img_info = self.img_dst[img_id]  # load from RAM
+            load_path = os.path.join(self.cfg['rcnn_dir'], "%s.pickle" % img_id)
+            with open(load_path, 'rb') as handle:
+                img_info = pickle.load(handle)
+        # Deprecated :
+        # else:
+        #     img_info = self.img_dst[img_id]  # load from RAM
 
         obj_num = img_info['num_boxes']
         boxes = img_info['boxes'].copy()
@@ -462,7 +472,9 @@ class Demo():
         if self.cfg['oracle']:
             print('Oracle data do not need to be loaded in RAM')
         else:
-            self.data_loader.load_all(self.cfg)
+            print('load_data is deprecated.')
+        # else:
+        #     self.data_loader.load_all(self.cfg)
 
     def img_available(self, image):
         img_id = image.split('.')[0]
