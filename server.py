@@ -67,7 +67,7 @@ def select(data):
 
 dataset = load_data("lxmert_gqaval_reasbias.pickle")
 
-print(dataset[0])
+# print(dataset[0])
 
 
 # to_map = select(dataset)
@@ -379,11 +379,14 @@ def merger2():
     with open("static/assets/data/images.json", 'r') as fjson:
         imgs = ujson.load(fjson)
 
-        with open("/home/theo/Downloads/orac/questions1.2/val_balanced_questions.json", 'r') as fjson3:
+        with open("/home/theo/Downloads/orac/questions1.2/testdev_balanced_questions.json", 'r') as fjson3:
             quest = ujson.load(fjson3)
 
+            # print(quest)
             for im in imgs["default"]:
-                res[im] = {"questions": getQuests(quest, im.replace("n", ""))}
+                print(im)
+                res[im] = {"questions": getQuests(quest, im)}
+                break
 
             with open('%s.json' % "info2", 'w') as wjson:
                 ujson.dump(res, wjson, ensure_ascii=False, sort_keys=True, indent=4)
@@ -394,6 +397,8 @@ def getQuests(data, id):
     i = 0
     for line in data:
         if data[line]['imageId'] == id:
+            print(line)
+            print("---")
             res[i] = data[line]
             i += 1
     return res

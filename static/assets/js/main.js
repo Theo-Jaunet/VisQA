@@ -1155,6 +1155,8 @@ function drawHeat(data, name, coords) {
 
     let cont = can.getContext('2d');
 
+    cont.lineWidth = "1px"
+    cont.strokeStyle = "rgba(107,107,107,0.62)"
 
     cont.clearRect(0, 0, 1900, 1900)
 
@@ -1222,6 +1224,10 @@ function drawHeat(data, name, coords) {
 
             // cont.fillRect(st + marg + ((cw + pad) * j), st + marg + ((ch + pad) * i) + pad, cw, ch)
             cont.fillRect(st + marg + ((cw + pad) * j), st + marg + ((ch + pad) * i) + pad, cw, ch)
+            cont.strokeRect(st + marg + ((cw + pad) * j), st + marg + ((ch + pad) * i) + pad, cw, ch)
+
+            // cont.stroke()
+            // cont.fill()
         }
     }
 }
