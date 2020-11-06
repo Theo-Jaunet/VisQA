@@ -187,6 +187,9 @@ class Demo_data():
             load_path = os.path.join(self.cfg['rcnn_dir'], "%s.pickle" % img_id)
             with open(load_path, 'rb') as handle:
                 img_info = pickle.load(handle)
+                img_info['boxes'] = img_info['boxes'].copy()[:, :2048].astype(np.float32)
+                img_info['features'] = img_info['features'].copy()[:, :2048].astype(np.float32)
+
         # Deprecated :
         # else:
         #     img_info = self.img_dst[img_id]  # load from RAM
@@ -389,7 +392,7 @@ class Demo():
         print("Config loaded!")
 
     def initConf(self, path):
-        self.data_loader = Demo_data(self.cfg)
+        # self.data_loader = Demo_data(self.cfg)
 
         args.task_pointer = 'KLDiv'
         args.n_head = 12
@@ -406,9 +409,12 @@ class Demo():
             args.n_head = 4
             args.hidden_size = 128
             args.from_scratch = True
-        if self.cfg['oracle']:
+        if self.cfg['type'] == "oracle":
             args.visual_feat_dim = 2320
-            self.cfg['data_split'] = 'val'
+
+            # if self.cfg['oracle']:
+            #     args.visual_feat_dim = 2320
+            #     self.cfg['data_split'] = 'val'
             args.from_scratch = True
 
         self.cfg["pretrained_model_lxmert"] = path

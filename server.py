@@ -67,6 +67,7 @@ def select(data):
 
 dataset = load_data("lxmert_gqaval_reasbias.pickle")
 
+
 # print(dataset[0])
 
 
@@ -343,6 +344,7 @@ def ask():
                         "heatmaps": purgeHeats(AtttoSliptDict(attention_heads), input_size)
                         })
 
+
 def getfilext(path):
     files = []
     file = [".pickle"]
@@ -408,19 +410,19 @@ def getQuests(data, id):
 def switchMod():
     global order
     global my_demo
-    name = request.form['name']
+
+    dataName = request.form['name']
     mod = ujson.loads(request.form['mod'])
     disp = request.form['disp']
-    # mod = request.form['mod']
-
-    print(my_demo.cfg)
+    type = request.form['type']
+    my_demo.cfg['type'] = type
 
     if mod["head"] == 4:
         my_demo.cfg["tiny_lxmert"] = 1
     else:
         my_demo.cfg["tiny_lxmert"] = 0
 
-    if name == "oracle":
+    if dataName == "oracle":
         my_demo.cfg["oracle"] = 1
         my_demo.cfg['data_split'] = 'val'
     else:
@@ -432,11 +434,12 @@ def switchMod():
          ("lv", mod["cross"], mod["head"]),
          ("vv", mod["cross"], mod["head"]), ("ll", mod["cross"], mod["head"])])
 
-    # print(args)
-
     my_demo.initConf("model/src/pretrain/" + disp)
 
-    my_demo.load_data()
+    #
+    if not dataName == "oracle":
+        my_demo.load_data()
+    # my_demo.load_data()
     my_demo.load_model()
 
     return 'ok'
@@ -451,9 +454,9 @@ if __name__ == '__main__':
     #
     # # * /
     #
-    my_demo.load_data()
+    # my_demo.load_data()
     my_demo.load_model()
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)
 
     # merger()
 

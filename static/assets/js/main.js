@@ -58,10 +58,11 @@ function switchMod(dat) {
 
 
     let form = new FormData();
-    form.append("name", dat.name);
+    form.append("name", dat.data);
     form.append("mod", JSON.stringify(dat.mod));
     form.append("disp", dat.display);
-    modType = dat.name;
+    form.append("type", dat.type);
+    modType = dat.data;
     asked = false;
     diff_bool = false;
 
@@ -74,18 +75,18 @@ function switchMod(dat) {
         data: form,
         success: function (d) {
             baseUrl = "static/assets/images/" + (dat.name === 'default' ? 'try' : dat.name) + "/"
-            imgs = imgsBlock[dat.name]
+            // imgs = imgsBlock[dat.name]
             let slide = $("#imSlide");
 
-            d3.select("#sceneGraph").selectAll("*").remove();
-
-            slide.attr("max", imgs.length - 1);
-            loadImg(baseUrl + imgs[0] + ".jpg");
-            if (dat.name !== 'oracle') {
-                $("#productName").html('')
-            } else {
-                fillQuest(imgs[0])
-            }
+            // d3.select("#sceneGraph").selectAll("*").remove();
+            //
+            // slide.attr("max", imgs.length - 1);
+            // loadImg(baseUrl + imgs[0] + ".jpg");
+            // if (dat.name !== 'oracle') {
+            //     $("#productName").html('')
+            // } else {
+            //     fillQuest(imgs[0])
+            // }
             mod = dat.mod
             UpdateCounter()
             drawModel(mod)
@@ -459,11 +460,11 @@ function getCol(val) {
 
 
     let col = "#ffb3ba"
-    if (val < 20) {
+    if (val < 12) {
         col = "#bae1ff" // blue
-    } else if (val < 35) {
+    } else if (val < 25) {
         col = "#baffc9"
-    } else if (val < 70) {
+    } else if (val < 50) {
         col = "#ffdfbb"
     }
 

@@ -1,7 +1,8 @@
 [
   {
     "display": "tiny_oracle",
-    "name": "oracle",
+    "data": "oracle",
+    "type": "oracle",
     "mod": {
       "head": 4,
       "lang": 9,
@@ -11,7 +12,8 @@
   },
   {
     "display": "lxmert_tiny",
-    "name": "default",
+    "data": "oracle",
+     "type": "rcnn",
     "mod": {
       "head": 4,
       "lang": 9,
@@ -21,7 +23,8 @@
   },
   {
     "display": "lxmert_tiny_init_oracle_pretrain",
-    "name": "default",
+    "data": "oracle",
+    "type": "rcnn",
     "mod": {
       "head": 4,
       "lang": 9,
@@ -31,7 +34,8 @@
   },
   {
     "display": "lxmert_tiny_init_oracle_scratch",
-    "name": "default",
+    "data": "oracle",
+    "type": "rcnn",
     "mod": {
       "head": 4,
       "lang": 9,
@@ -41,7 +45,8 @@
   },
   {
     "display": "lxmert",
-    "name": "default",
+    "data": "oracle",
+    "type": "rcnn",
     "mod": {
       "head": 12,
       "lang": 9,
