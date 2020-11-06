@@ -417,18 +417,30 @@ def switchMod():
     type = request.form['type']
     my_demo.cfg['type'] = type
 
-    if mod["head"] == 4:
+    print("DISP:", disp)
+
+    if disp in ['lxmert_tiny', 'lxmert_tiny_init_oracle_pretrain', 'lxmert_tiny_init_oracle_scratch']:
         my_demo.cfg["tiny_lxmert"] = 1
-    else:
+        my_demo.cfg["oracle"] = 0
+    elif disp in ['lxmert']:
         my_demo.cfg["tiny_lxmert"] = 0
+        my_demo.cfg["oracle"] = 0
+    elif disp in ['tiny_oracle']:
+        my_demo.cfg["tiny_lxmert"] = 1
+        my_demo.cfg["oracle"] = 1
+     
+    # if mod["head"] == 4:
+    #     my_demo.cfg["tiny_lxmert"] = 1
+    # else:
+    #     my_demo.cfg["tiny_lxmert"] = 0
 
     if dataName == "oracle":
-        my_demo.cfg["oracle"] = 1
+        # my_demo.cfg["oracle"] = 1
         my_demo.cfg['data_split'] = 'val'
     else:
-        my_demo.cfg["oracle"] = 0
+        # my_demo.cfg["oracle"] = 0
         my_demo.cfg['data_split'] = 'testdev'
-
+        
     order = makeOrder(
         [("lang", mod["lang"], mod["head"]), ("vis", mod["vis"], mod["head"]), ("vl", mod["cross"], mod["head"]),
          ("lv", mod["cross"], mod["head"]),
