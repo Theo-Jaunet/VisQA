@@ -139,15 +139,15 @@
         </div>
     </div>
 
-    <div class="row" style="margin-top: 0.1%;position: relative">
+    <div class="row" style="margin-top: 1.4%;position: relative">
         <div id="asker" class="three columns">
-            <div style=";background-color: #fafafa;border: thin solid #f3f3f3;padding: 1.125em;">
-                <input type="text" id="ask-quest" style="width: 250px"
+            <div style=";background-color: #fafafa;border: thin solid #f3f3f3;padding: .325em 0 .325em 0.2em;">
+                <input type="text" id="ask-quest" style="width: 314px"
                        placeholder="Ask a question about the picture" list="productName">
                 <datalist id="productName">
                     <option value="bob">bob</option>
                 </datalist>
-                <button class="button-primary" style="display:inline-block;" id="ask">Ask</button>
+                <button class="button-primary" style="display:inline-block;padding: 0 12px" id="ask">Ask</button>
             </div>
             <div style="width: 300px;height: 320px;margin-top:20px">
                 <canvas id="inVis"
@@ -602,13 +602,12 @@
 
     $("#plusTail").on("click", function () {
 
-        fillSide($("#tail"), order.slice(loadedImgs[0], loadedImgs[0]+20), false)
+        fillSide($("#tail"), order.slice(loadedImgs[0], loadedImgs[0] + 20), false)
 
     })
 
     $("#plusHead").on("click", function () {
-        fillSide($("#head"), order.slice(order.length - (loadedImgs[1] + 20), order.length - loadedImgs[1]), true)
-
+        fillSide($("#head"), order.slice(order.length+1 - (loadedImgs[1] + 20), order.length+1 - loadedImgs[1]).reverse(), true)
     })
 
 
@@ -633,8 +632,10 @@
 
         if (thead) {
             loadedImgs[1] += data.length
+            elem.animate({scrollLeft: 0}, 200);
         } else {
             loadedImgs[0] += data.length
+            elem.animate({scrollLeft: loadedImgs[0] * 60}, 200);
         }
 
     }
