@@ -14,7 +14,7 @@ let yscale;
 let currKmean = {};
 let currHeatmaps = {};
 let currHeatLabels = {};
-
+let curImg = 0
 let currDiffHeat = {};
 
 
@@ -43,6 +43,9 @@ let imShown;
 
 let curHeat;
 let curname;
+let order;
+
+let loadedImgs = [0, 0];
 
 
 load_data_light().then(r => init(r));
@@ -219,16 +222,16 @@ function drawModel(mod) {
     let yinter = 5;
 
 
-    let top_marg = 15; // BLOCK
+    let top_marg = 18; // BLOCK
 
 
-    let blockHeight = ((300 - top_marg * 3) - ((yinter * 2) + top_marg)) / 2
+    let blockHeight = ((268 - top_marg * 3) - ((yinter * 2) + top_marg)) / 2
 
 
     let block_xinter = 10;
 
     let rectHeight = blockHeight - yinter * 2
-    let rectWidth = ((960) / mlen)
+    let rectWidth = ((980) / mlen)
 
     let sqSize = rectWidth
 
@@ -536,12 +539,28 @@ function init(dat) {
     currKmean = refKmean;
 // data = JSON.parse(data)
 
-    fillQuest(imgs[0]);
+
+    order = Object.keys(metaDat).map(d => {
+        return {"score": metaDat[d]["score"], "id": d}
+    })
+
+    order = order.sort((a, b) => (a.score > b.score) ? -1 : ((b.score > a.score) ? 1 : 0))
+
+    console.log(order[0]["id"]);
+    fillQuest(order[0]["id"]);
 
     $("#counter").html("Masked Heads: " + 0 + "/" + Object.keys(refKmean).length)
 
     drawModel(mod);
     setDPI(document.getElementById("heatm"), 960)
+
+    loadedImgs = [20, 20];
+    fillFlat(order.slice(0, 20), order.slice(-20), 740, 75)
+
+
+    loadInst(order[0]["id"], false)
+
+
 // plotter_init(data);
 // fillSelect(data.map(d => d.global_group), "#ggroup")
 // fillSelect2(data.map(d => d.functions), "#function")
@@ -553,6 +572,75 @@ function init(dat) {
 // });
 }
 
+function loadInst(imgId, thead) {
+
+
+    let questId = metaDat[imgId]["ids"]["max"];
+    if (thead || questId == undefined) {
+        questId = (metaDat[imgId]["ids"]["min"] !== undefined ? metaDat[imgId]["ids"]["min"] : questId)
+    }
+
+
+    let im = new Image();
+    let val = imgId
+
+    im.onload = function () {
+
+        let can = document.getElementById("inVis")
+
+        let cont = can.getContext('2d');
+
+        imShown = im
+        let rate = fixRatio2([im.width, im.height], [300, 300])
+
+        can.width = rate[0]
+        can.height = rate[1]
+
+        cont.drawImage(im, 0, 0, rate[0], rate[1])
+    };
+
+    im.src = baseUrl + val + ".jpg"
+    if (modType === 'oracle') {
+        fillQuest(val)
+    }
+
+    let q = getQ(metaDat[imgId]["questions"], questId)
+
+
+    // metaDat[imgId].filter(d => d["questionId"] == questId)[0]
+
+    let form = new FormData();
+    form.append("units", attsMaps);
+    form.append("question", q["question"]);
+    form.append("image", val + ".jpg");
+
+    $.ajax({
+        type: "POST",
+        url: "/ask",
+        processData: false,
+        contentType: false,
+        data: form,
+        success: function (d) {
+            ask(d)
+
+            $("#ask-quest").attr("value", q["question"])
+        }
+    })
+}
+
+
+function getQ(data, id) {
+
+    let keys = Object.keys(data)
+    for (let i = 0; i < keys.length; i++) {
+        if (data[keys[i]]["questionId"] == id)
+            return data[keys[i]]
+    }
+
+
+    return undefined
+
+}
 
 function fillQuest(id) {
 
@@ -561,13 +649,12 @@ function fillQuest(id) {
     let elem = $("#productName");
 
     elem.html('');
-    console.log(metaDat[id]["scene"]);
+    // console.log(metaDat[id]["scene"]);
 
     fillScene(metaDat[id]["scene"])
 
     for (let i = 0; i < quests.length; i++) {
         let temp = metaDat[id]["questions"][quests[i]]
-
         elem.append(new Option(temp.question, temp.question))
 
     }
@@ -575,7 +662,6 @@ function fillQuest(id) {
 }
 
 function fillScene(data) {
-
 
     let heads = Object.keys(data.objects);
 
@@ -1273,6 +1359,79 @@ function makeDiff2(mat1, mat2) {
     return mat1.map((d, i) => d.map((f, j) => f - mat2[i][j]));
 }
 
+
+async function loadImgs(array, size) {
+
+    let res = [];
+    for (let i = 0; i < array.length; i++) {
+
+        let im = new Image();
+
+
+        im.onload = function () {
+
+            let rate = fixRatio2([im.width, im.height], size)
+            im.width = rate[0]
+            im.height = rate[1]
+
+
+        };
+
+        im.src = baseUrl + array[i] + ".jpg"
+
+        res.push(im)
+    }
+
+
+    return res
+}
+
+
+function addImageProcess(src, size) {
+    return new Promise((resolve, reject) => {
+        let img = new Image()
+        img.onload = () => {
+            let rate = fixRatio2([img.width, img.height], size);
+            img.width = rate[0];
+            img.height = rate[1];
+            return resolve(img);
+        }
+        img.onerror = reject
+        img.src = src
+    })
+}
+
+async function fillFlat(tails, heads, width, height) {
+
+    let tail = $("#tail");
+    let head = $("#head");
+
+
+    for (let iter = 0; iter < tails.length; iter++) {
+
+
+        let img = await addImageProcess(baseUrl + tails[iter]["id"] + ".jpg", [height, height])
+
+        img.setAttribute("num", iter)
+        if (iter == 0) {
+            img.setAttribute("class", "selectedIm")
+        }
+        tail.append(img)
+
+
+    }
+
+
+    for (let iter = 0; iter < heads.length; iter++) {
+        let img = await addImageProcess(baseUrl + heads[iter]["id"] + ".jpg", [height, height])
+        img.setAttribute("num", order.length - heads.length + iter)
+        head.append(img)
+
+    }
+
+    // fixRatio2()
+
+}
 
 function setDPI(canvas, dpi) {
     // Set up CSS size.

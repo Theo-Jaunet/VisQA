@@ -366,14 +366,35 @@ def merger():
         with open("/home/theo/Downloads/orac/sceneGraphs/val_sceneGraphs.json", 'r') as fjson2:
             scene = ujson.load(fjson2)
 
-            with open("/home/theo/Downloads/orac/questions1.2/val_balanced_questions.json", 'r') as fjson3:
+            with open("/home/theo/Downloads/val_all_tail0.20_head0.20.json", 'r') as fjson3:
+                # with open("/home/theo/Downloads/orac/questions1.2/val_balanced_questions.json", 'r') as fjson3:
                 quest = ujson.load(fjson3)
 
                 for im in imgs["oracle"]:
-                    res[im] = {"questions": getQuests(quest, im), "scene": scene[im]}
+                    temp = getQuests(quest, im)
+                    if not temp == {}:
+                        score, idmin, idmax = makeScore(temp)
+                        res[im] = {"questions": temp, "scene": scene[im], "score": score,
+                                   "ids": {"min": idmin, "max": idmax}}
 
                 with open('%s.json' % "info", 'w') as wjson:
                     ujson.dump(res, wjson, ensure_ascii=False, sort_keys=True, indent=4)
+
+
+def makeScore(dat):
+    temp = 0
+    idmin = ""
+    idmax = ""
+    ct = 0
+    for key, elem in dat.items():
+        if elem["ood"] == "tail":
+            temp += 1
+            if idmax == "":
+                idmax = elem["questionId"]
+        if idmin == "" and elem["ood"] == "head":
+            idmin = elem["questionId"]
+        ct += 1
+    return temp / ct, idmin, idmax
 
 
 def merger2():
@@ -389,7 +410,6 @@ def merger2():
                 print(im)
                 res[im] = {"questions": getQuests(quest, im)}
                 break
-
             with open('%s.json' % "info2", 'w') as wjson:
                 ujson.dump(res, wjson, ensure_ascii=False, sort_keys=True, indent=4)
 
@@ -401,8 +421,29 @@ def getQuests(data, id):
         if data[line]['imageId'] == id:
             print(line)
             print("---")
-            res[i] = data[line]
+            res[i] = formatLine(data[line], line)
             i += 1
+    return res
+
+
+def formatLine(line, id):
+    res = {"head": line["ans_head"], "tail": line["ans_tail"], "imageId": line["imageId"], "groups": line["groups"],
+           "functions": line["types"]["detailed"], "answer": line["answer"], "question": line["question"]}
+
+    temp = "middle"
+
+    for elem in line["ans_head"]:
+        if line["answer"] == elem["ans"]:
+            temp = "head"
+            break
+
+    for elem in line["ans_tail"]:
+        if line["answer"] == elem["ans"]:
+            temp = "tail"
+            break
+
+    res["ood"] = temp
+    res["questionId"] = id
     return res
 
 
@@ -428,7 +469,7 @@ def switchMod():
     elif disp in ['tiny_oracle']:
         my_demo.cfg["tiny_lxmert"] = 1
         my_demo.cfg["oracle"] = 1
-     
+
     # if mod["head"] == 4:
     #     my_demo.cfg["tiny_lxmert"] = 1
     # else:
@@ -440,7 +481,7 @@ def switchMod():
     else:
         # my_demo.cfg["oracle"] = 0
         my_demo.cfg['data_split'] = 'testdev'
-        
+
     order = makeOrder(
         [("lang", mod["lang"], mod["head"]), ("vis", mod["vis"], mod["head"]), ("vl", mod["cross"], mod["head"]),
          ("lv", mod["cross"], mod["head"]),
@@ -467,8 +508,13 @@ if __name__ == '__main__':
     # # * /
     #
     # my_demo.load_data()
+
     my_demo.load_model()
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=True)
+
+    # with open("/home/theo/Downloads/val_all_tail0.20_head0.20.json", 'r') as fjson:
+    #     imgs = ujson.load(fjson)
+    #     print(imgs["001002646"])
 
     # merger()
 

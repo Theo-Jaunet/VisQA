@@ -86,6 +86,24 @@
 
             user-select: none;
         }
+
+        #head img, #tail img {
+            border: #555555 solid 1px;
+            margin: 1px;
+        }
+
+        .selectedIm {
+            border: red solid 1px !important;
+        }
+
+        .plusBtn {
+            cursor: pointer;
+        }
+
+        .plusBtn:hover {
+            transform: scale(1.2, 1.2);
+        }
+
     </style>
 </head>
 <body>
@@ -95,125 +113,124 @@
 <!-- Primary Page Layout
 –––––––––––––––––––––––––––––––––––––––––––––––––– -->
 
+<!--Icons made by <a href="https://www.flaticon.com/authors/dmitri13" title="dmitri13">dmitri13</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a>-->
 
-<div class="container" style="margin-bottom: 5%;margin-left: auto">
-
-
+<div class="container" style="margin-bottom: 5%;margin-left: auto;width:1750px!important;max-width: 1750px">
     <div class="row">
-        <div class="twelve column" style="text-align: center;margin-top: 4%;position: relative">
+        <div class="twelve column" style="margin-top: 2%;position: relative">
+            <div style=";background-color: #fafafa;border: thin solid #f3f3f3;padding: 0.25em;height: 98px;display: flex"
+                 id="selFlat">
+                <div id="tail" style="height: 100%;width: 44%;display: flex;overflow-x: scroll;overflow-y: hidden">
 
-            <div id="asker" style="position: absolute;left:-420px;top:5%">
-                <div style=";background-color: #fafafa;border: thin solid #f3f3f3;padding: 1.125em;">
-                    <input type="text" id="ask-quest" style="width: 250px"
-                           placeholder="Ask a question about the picture" list="productName">
-                    <datalist id="productName">
-                        <option value="bob">bob</option>
-                    </datalist>
-                    <button class="button-primary" style="display:inline-block;" id="ask">Ask</button>
                 </div>
-                <div style="width: 300px;height: 320px;margin-top:40px">
-                    <canvas id="inVis"
-                            style=";background-color: #fafafa;border: thin solid #f3f3f3;padding: 1.125em;"></canvas>
-                    <input type="range" id="imSlide" min="0" value="0" class="u-full-width">
+                <div id="midSel" style="height: 100%;width: 10%;display: inline-block;position: relative">
+                    <img src="/static/assets/images/add.png" id="plusTail" class="plusBtn"
+                         style="height: 40px;width: auto;top: 20%;left: 6%;position: absolute">
+                    <img src="/static/assets/images/more.png"
+                         style="height: 40px;width: auto;top: 20%;left: 38.5%;position: absolute">
+                    <img src="/static/assets/images/add.png" id="plusHead" class="plusBtn"
+                         style="height: 40px;width: auto;top: 20%;right: 6%;position: absolute">
                 </div>
+                <div id="head" style="height: 100%;width: 44%;display: flex;overflow-x: scroll;overflow-y: hidden">
 
-
-                <div style="margin-top: 60px">
-                    <svg id="sceneGraph"
-                         style="width: 80%;height:
-                         400px;background-color: #fafafa;border: thin solid #f3f3f3;padding: 0.125em;"></svg>
                 </div>
-
             </div>
 
-            <div style="position: absolute;left: 1020px;top: 32%">
+        </div>
+    </div>
+
+    <div class="row" style="margin-top: 0.1%;position: relative">
+        <div id="asker" class="three columns">
+            <div style=";background-color: #fafafa;border: thin solid #f3f3f3;padding: 1.125em;">
+                <input type="text" id="ask-quest" style="width: 250px"
+                       placeholder="Ask a question about the picture" list="productName">
+                <datalist id="productName">
+                    <option value="bob">bob</option>
+                </datalist>
+                <button class="button-primary" style="display:inline-block;" id="ask">Ask</button>
+            </div>
+            <div style="width: 300px;height: 320px;margin-top:20px">
+                <canvas id="inVis"
+                        style=";background-color: #fafafa;border: thin solid #f3f3f3;padding: 1.125em;"></canvas>
+                <!--                <input type="range" id="imSlide" min="0" value="0" class="u-full-width">-->
+            </div>
 
 
-                <svg width="150" id="res"
-                     style=";background-color: #fafafa;border: thin solid #f3f3f3;padding: 1.125em;">
+        </div>
+        <div class="nine columns">
+            <div style="display: inline-block;">
 
-                </svg>
-                <!--                <p id="result"-->
-                <!--                   style="text-align: center;display:block;margin-top: 5px;margin-bottom: 5px;font-weight: 600;background-color: #fafafa;border: thin solid #f3f3f3;padding: 1.125em;"></p>-->
+                <div style="position: relative;display: inline-block;left: 0">
+                    <button id="saveState"> Save</button>
+                    <!--                        <button id="makeDiff"> AbsDiff</button>-->
+                    <button id="fullDiff">
+                        Comapre
+                    </button>
+                    <select style="display: inline-block;margin-right: 25px" class="one-half" id="models">
+
+                    </select>
+                    <span style="margin-top: -20%">K-Median 0</span>
+                    <div style="display: inline-block;vertical-align: middle">
+                        <div style="background-color: #bbd8e6;width: 30px;height: 30px" class="actFilted"
+                             num="0"></div>
+                        <div style="background-color: #cbecaf;width: 30px;height: 30px" class="actFilted"
+                             num="1"></div>
+                        <div style="background-color: #f8e4c5;width: 30px;height: 30px" class="actFilted"
+                             num="2"></div>
+                        <div style="background-color: #f3cfdb;width: 30px;height: 30px" class="actFilted"
+                             num="3"></div>
+                    </div>
+                    <span> K-Median 100 </span>
+
+                    <div id="counter">
+                        Masked Heads:
+                    </div>
+                </div>
+                <button class="button" id="resetMod" style="position: absolute;margin-left: 20px"> reset Selection
+                </button>
             </div>
 
 
             <div style="width: 100%;position: relative">
 
                 <svg id="model"
-                     style="width: 100%;height: 280px;margin-top: 30px;background-color: #fafafa;border: thin solid #f3f3f3;padding: 1.125em;"></svg>
+                     style="width: 980px;height: 260px;margin-top: 30px;background-color: #fafafa;border: thin solid #f3f3f3;padding: 1.125em;"></svg>
+                <svg width="150" id="res"
+                     style=";background-color: #fafafa;border: thin solid #f3f3f3;padding: 1.125em;position: absolute;right: 0;top:25%">
+
+                </svg>
                 <div style="position: absolute;left: 50%;top: 32%;visibility: hidden" id="loader">
                     <img src="static/assets/images/load.gif" style="width: 85px"/>
                     <h3> Loading ... </h3>
                 </div>
-                <div style="display: inline-block;position: absolute;left: 0%;">
 
-                    <div style="position: relative;display: inline-block;left: 0">
-                        <button id="saveState"> Save</button>
-<!--                        <button id="makeDiff"> AbsDiff</button>-->
-                        <button id="fullDiff">
-                            Comapre
-                        </button>
-                        <select style="display: inline-block;margin-right: 25px" class="one-half" id="models">
-
-                        </select>
-                        <span style="margin-top: -20%">K-Median 0</span>
-                        <div style="display: inline-block;vertical-align: middle">
-                            <div style="background-color: #bbd8e6;width: 30px;height: 30px" class="actFilted"
-                                 num="0"></div>
-                            <div style="background-color: #cbecaf;width: 30px;height: 30px" class="actFilted"
-                                 num="1"></div>
-                            <div style="background-color: #f8e4c5;width: 30px;height: 30px" class="actFilted"
-                                 num="2"></div>
-                            <div style="background-color: #f3cfdb;width: 30px;height: 30px" class="actFilted"
-                                 num="3"></div>
-                        </div>
-                        <span> K-Median 100 </span>
-
-                        <div id="counter">
-                            Masked Heads:
-                        </div>
-                    </div>
-                    <button class="button" id="resetMod" style="position: absolute;margin-left: 20px"> reset Selection
-                    </button>
-                </div>
             </div>
 
         </div>
 
     </div>
 
-    <div class="row" style="margin-top: 14%">
-        <div class="twelve column" style="margin-top: 0.2%">
-
-            <div style="width:100%;height: 640px;position: relative">
-                <!--                <div style="width: 100%;text-align: center;margin-bottom: 10px">-->
-                <!--                    <button class="button-primary" id="go" style="padding: 0 15px"> Make Proj</button>-->
-                <!--                    <label style="display: inline-block" for="ggroup">-->
-                <!--                        Global Group-->
-                <!--                    </label>-->
-                <!--                    <select class="one-half" id="ggroup" style="display: inline-block">-->
-                <!--                    </select>-->
-                <!--                    <label style="display: inline-block" for="function">-->
-                <!--                        Function</label>-->
-                <!--                    <select style="display: inline-block" class="one-half" id="function">-->
-
-                <!--                    </select>-->
-
-                <!--                    <label style="display: inline-block" for="question">Question</label>-->
-                <!--                    <input style="display: inline-block" type="text" class="one-half" id="question">-->
-                <!--                    <button class="button-primary" id="reset" style="padding: 0 15px"> reset</button>-->
-                <!--                </div>-->
+    <div class="row">
+        <div class="three columns">
 
 
-                <!--                <div style="width:48%;height: 68%;border: #555555 solid 1px;position: relative;display:inline-block">-->
-                <!--                    <svg id="proj" style="height: 100%;width:100%" viewBox="0 0 960 642">-->
+            <div style="margin-top: 60px">
+                <svg id="sceneGraph"
+                     style="width: 80%;height:
+                         400px;background-color: #fafafa;border: thin solid #f3f3f3;padding: 0.125em;"></svg>
+            </div>
 
-                <!--                    </svg>-->
-                <!--                </div>-->
-                <div style="width:60%;height: 78%;position: relative;display: inline-block;background-color: #fafafa;border: thin solid #f3f3f3;padding: 0.125em;">
+        </div>
+        <div class="eight columns">
+
+            <div style="width:100%;height: 540px;position: relative;background-color: #fafafa;border: thin solid #f3f3f3;padding: 0.125em;">
+                <div style="width:500px;height: 500px;position: relative;display: inline-block;">
                     <canvas style="width: 100%;height: 100%" id="heatm"></canvas>
                 </div>
+                <div style="width:45%;height: 78%;position: relative;display: inline-block;border-left: thin solid #f3f3f3">
+
+                </div>
+
             </div>
         </div>
 
@@ -386,7 +403,6 @@
         elem.toggleClass("kmeanSelected")
         UpdateCounter()
 
-
     });
 
 
@@ -527,6 +543,35 @@
     });
 
 
+    $("#tail").on("mouseover", "img", function () {
+
+        let elem = $(this);
+        if (!keymap[17]) {
+
+            if (curImg !== order[elem.attr("num")]["id"]) {
+                curImg = order[elem.attr("num")]["id"]
+                loadInst(curImg, false)
+                $(".selectedIm").toggleClass("selectedIm")
+                elem.toggleClass("selectedIm")
+            }
+        }
+    });
+
+
+    $("#head").on("mouseover", "img", function () {
+
+        let elem = $(this);
+        if (!keymap[17]) {
+
+            if (curImg !== order[elem.attr("num")]["id"]) {
+                curImg = order[elem.attr("num")]["id"]
+                loadInst(curImg, true)
+                $(".selectedIm").toggleClass("selectedIm")
+                elem.toggleClass("selectedIm")
+            }
+        }
+    });
+
     d3.select("#heatm").on("mousemove", function () {
         if (curname) {
 
@@ -554,6 +599,45 @@
         switchMod(mode)
 
     })
+
+    $("#plusTail").on("click", function () {
+
+        fillSide($("#tail"), order.slice(loadedImgs[0], loadedImgs[0]+20), false)
+
+    })
+
+    $("#plusHead").on("click", function () {
+        fillSide($("#head"), order.slice(order.length - (loadedImgs[1] + 20), order.length - loadedImgs[1]), true)
+
+    })
+
+
+    async function fillSide(elem, data, thead) {
+
+        for (let iter = 0; iter < data.length; iter++) {
+
+
+            let img = await addImageProcess(baseUrl + data[iter]["id"] + ".jpg", [75, 75]);
+
+            img.setAttribute("num", iter)
+
+            if (thead) {
+                elem.prepend(img)
+                img.setAttribute("num", order.length - (loadedImgs[1] + iter))
+            } else {
+                elem.append(img)
+                img.setAttribute("num", loadedImgs[0] + iter)
+            }
+
+        }
+
+        if (thead) {
+            loadedImgs[1] += data.length
+        } else {
+            loadedImgs[0] += data.length
+        }
+
+    }
 
 
 </script>
