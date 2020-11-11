@@ -268,7 +268,7 @@ def toSliptD(data):
 def toSliptDict(data):
     res = {}
     global order
-    print(data['lang'][0][0])
+    # print(data['lang'][0][0])
     for elem in order:
         temp = elem.split("_")
         res[elem] = round(np.median(data[temp[0]][int(temp[1])][int(temp[2])]))
@@ -498,6 +498,46 @@ def switchMod():
     return 'ok'
 
 
+def stackDat():
+    with open("static/assets/data/info.json", "r") as datFile:
+        data = ujson.load(datFile)
+        res = {}
+        head_mask = empty_mask()
+        for elem in order:
+            res[elem] = {"functions": {}, "groups": {}, "kmeds": []}
+        skip = [51,54,101,138,151,204,206]
+        img = 0
+        for k, v in data.items():
+            print("doing img ..", img," with id:",k)
+            if img in skip:
+                print("SKIPPED")
+                img += 1
+                continue
+            for k2, v2 in v["questions"].items():
+                top_prediction, five_predictions, attention_heads, alignment, k_dist, input_labels, input_size \
+                    = my_demo.ask(v2["question"], k, head_mask)
+
+                k_vals = toSliptDict(k_dist)
+
+                for k3, v3 in k_vals.items():
+
+                    if not v2["functions"] in res[k3]["functions"]:
+                        res[k3]["functions"][v2["functions"]] = [v3]
+                    else:
+                        res[k3]["functions"][v2["functions"]].append(v3)
+
+                    if not v2["groups"]["global"] is None:
+                        if not v2["groups"]["global"] in res[k3]["groups"]:
+                            res[k3]["groups"][v2["groups"]["global"]] = [v3]
+                        else:
+                            res[k3]["groups"][v2["groups"]["global"]].append(v3)
+                    res[k3]["kmeds"].append(v3)
+            img += 1
+
+        with open('%s.json' % "tiny_oracle_full", 'w') as wjson:
+            ujson.dump(res, wjson, ensure_ascii=False, sort_keys=True, indent=4)
+
+
 if __name__ == '__main__':
     # * Display config
 
@@ -510,7 +550,9 @@ if __name__ == '__main__':
     # my_demo.load_data()
 
     my_demo.load_model()
-    app.run(host='0.0.0.0', port=5000, debug=True)
+
+    # stackDat()
+    app.run(host='0.0.0.0', port=5000, debug=False)
 
     # with open("/home/theo/Downloads/val_all_tail0.20_head0.20.json", 'r') as fjson:
     #     imgs = ujson.load(fjson)
