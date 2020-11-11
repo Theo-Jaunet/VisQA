@@ -47,6 +47,8 @@ let order;
 
 let loadedImgs = [0, 0];
 
+let headStat;
+
 
 load_data_light().then(r => init(r));
 
@@ -54,7 +56,13 @@ load_data_light().then(r => init(r));
 async function load_data_light() {
 
 
-    return [await d3.json('static/assets/data/data.json', d3.autoType), await d3.json('static/assets/data/k_median.json', d3.autoType), await d3.json('static/assets/data/mods.json', d3.autoType), await d3.json('static/assets/data/info.json', d3.autoType)]
+    return [
+        await d3.json('static/assets/data/data.json', d3.autoType),
+        await d3.json('static/assets/data/k_median.json', d3.autoType),
+        await d3.json('static/assets/data/mods.json', d3.autoType),
+        await d3.json('static/assets/data/info.json', d3.autoType),
+        await d3.json('static/assets/data/tiny_oracle_full.json', d3.autoType)
+    ]
 }
 
 function switchMod(dat) {
@@ -491,15 +499,318 @@ function findElems(data, thresh, base) {
 }
 
 
-function init(dat) {
+function initStacked() {
+    let jqSv = $("#stacked")
 
+    let size = [jqSv.width(), jqSv.height()]
+
+    let leftmarg = 120
+
+    let lineMarg = 5
+
+
+    let svg = d3.select("#stacked")
+
+
+    // svg.append("line")
+    //     .attr("x1", leftmarg + lineMarg)
+    //     .attr("y1", size[1] / 2)
+    //     .attr("x2", size[0] - lineMarg)
+    //     .attr("y2", size[1] / 2)
+    //     .attr("stroke", "#555555")
+    //     .attr("stroke-width", 1)
+
+
+    svg.append("line")
+        .attr("x1", leftmarg)
+        .attr("y1", lineMarg)
+        .attr("x2", leftmarg)
+        .attr("y2", size[1] - lineMarg)
+        .attr("stroke", "#555555")
+        .attr("stroke-width", 1)
+
+
+    let funcs = Object.keys(headStat["lang_0_0"]["functions"]);
+    // let groups = Object.keys(headStat["lang_0_0"]["groups"]);
+    let grs = Object.keys(headStat["lang_0_0"]["groups"]);
+
+
+    let temp = funcs.map(d => [0, 0, 0, 0])
+    let temp2 = grs.map(d => [0, 0, 0, 0])
+
+    let stack = d3.stack()
+        .keys([0, 1, 2, 3])
+
+
+    let topStack = svg.append("g")
+        .attr("id", "topStacked")
+
+    let botStack = svg.append("g")
+        .attr("id", "botStack")
+
+
+    let color = ["#bae1ff", "#baffc9", "#ffdfbb", "#ffb3ba"]
+
+    const groups = topStack.append('g')
+        .attr("id", "topBars")
+        .selectAll('g')
+        .data(stack(temp))
+        .join('g')
+        .style('fill', (d, i) => color[d.key])
+
+
+    const groups2 = botStack.append('g')
+        .attr("id", "botBars")
+        .selectAll('g')
+        .data(stack(temp2))
+        .join('g')
+        .style('fill', (d, i) => color[d.key])
+
+
+    let bandWidth = 15
+    let bandPad = 6
+
+    let yScale = d3.scaleLinear().domain([0, 300]).range([(size[1] - 120) / 2, 50])
+
+    let yScale2 = d3.scaleLinear().domain([0, 300]).range([(size[1] - 120), size[1] / 2]);
+
+
+    groups.selectAll('rect')
+        .data(d => d)
+        .join('rect')
+        .attr('x', (d, i) => 20 + leftmarg + (bandWidth * i) + (bandPad * i))
+        .attr('y', d => yScale(d[1]))
+        .attr('height', d => yScale(d[0]) - yScale(d[1]))
+        .attr('width', bandWidth)
+        .attr("stroke", "rgba(100,100,100,0.44)")
+        .attr("stroke-width", "1")
+
+
+    groups2.selectAll('rect')
+        .data(d => d)
+        .join('rect')
+        .attr('x', (d, i) => 20 + leftmarg + (bandWidth * i) + (bandPad * i))
+        .attr('y', d => yScale2(d[1]))
+        .attr('height', d => yScale2(d[0]) - yScale2(d[1]))
+        .attr('width', bandWidth)
+        .attr("stroke", "rgba(100,100,100,0.44)")
+        .attr("stroke-width", "1")
+
+    let tg = topStack.append("g")
+        .attr("id", "topLabels")
+
+
+    let tg2 = botStack.append("g")
+        .attr("id", "botLabels")
+
+
+    // for (let i = 0; i < funcs.length; i++) {
+    //
+    //     let tx = 20 + leftmarg + (bandWidth * i) + (bandPad * i) + bandWidth / 2
+    //     let ty = (190)
+    //     tg.append('text')
+    //         .attr("text-anchor", "end")
+    //         .style("transform", "translate(" + tx + "px," + ty + "px) rotate(-85deg)")
+    //         .text(funcs[i])
+    // }
+    //
+    //
+    // for (let i = 0; i < grs.length; i++) {
+    //
+    //     let tx = 20 + leftmarg + (bandWidth * i) + (bandPad * i) + bandWidth / 2
+    //     let ty = (size[1] - 100)
+    //     tg2.append('text')
+    //         .attr("text-anchor", "end")
+    //         .style("transform", "translate(" + tx + "px," + ty + "px) rotate(-85deg)")
+    //         .text(grs[i])
+    // }
+    //
+
+    let tScale = d3.scaleLinear()
+        .domain([0, 100]).nice()
+        .range([0, 471]).clamp(true)
+
+    let vals = [12, 25, 50]
+
+    for (let i = 0; i < vals.length; i++) {
+        console.log(tScale(vals[i]));
+
+        svg.append("line")
+            .attr("x1", leftmarg)
+            .attr("x2", lineMarg)
+            .attr("y1", tScale(vals[i]))
+            .attr("y2", tScale(vals[i]))
+            .attr("stroke", "rgba(85,85,85,0.67)")
+            .attr("stroke-width", 1)
+
+    }
+
+
+    svg.append("path")
+        .attr("d", "")
+        .attr("id", "karea");
+
+
+}
+
+
+function updateStats(data) {
+
+    let stack = d3.stack()
+        .keys([0, 1, 2, 3])
+
+    let leftmarg = 120
+    let lineMarg = 5
+    let bandWidth = 15
+    let bandPad = 6
+
+
+    let g = d3.select("#topBars")
+    let teKey = Object.keys(data['functions'])
+
+    let dat = teKey.map(d => {
+        return {"val": data["functions"][d], "key": d}
+    })
+    let temp = dat.sort((a, b) => (a["val"][0] > b["val"][0]) ? -1 : ((b["val"][0] > a["val"][0]) ? 1 : 0))
+
+
+    let labels = temp.map(d => d["key"]);
+
+    // let labels = ;
+
+    let grs = g.selectAll("g").data(stack(temp.map(d => d["val"])))
+    // let grs = g.selectAll("g").data(stack(teKey.map(d => data["functions"][d])))
+
+    let yScale = d3.scaleLinear().domain([50, 200]).range([(486 - 300) / 2, 20])
+
+    grs.selectAll('rect')
+        .data(d => d)
+        .join('rect').transition().duration(200).attr('y', d => yScale(d[1]))
+        .attr('height', d => yScale(d[0]) - yScale(d[1]))
+
+    let tg = d3.select("#topLabels")
+
+    tg.selectAll("text").remove()
+
+    for (let i = 0; i < labels.length; i++) {
+
+        let tx = 20 + leftmarg + (bandWidth * i) + (bandPad * i) + bandWidth / 2
+        let ty = (122)
+        tg.append('text')
+            .attr("text-anchor", "end")
+            .style("transform", "translate(" + tx + "px," + ty + "px) rotate(-85deg)")
+            .text(labels[i])
+    }
+
+
+    let g2 = d3.select("#botBars")
+    let teKey2 = Object.keys(data['groups'])
+
+    let dat2 = teKey2.map(d => {
+        return {"val": data["groups"][d], "key": d}
+    })
+    let temp2 = dat2.sort((a, b) => (a["val"][0] > b["val"][0]) ? -1 : ((b["val"][0] > a["val"][0]) ? 1 : 0))
+
+
+    let labels2 = temp2.map(d => d["key"]);
+
+    // let labels = ;
+
+    let grs2 = g2.selectAll("g").data(stack(temp2.map(d => d["val"])))
+    // let grs = g.selectAll("g").data(stack(teKey.map(d => data["functions"][d])))
+
+    let yScale2 = d3.scaleLinear().domain([50, 200]).range([486-130, 486-220])
+
+    grs2.selectAll('rect')
+        .data(d => d)
+        .join('rect').transition().duration(200).attr('y', d => yScale2(d[1]))
+        .attr('height', d => yScale2(d[0]) - yScale2(d[1]))
+
+    let tg2 = d3.select("#botLabels")
+
+    tg2.selectAll("text").remove()
+
+    for (let i = 0; i < labels2.length; i++) {
+
+        let tx = 20 + leftmarg + (bandWidth * i) + (bandPad * i) + bandWidth / 2
+        let ty = (486-90)
+        tg2.append('text')
+            .attr("text-anchor", "end")
+            .style("transform", "translate(" + tx + "px," + ty + "px) rotate(-85deg)")
+            .text(labels2[i])
+    }
+
+
+    drawKaera(data["kmeds"])
+
+}
+
+function drawKaera(data) {
+    var counts = {};
+
+    let path = d3.select("#karea")
+
+    let yScale = d3.scaleLinear()
+        .domain([0, 100]).nice()
+        .range([0, 471]).clamp(true)
+
+
+    let xScale = d3.scaleLinear()
+        .domain([0, 200]).nice()
+        .range([120, 10]).clamp(true)
+
+
+    for (var i = 0; i < data.length; i++) {
+        var num = data[i];
+        counts[num] = counts[num] ? counts[num] + 1 : 1;
+    }
+
+    let tdat = Object.keys(counts).map(d => {
+        return {"key": d, "val": counts[d]}
+    })
+
+    // console.log(tdat);
+
+    let area = d3.area()
+        .curve(d3.curveBasis)
+        .x1(d => xScale(d.val))
+        .x0(xScale(0))
+        .y(d => yScale(d.key))
+
+
+    path.datum(tdat).transition().duration(300)
+        .attr("fill", getCol(median(data)))
+        .attr("d", area)
+        .attr("stroke", "rgba(100,100,100,0.44)")
+        .attr("stroke-width", "1")
+
+}
+
+
+function median(values) {
+    if (values.length === 0) return 0;
+
+    values.sort(function (a, b) {
+        return a - b;
+    });
+
+    var half = Math.floor(values.length / 2);
+
+    if (values.length % 2)
+        return values[half];
+
+    return (values[half - 1] + values[half]) / 2.0;
+}
+
+
+function init(dat) {
 
     models = dat[2];
     console.log(models);
-
     metaDat = dat[3]
-
     console.log(metaDat);
+
+    headStat = dat[4]
 
     let sel = $("#models");
 
@@ -549,6 +860,8 @@ function init(dat) {
     console.log(order[0]["id"]);
     fillQuest(order[0]["id"]);
 
+    curImg = order[0]["id"]
+
     $("#counter").html("Masked Heads: " + 0 + "/" + Object.keys(refKmean).length)
 
     drawModel(mod);
@@ -560,6 +873,7 @@ function init(dat) {
 
     loadInst(order[0]["id"], false)
 
+    initStacked()
 
 // plotter_init(data);
 // fillSelect(data.map(d => d.global_group), "#ggroup")

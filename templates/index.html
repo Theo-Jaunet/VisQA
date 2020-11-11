@@ -227,8 +227,10 @@
                 <div style="width:500px;height: 500px;position: relative;display: inline-block;">
                     <canvas style="width: 100%;height: 100%" id="heatm"></canvas>
                 </div>
-                <div style="width:45%;height: 78%;position: relative;display: inline-block;border-left: thin solid #f3f3f3">
+                <div style="width:54%;height: 90%;position: relative;display: inline-block;padding-left: 12px">
+                    <svg id="stacked" style="width: 100%;height: 100%;">
 
+                    </svg>
                 </div>
 
             </div>
@@ -410,7 +412,7 @@
         let form = new FormData();
         form.append("units", attsMaps);
         form.append("question", $("#ask-quest").val());
-        form.append("image", imgs[$("#imSlide").val()] + ".jpg");
+        form.append("image", curImg + ".jpg");
 
         $.ajax({
             type: "POST",
@@ -428,7 +430,7 @@
         let form = new FormData();
         form.append("units", attsMaps);
         form.append("question", $("#ask-quest").val());
-        form.append("image", imgs[$("#imSlide").val()] + ".jpg");
+        form.append("image", curImg + ".jpg");
 
         $.ajax({
             type: "POST",
@@ -536,6 +538,9 @@
                 }
 
                 drawHeat(data, id, [0, 0]);
+
+
+                updateStats(headStat[id])
                 curHeat = data;
                 curname = id
             }
@@ -607,7 +612,7 @@
     })
 
     $("#plusHead").on("click", function () {
-        fillSide($("#head"), order.slice(order.length+1 - (loadedImgs[1] + 20), order.length+1 - loadedImgs[1]).reverse(), true)
+        fillSide($("#head"), order.slice(order.length + 1 - (loadedImgs[1] + 20), order.length + 1 - loadedImgs[1]).reverse(), true)
     })
 
 

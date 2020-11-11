@@ -505,14 +505,14 @@ def stackDat():
         head_mask = empty_mask()
         for elem in order:
             res[elem] = {"functions": {}, "groups": {}, "kmeds": []}
-        skip = [51,54,101,138,151,204,206]
+        # skip = [51,54,101,138,151,204,206]
         img = 0
         for k, v in data.items():
-            print("doing img ..", img," with id:",k)
-            if img in skip:
-                print("SKIPPED")
-                img += 1
-                continue
+            print("doing img ..", img, " with id:", k)
+            # if img in skip:
+            #     print("SKIPPED")
+            #     img += 1
+            #     continue
             for k2, v2 in v["questions"].items():
                 top_prediction, five_predictions, attention_heads, alignment, k_dist, input_labels, input_size \
                     = my_demo.ask(v2["question"], k, head_mask)
@@ -522,20 +522,36 @@ def stackDat():
                 for k3, v3 in k_vals.items():
 
                     if not v2["functions"] in res[k3]["functions"]:
-                        res[k3]["functions"][v2["functions"]] = [v3]
+                        res[k3]["functions"][v2["functions"]] = k_split([0, 0, 0, 0], v3)
                     else:
-                        res[k3]["functions"][v2["functions"]].append(v3)
+                        res[k3]["functions"][v2["functions"]] = k_split(res[k3]["functions"][v2["functions"]], v3)
 
                     if not v2["groups"]["global"] is None:
                         if not v2["groups"]["global"] in res[k3]["groups"]:
-                            res[k3]["groups"][v2["groups"]["global"]] = [v3]
+                            res[k3]["groups"][v2["groups"]["global"]] = k_split([0, 0, 0, 0], v3)
                         else:
-                            res[k3]["groups"][v2["groups"]["global"]].append(v3)
-                    res[k3]["kmeds"].append(v3)
+                            res[k3]["groups"][v2["groups"]["global"]] = k_split(
+                                res[k3]["groups"][v2["groups"]["global"]], v3)
+                    res[k3]["kmeds"].append(int(v3))
             img += 1
 
         with open('%s.json' % "tiny_oracle_full", 'w') as wjson:
             ujson.dump(res, wjson, ensure_ascii=False, sort_keys=True, indent=4)
+
+
+def k_split(array, val):
+    if val < 12:
+        array[0] += 1
+        return array
+    elif val < 25:
+        array[1] += 1
+        return array
+    elif val < 25:
+        array[2] += 1
+        return array
+    else:
+        array[3] += 1
+        return array
 
 
 if __name__ == '__main__':
@@ -552,7 +568,7 @@ if __name__ == '__main__':
     my_demo.load_model()
 
     # stackDat()
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=True)
 
     # with open("/home/theo/Downloads/val_all_tail0.20_head0.20.json", 'r') as fjson:
     #     imgs = ujson.load(fjson)
