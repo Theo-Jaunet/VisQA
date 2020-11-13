@@ -85,7 +85,7 @@ function switchMod(dat) {
         contentType: false,
         data: form,
         success: function (d) {
-            baseUrl = "static/assets/images/" + (dat.name === 'default' ? 'try' : dat.name) + "/"
+            baseUrl = "static/assets/images/" + (dat.data === 'default' ? 'try' : dat.data) + "/"
             // imgs = imgsBlock[dat.name]
             let slide = $("#imSlide");
 
@@ -1641,8 +1641,8 @@ function agDiff(data) {
 }
 
 function findRC(coords, cw, ch, st, marg, pad) {
-    let xscale = d3.scaleLinear().domain([88, 570]).range([145, 985])
-    let yscale = d3.scaleLinear().domain([75, 495]).range([150, 990])
+    let xscale = d3.scaleLinear().domain([88, 500]).range([145, 985])
+    let yscale = d3.scaleLinear().domain([75, 500]).range([150, 990])
     // console.log(coords[1]);
     // console.log('FIXXX');
     // console.log(yscale(coords[1]));

@@ -333,7 +333,7 @@ def ask():
         alignment[k]["xywh"] = alignment[k]["xywh"].tolist()
 
     print(input_labels)
-
+    print(image)
     return ujson.dumps({"pred": top_prediction[0],
                         "confidence": top_prediction[1].item(),
                         "alignment": alignment,
@@ -568,7 +568,7 @@ if __name__ == '__main__':
     my_demo.load_model()
 
     # stackDat()
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)
 
     # with open("/home/theo/Downloads/val_all_tail0.20_head0.20.json", 'r') as fjson:
     #     imgs = ujson.load(fjson)
