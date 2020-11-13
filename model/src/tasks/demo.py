@@ -128,6 +128,7 @@ class Demo_data():
         self.cfg = cfg
 
         vocab_path = cfg["object_classes_oracle"] if cfg["oracle"] else cfg["object_classes"]
+        print("Object vocab path is %s"%vocab_path)
         with open(vocab_path, 'r') as f:
             self.object_classes = f.read().split('\n')
 
@@ -426,6 +427,9 @@ class Demo():
         """
         Load the pre-trained VQA model
         """
+
+        # update data, to allow multiple load_model() calls
+        self.data_loader = Demo_data(self.cfg)
 
         # load answer dict
         with open(self.cfg['answers_dict'], 'r') as f:
