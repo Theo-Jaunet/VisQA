@@ -97,13 +97,14 @@ def ask():
     question = request.form['question']
     image = request.form['image']
     head_mask = empty_mask()
-    print("ASKING")
+    print("init")
+    print(question)
     if units is not None and not units == ['']:
         for elem in units:
             temp = elem.split("_")
             # print(temp)
             head_mask[temp[0]][int(temp[1])][int(temp[2])] = 1
-
+    print("ASKING")
     top_prediction, five_predictions, attention_heads, alignment, k_dist, input_labels, input_size \
         = my_demo.ask(question, image, head_mask)
 
