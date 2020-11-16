@@ -94,7 +94,7 @@ def get_k_dist_from_attmaps(att_maps, lang_mask, vis_mask):
                 true_n_tkn = mask_send.sum(-1)  # number of tokens after masking
                 k = k.view((d_1, 1)).float() / true_n_tkn.unsqueeze(-1).float() * 100
                 # remove masked tokens
-                k = torch.masked_select(k.squeeze(), mask_receive.byte())
+                k = torch.masked_select(k.squeeze(), mask_receive.bool())
                 k_dist[maptype][l_i][n_i] = k.numpy()
     return k_dist
 
