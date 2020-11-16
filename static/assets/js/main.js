@@ -923,6 +923,8 @@ function loadInst(imgId, thead) {
 
     // metaDat[imgId].filter(d => d["questionId"] == questId)[0]
 
+    console.log(q);
+
     let form = new FormData();
     form.append("units", attsMaps);
     form.append("question", q["question"]);
