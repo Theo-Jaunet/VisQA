@@ -559,6 +559,7 @@ class Demo():
             tkn_sent: tokenized sentence
             att_maps: attention maps
             """
+            print("no-grad")
             logit, _, _, _, _, tkn_sent, att_maps, lang_mask = self.model(feats, boxes, question, iou_question,
                                                                           iou_answer,
                                                                           sem_question_words, sem_answer_words,

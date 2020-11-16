@@ -946,8 +946,9 @@ class LXRTModel(BertPreTrainedModel):
 
     def forward(self, input_ids, token_type_ids=None, attention_mask=None, head_mask=None,
                 visual_feats=None, visual_attention_mask=None):
+        print("FORWARD INIT")
         if head_mask is None:
-            
+            print("NO HEADMASK")
             head_mask = {}
             for maptype in ['lang', 'vis', 'vl', 'lv', 'vv', 'll']:
 
@@ -959,12 +960,13 @@ class LXRTModel(BertPreTrainedModel):
                     n_layers = args.xlayers
 
                 head_mask[maptype] = torch.zeros((n_layers, args.n_head))  # done later.to(next(self.parameters()).device)
-
+            print("NO HEADMASK -- END OF INIT")
         if attention_mask is None:
             attention_mask = torch.ones_like(input_ids)
+            print("ATTMASK -- END OF INIT")
         if token_type_ids is None:
             token_type_ids = torch.zeros_like(input_ids)
-
+            print("TOKENS -- END OF INIT")
         # We create a 3D attention mask from a 2D tensor mask.
         # Sizes are [batch_size, 1, 1, to_seq_length]
         # So we can broadcast to [batch_size, num_heads, from_seq_length, to_seq_length]
@@ -987,11 +989,12 @@ class LXRTModel(BertPreTrainedModel):
             extended_visual_attention_mask = (1.0 - extended_visual_attention_mask) * -10000.0
         else:
             extended_visual_attention_mask = None
-
+        print("EMBEDINGS -- INIT")
         # Positional Word Embeddings
         embedding_output = self.embeddings(input_ids, token_type_ids)
-
+        print("EMBEDINGS -- END OF INIT")
         # Run LXRT backbone
+
         lang_feats, visn_feats, att_maps = self.encoder(
             embedding_output,
             extended_attention_mask,
@@ -999,6 +1002,8 @@ class LXRTModel(BertPreTrainedModel):
             visn_feats=visual_feats,
             visn_attention_mask=extended_visual_attention_mask)
         pooled_output = self.pooler(lang_feats)
+
+        print("FORWARD BERT??")
 
         return (lang_feats, visn_feats), pooled_output, att_maps
 
