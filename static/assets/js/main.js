@@ -1189,7 +1189,8 @@ function handleNodeOut() {
 // }
 
 function ask(data) {
-    d = JSON.parse(data);
+    // d = JSON.parse(data);
+    d = data
 
     // $("#result").html("Answer: <br> " + d.pred + " at " + (Math.round(d.confidence * 10000) / 100) + "%")
     console.log(d);
