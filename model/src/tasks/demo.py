@@ -463,14 +463,14 @@ class Demo():
                 else:
                     path = self.cfg['pretrained_model_lxmert']
             print("Load model's weights from %s" % path)
-            state_dict = torch.load("%s.pth" % path,map_location='cpu')
+            state_dict = torch.load("%s.pth" % path)
             for key in list(state_dict.keys()):
                 if '.module' in key:
                     state_dict[key.replace('.module', '')] = state_dict.pop(key)
             self.model.load_state_dict(state_dict, strict=False)
 
         # To GPU
-        # self.model = self.model.cuda() # We don't have GPUs on server
+        # self.model = self.model.cuda()
 
         print("Model loaded!")
 
