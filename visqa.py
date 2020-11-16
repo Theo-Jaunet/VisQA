@@ -117,12 +117,17 @@ def ask():
 
     heats =  purgeHeats(AtttoSliptDict(attention_heads), input_size)
     print("DONE RETURNING")
-    return ujson.dumps({
+
+    resp = Response(response= ujson.dumps({
         "k_dist": k_vals,
         "five": five,
         "labels": input_labels,
         "heatmaps":heats
-    })
+    }),
+                    status=200,
+                    mimetype="application/json")
+    
+    return resp
 
 
 @app.route('/switchMod', methods=["POST"])
