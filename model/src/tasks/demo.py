@@ -128,7 +128,7 @@ class Demo_data():
         self.cfg = cfg
 
         vocab_path = cfg["object_classes_oracle"] if cfg["oracle"] else cfg["object_classes"]
-        print("Object vocab path is %s"%vocab_path)
+        print("Object vocab path is %s" % vocab_path)
         with open(vocab_path, 'r') as f:
             self.object_classes = f.read().split('\n')
 
@@ -210,8 +210,8 @@ class Demo_data():
         boxes = boxes.copy()
         boxes[:, (0, 2)] /= img_w
         boxes[:, (1, 3)] /= img_h
-        #np.testing.assert_array_less(boxes, 1 + 1e-5) #TODO Not useful for demo
-        #np.testing.assert_array_less(-boxes, 0 + 1e-5)
+        # np.testing.assert_array_less(boxes, 1 + 1e-5) #TODO Not useful for demo
+        # np.testing.assert_array_less(-boxes, 0 + 1e-5)
 
         # Padding, because each image does not necessary have same amount of
         # object (e.g. oracle)
@@ -364,9 +364,11 @@ class Demo():
         self.model = None  # pretrained VQA model
         self.cfg = None  # demo configs
         self.load_config()
-        self.data_loader = Demo_data(self.cfg)  # my data loader (not pytorch one)
+        self.data_loader = ""  # my data loader (not pytorch one)
+        # self.data_loader = Demo_data(self.cfg)  # my data loader (not pytorch one)
         self.label_to_ans = {}  # add dictionnary mapping ans_id to answer
         self.displayer = Demo_display(data_path=self.cfg['images_dir'])
+        self.load_model()
 
     def load_config(self):
         """
@@ -463,7 +465,7 @@ class Demo():
                 else:
                     path = self.cfg['pretrained_model_lxmert']
             print("Load model's weights from %s" % path)
-            state_dict = torch.load("%s.pth" % path)
+            state_dict = torch.load("%s.pth" % path, map_location=torch.device('cpu'))
             for key in list(state_dict.keys()):
                 if '.module' in key:
                     state_dict[key.replace('.module', '')] = state_dict.pop(key)
