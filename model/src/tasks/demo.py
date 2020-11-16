@@ -470,7 +470,7 @@ class Demo():
             self.model.load_state_dict(state_dict, strict=False)
 
         # To GPU
-        self.model = self.model.cuda()
+        # self.model = self.model.cuda() # We don't have GPUs on server
 
         print("Model loaded!")
 
@@ -540,9 +540,9 @@ class Demo():
         vis_mask = torch.from_numpy(np.concatenate((np.ones(min(obj_num, 36)), np.zeros(max(0, 36 - obj_num)))))
 
         # To GPU
-        feats, boxes, visual_attention_mask = feats.cuda(), boxes.cuda(), visual_attention_mask.cuda()
-        iou_question, iou_answer = iou_question.cuda(), iou_answer.cuda()
-        sem_question_words, sem_answer_words, bboxes_words = sem_question_words.cuda(), sem_answer_words.cuda(), bboxes_words.cuda()
+        # feats, boxes, visual_attention_mask = feats.cuda(), boxes.cuda(), visual_attention_mask.cuda()
+        # iou_question, iou_answer = iou_question.cuda(), iou_answer.cuda()
+        # sem_question_words, sem_answer_words, bboxes_words = sem_question_words.cuda(), sem_answer_words.cuda(), bboxes_words.cuda()
 
         # Inference
         with torch.no_grad():

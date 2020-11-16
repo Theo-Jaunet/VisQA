@@ -546,7 +546,7 @@ def k_split(array, val):
     elif val < 25:
         array[1] += 1
         return array
-    elif val < 25:
+    elif val < 50:
         array[2] += 1
         return array
     else:
