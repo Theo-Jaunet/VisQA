@@ -599,7 +599,9 @@ class VisualFeatEncoder(nn.Module):
 
     def forward(self, visn_input):
         feats, boxes = visn_input
-        x = self.visn_fc(feats)  
+        print("VIS ENCODE")
+        x = self.visn_fc(feats)
+        print("VIS ENCODE2")
         x = self.visn_layer_norm(x)
         y = self.box_fc(boxes)  
         y = self.box_layer_norm(y)
