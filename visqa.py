@@ -97,7 +97,7 @@ def ask():
     question = request.form['question']
     image = request.form['image']
     head_mask = empty_mask()
-
+    print("ASKING")
     if units is not None and not units == ['']:
         for elem in units:
             temp = elem.split("_")
@@ -106,19 +106,21 @@ def ask():
 
     top_prediction, five_predictions, attention_heads, alignment, k_dist, input_labels, input_size \
         = my_demo.ask(question, image, head_mask)
+
+    print("GOT PRED")
     k_vals = toSliptDict(k_dist)
 
     five = {}
     for u in range(len(five_predictions)):
         five[five_predictions[u][0]] = five_predictions[u][1].item()
 
-    for k, v in alignment.items():
-        alignment[k]["xywh"] = alignment[k]["xywh"].tolist()
+    heats =  purgeHeats(AtttoSliptDict(attention_heads), input_size)
+    print("DONE RETURNING")
     return ujson.dumps({
         "k_dist": k_vals,
         "five": five,
         "labels": input_labels,
-        "heatmaps": purgeHeats(AtttoSliptDict(attention_heads), input_size)
+        "heatmaps":heats
     })
 
 
