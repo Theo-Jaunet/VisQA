@@ -463,7 +463,7 @@ class Demo():
                 else:
                     path = self.cfg['pretrained_model_lxmert']
             print("Load model's weights from %s" % path)
-            state_dict = torch.load("%s.pth" % path)
+            state_dict = torch.load("%s.pth" % path,map_location='cpu')
             for key in list(state_dict.keys()):
                 if '.module' in key:
                     state_dict[key.replace('.module', '')] = state_dict.pop(key)
