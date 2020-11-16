@@ -520,18 +520,22 @@ class Demo():
             *          {"word":[x,y,w,h]}. Coordinates are relative to the dimension of the image.
             *k_dist: distribution of k for each attention head (dictionnary)
         """
-
+        print("ini DEMO")
         self.model.eval()
 
         # Load image features
         img_id = image.split('.')[0]
         feats, boxes, obj_class, visual_attention_mask, obj_num, width, height = self.data_loader.get_feats(img_id)
 
+        print("DATA loaded")
+
         # Reshape data in a batch of size 1 and turn them to tensor
         feats = torch.from_numpy(feats).unsqueeze(0)
         boxes = torch.from_numpy(boxes).unsqueeze(0)
         visual_attention_mask = torch.from_numpy(visual_attention_mask).unsqueeze(0)
         question = [question]
+
+        print("Question loaded")
 
         # We do not use these variables, so we define dummy values
         iou_question = torch.zeros((1, 20, 36))
@@ -540,6 +544,8 @@ class Demo():
         sem_answer_words = torch.zeros((1, 1, 36))
         bboxes_words = torch.zeros((1, 20 + 1, 4))
         vis_mask = torch.from_numpy(np.concatenate((np.ones(min(obj_num, 36)), np.zeros(max(0, 36 - obj_num)))))
+
+        print("input SHAPED")
 
         # To GPU
         # feats, boxes, visual_attention_mask = feats.cuda(), boxes.cuda(), visual_attention_mask.cuda()
@@ -560,6 +566,8 @@ class Demo():
                                                                           verbose=True,
                                                                           head_mask=head_mask, )
 
+        print("ASKED IN DEMO")
+
         # Extract alignment for attention map 'vl' layer 3 head 0
         # word2bbox = get_alignment_from_attmap(
         #     att_maps['vl'][3].cpu().squeeze().sum(0),
@@ -569,10 +577,10 @@ class Demo():
             boxes, obj_class, tkn_sent[0])
 
 
-
         # Extract k_dist
         k_dist = get_k_dist_from_attmaps(att_maps, lang_mask.squeeze(), vis_mask)
         # k_dist = get_k_dist_from_attmaps(att_maps, lang_mask.cpu().squeeze(), vis_mask)
+        print("K-DIST DONE")
 
         # compute prediction
         logit = torch.softmax(logit, dim=-1)
@@ -582,6 +590,7 @@ class Demo():
         five_predictions = [(self.label_to_ans[label_srt[i].numpy()], score_srt[i]) for i in range(5)]
         attention_heads = att_maps
 
+        print("Make BBOXES")
         # textual and visual input labels
         bboxes_pxl = (boxes.squeeze()[:obj_num] * torch.tensor([width, height, width, height]).unsqueeze(
             0).float()).short().tolist()
@@ -589,7 +598,7 @@ class Demo():
 
         # Input size
         input_size = {'textual': len(tkn_sent[0]), 'visual': obj_num}
-
+        print("RETURN IN DEMO")
         return top_prediction, five_predictions, attention_heads, word2bbox, k_dist, input_labels, input_size
 
 
