@@ -361,7 +361,8 @@ class BertOutAttention(nn.Module):
         # Normalize the attention scores to probabilities.
         attention_probs = nn.Softmax(dim=-1)(attention_scores)
 
-        maps = attention_probs.detach().clone().cpu()
+        # maps = attention_probs.detach().clone().cpu()
+        maps = attention_probs.detach().clone()
 
         # This is actually dropping out entire tokens to attend to, which might
         # seem a bit unusual, but is taken from the original Transformer paper.
@@ -421,7 +422,8 @@ class BertSelfAttention(nn.Module):
         # Normalize the attention scores to probabilities.
         attention_probs = nn.Softmax(dim=-1)(attention_scores)
 
-        maps = attention_probs.detach().clone().cpu()
+        maps = attention_probs.detach().clone()
+        # maps = attention_probs.detach().clone().cpu()
 
         # This is actually dropping out entire tokens to attend to, which might
         # seem a bit unusual, but is taken from the original Transformer paper.
@@ -871,7 +873,8 @@ class BertPreTrainedModel(nn.Module):
         model = cls(config, *inputs, **kwargs)
         if state_dict is None and not from_tf:
             weights_path = os.path.join(serialization_dir, WEIGHTS_NAME)
-            state_dict = torch.load(weights_path, map_location='cpu' if not torch.cuda.is_available() else None)
+            state_dict = torch.load(weights_path, map_location='cpu')
+            # state_dict = torch.load(weights_path, map_location='cpu' if not torch.cuda.is_available() else None)
         if tempdir:
             # Clean up temp dir
             shutil.rmtree(tempdir)

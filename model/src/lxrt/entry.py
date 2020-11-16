@@ -217,9 +217,12 @@ class LXRTEncoder(nn.Module):
         else:
             train_features, iou_target, tkn_sent = sents, None, None
 
-        input_ids = torch.tensor([f.input_ids for f in train_features], dtype=torch.long).cuda(non_blocking=True)
-        input_mask = torch.tensor([f.input_mask for f in train_features], dtype=torch.long).cuda(non_blocking=True)
-        segment_ids = torch.tensor([f.segment_ids for f in train_features], dtype=torch.long).cuda(non_blocking=True)
+        input_ids = torch.tensor([f.input_ids for f in train_features], dtype=torch.long)
+        # input_ids = torch.tensor([f.input_ids for f in train_features], dtype=torch.long).cuda(non_blocking=True)
+        input_mask = torch.tensor([f.input_mask for f in train_features], dtype=torch.long)
+        # input_mask = torch.tensor([f.input_mask for f in train_features], dtype=torch.long).cuda(non_blocking=True)
+        segment_ids = torch.tensor([f.segment_ids for f in train_features], dtype=torch.long)
+        # segment_ids = torch.tensor([f.segment_ids for f in train_features], dtype=torch.long).cuda(non_blocking=True)
 
         (lang_feat, vis_feat), output, att_maps = self.model(   
             input_ids, segment_ids, input_mask,

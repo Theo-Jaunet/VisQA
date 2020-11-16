@@ -47,7 +47,7 @@ def get_alignment_from_attmap(att_map, boxes, obj_class, tkn_sent):
         'xywh' and its class)
     """
     alignment = torch.argmax(att_map, dim=-1).numpy()
-    word2bbox = {wrd: {'xywh': boxes[0, alignment[w_i]].cpu().numpy(), 'class': obj_class[alignment[w_i]]} \
+    word2bbox = {wrd: {'xywh': boxes[0, alignment[w_i]].numpy(), 'class': obj_class[alignment[w_i]]} \
                  for w_i, wrd in enumerate(tkn_sent)}
     return word2bbox
 
@@ -561,23 +561,29 @@ class Demo():
                                                                           head_mask=head_mask, )
 
         # Extract alignment for attention map 'vl' layer 3 head 0
+        # word2bbox = get_alignment_from_attmap(
+        #     att_maps['vl'][3].cpu().squeeze().sum(0),
+        #     boxes, obj_class, tkn_sent[0])
         word2bbox = get_alignment_from_attmap(
-            att_maps['vl'][3].cpu().squeeze().sum(0),
+            att_maps['vl'][3].squeeze().sum(0),
             boxes, obj_class, tkn_sent[0])
 
+
+
         # Extract k_dist
-        k_dist = get_k_dist_from_attmaps(att_maps, lang_mask.cpu().squeeze(), vis_mask)
+        k_dist = get_k_dist_from_attmaps(att_maps, lang_mask.squeeze(), vis_mask)
+        # k_dist = get_k_dist_from_attmaps(att_maps, lang_mask.cpu().squeeze(), vis_mask)
 
         # compute prediction
         logit = torch.softmax(logit, dim=-1)
         score, label = logit.max(1)
-        top_prediction = (self.label_to_ans[label[0].cpu().numpy()], score[0])
+        top_prediction = (self.label_to_ans[label[0].numpy()], score[0])
         score_srt, label_srt = torch.sort(logit.squeeze(), descending=True, dim=-1)
-        five_predictions = [(self.label_to_ans[label_srt[i].cpu().numpy()], score_srt[i]) for i in range(5)]
+        five_predictions = [(self.label_to_ans[label_srt[i].numpy()], score_srt[i]) for i in range(5)]
         attention_heads = att_maps
 
         # textual and visual input labels
-        bboxes_pxl = (boxes.squeeze()[:obj_num].cpu() * torch.tensor([width, height, width, height]).unsqueeze(
+        bboxes_pxl = (boxes.squeeze()[:obj_num] * torch.tensor([width, height, width, height]).unsqueeze(
             0).float()).short().tolist()
         input_labels = {'textual': tkn_sent[0], 'visual': obj_class, 'bboxes': bboxes_pxl}
 
