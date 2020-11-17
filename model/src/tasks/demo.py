@@ -39,6 +39,7 @@ from src.tasks.gqa_model import GQAModel
 import argparse
 from param import args
 
+
 # useful fonctions ----------------------------------
 def get_alignment_from_attmap(att_map, boxes, obj_class, tkn_sent):
     """
@@ -561,12 +562,15 @@ class Demo():
             att_maps: attention maps
             """
             print("no-grad")
-            logit, _, _, _, _, tkn_sent, att_maps, lang_mask,score,label,score_srt, label_srt = self.model(feats, boxes, question, iou_question,
-                                                                          iou_answer,
-                                                                          sem_question_words, sem_answer_words,
-                                                                          bboxes_words, visual_attention_mask,
-                                                                          verbose=True,
-                                                                          head_mask=head_mask, )
+            logit, _, _, _, _, tkn_sent, att_maps, lang_mask, score_srt, label_srt = self.model(feats, boxes, question,
+                                                                                                iou_question,
+                                                                                                iou_answer,
+                                                                                                sem_question_words,
+                                                                                                sem_answer_words,
+                                                                                                bboxes_words,
+                                                                                                visual_attention_mask,
+                                                                                                verbose=True,
+                                                                                                head_mask=head_mask, )
 
         print("ASKED IN DEMO")
 
@@ -578,7 +582,6 @@ class Demo():
             att_maps['vl'][3].squeeze().sum(0),
             boxes, obj_class, tkn_sent[0])
 
-
         # Extract k_dist
         k_dist = get_k_dist_from_attmaps(att_maps, lang_mask.squeeze(), vis_mask)
         # k_dist = get_k_dist_from_attmaps(att_maps, lang_mask.cpu().squeeze(), vis_mask)
@@ -587,7 +590,7 @@ class Demo():
         # compute prediction
         # logit = torch.softmax(logit, dim=-1)
         # score, label = logit.max(1)
-        top_prediction = (self.label_to_ans[label[0].numpy()], score[0])
+        # top_prediction = (self.label_to_ans[label[0].numpy()], score[0])
         # score_srt, label_srt = torch.sort(logit.squeeze(), descending=True, dim=-1)
         five_predictions = [(self.label_to_ans[label_srt[i].numpy()], score_srt[i]) for i in range(5)]
         attention_heads = att_maps
@@ -601,7 +604,7 @@ class Demo():
         # Input size
         input_size = {'textual': len(tkn_sent[0]), 'visual': obj_num}
         print("RETURN IN DEMO")
-        return top_prediction, five_predictions, attention_heads, word2bbox, k_dist, input_labels, input_size
+        return [0, 0], five_predictions, attention_heads, word2bbox, k_dist, input_labels, input_size
 
 
 if __name__ == "__main__":

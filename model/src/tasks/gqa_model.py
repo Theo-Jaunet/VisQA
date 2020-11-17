@@ -58,11 +58,12 @@ class GQAModel(nn.Module):
             iou_pred = self.matching_decoder(lang_feat, vis_feat)
         logit = torch.softmax(logit, dim=-1)
 
-        score, label = logit.max(1)
+        # score, label = logit.max(1)
         score_srt, label_srt = torch.sort(logit.squeeze(), descending=True, dim=-1)
 
         if verbose:
-            return logit, iou_target, iou_pred, lang_feat, vis_feat, tkn_sent, att_maps, input_mask,score,label,score_srt, label_srt
+            return logit, iou_target, iou_pred, lang_feat, vis_feat, tkn_sent, att_maps, input_mask,score_srt, label_srt
+            # return logit, iou_target, iou_pred, lang_feat, vis_feat, tkn_sent, att_maps, input_mask,score,label,score_srt, label_srt
         else:
             return logit, iou_target, iou_pred#, att_maps
 
