@@ -11,7 +11,7 @@ export PYTHONPATH=$PYTHONPATH:./src
 # python lib
 import json
 import time
-import argparse
+#
 import random
 import os
 import pickle
@@ -32,11 +32,12 @@ import nltk
 from nltk.corpus import stopwords
 
 # my dependencies
-from param import args
+# from param import args
 from pretrain.qa_answer_table import load_lxmert_qa
 from src.tasks.gqa_data import GQABufferLoader
 from src.tasks.gqa_model import GQAModel
-
+import argparse
+from param import args
 
 # useful fonctions ----------------------------------
 def get_alignment_from_attmap(att_map, boxes, obj_class, tkn_sent):

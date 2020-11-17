@@ -101,7 +101,8 @@ def parse_args():
     parser.add_argument("--saveRam", action='store_const', default=False, const=True)
     
     # Parse the arguments.
-    args = parser.parse_args()
+    # args = parser.parse_args()
+    args ,unknown= parser.parse_known_args()
 
     # Bind optimizer class.
     args.optimizer = get_optimizer(args.optim)

@@ -16,7 +16,7 @@ sys.path.insert(1, 'model')
 from model.src.tasks.demo import Demo, empty_mask
 
 
-app = Flask(__name__)
+
 
 # app.secret_key = binascii.hexlify(os.urandom(24))
 #
@@ -32,7 +32,7 @@ app = Flask(__name__)
 my_demo = Demo()
 mod = [("lang", 9, 4), ("vis", 5, 4), ("vl", 5, 4), ("lv", 5, 4), ("vv", 5, 4), ("ll", 5, 4)]
 # my_demo.load_model()
-
+app = Flask(__name__)
 def makeOrder(layout):
     res = []
 
