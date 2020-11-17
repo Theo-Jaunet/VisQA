@@ -56,7 +56,7 @@ class GQAModel(nn.Module):
         iou_pred = None
         if args.task_pointer != 'none':
             iou_pred = self.matching_decoder(lang_feat, vis_feat)
-
+        logit = torch.softmax(logit, dim=-1)
         if verbose:
             return logit, iou_target, iou_pred, lang_feat, vis_feat, tkn_sent, att_maps, input_mask
         else:

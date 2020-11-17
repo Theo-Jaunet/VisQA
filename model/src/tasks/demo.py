@@ -585,7 +585,7 @@ class Demo():
         print("K-DIST DONE")
 
         # compute prediction
-        logit = torch.softmax(logit, dim=-1)
+        # logit = torch.softmax(logit, dim=-1)
         score, label = logit.max(1)
         top_prediction = (self.label_to_ans[label[0].numpy()], score[0])
         score_srt, label_srt = torch.sort(logit.squeeze(), descending=True, dim=-1)
