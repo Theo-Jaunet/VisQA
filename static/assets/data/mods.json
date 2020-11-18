@@ -31,27 +31,5 @@
       "vis": 5,
       "cross": 5
     }
-  },
-  {
-    "display": "lxmert_tiny_init_oracle_scratch",
-    "data": "oracle",
-    "type": "rcnn",
-    "mod": {
-      "head": 4,
-      "lang": 9,
-      "vis": 5,
-      "cross": 5
-    }
-  },
-  {
-    "display": "lxmert",
-    "data": "oracle",
-    "type": "rcnn",
-    "mod": {
-      "head": 12,
-      "lang": 9,
-      "vis": 5,
-      "cross": 5
-    }
   }
 ]

@@ -362,9 +362,10 @@ class Demo():
     Main class for the demo.
     """
 
-    def __init__(self):
+    def __init__(self, mode=None):
         self.model = None  # pretrained VQA model
         self.cfg = None  # demo configs
+        self.mode = mode
         self.load_config()
         self.data_loader = ""  # my data loader (not pytorch one)
         # self.data_loader = Demo_data(self.cfg)  # my data loader (not pytorch one)
@@ -380,20 +381,37 @@ class Demo():
         with open('model/src/tasks/demo_cfg.json', 'r') as f:
             self.cfg = json.load(f)
 
-        # modify LXMERT config accoring to the demo cfg:
-        # (manually modify argument in args)
-        if self.cfg['ecai_lxmert']:
-            args.task_pointer = 'KLDiv'
+        if self.mode is not None:
+            if self.mode in ['lxmert_tiny', 'lxmert_tiny_init_oracle_pretrain', 'lxmert_tiny_init_oracle_scratch']:
+                self.cfg["tiny_lxmert"] = 1
+                self.cfg["oracle"] = 0
+            elif self.mode in ['lxmert']:
+                self.cfg["tiny_lxmert"] = 0
+                self.cfg["oracle"] = 0
+            elif self.mode in ['tiny_oracle']:
+                self.cfg["tiny_lxmert"] = 1
+                self.cfg["oracle"] = 1
+            if "lxmert" in self.mode:
+                self.cfg['type'] = "rcnn"
+            else:
+                self.cfg['type'] = "oracle"
+            self.initConf("model/src/pretrain/" + self.mode)
         else:
-            args.task_pointer = 'none'
-        if self.cfg['tiny_lxmert']:
-            args.n_head = 4
-            args.hidden_size = 128
-            args.from_scratch = True
-        if self.cfg['oracle']:
-            args.visual_feat_dim = 2320
-            self.cfg['data_split'] = 'val'
-            args.from_scratch = True
+
+            # modify LXMERT config accoring to the demo cfg:
+            # (manually modify argument in args)
+            if self.cfg['ecai_lxmert']:
+                args.task_pointer = 'KLDiv'
+            else:
+                args.task_pointer = 'none'
+            if self.cfg['tiny_lxmert']:
+                args.n_head = 4
+                args.hidden_size = 128
+                args.from_scratch = True
+            if self.cfg['oracle']:
+                args.visual_feat_dim = 2320
+                self.cfg['data_split'] = 'val'
+                args.from_scratch = True
         print("Config loaded!")
 
     def initConf(self, path):
@@ -522,22 +540,17 @@ class Demo():
             *          {"word":[x,y,w,h]}. Coordinates are relative to the dimension of the image.
             *k_dist: distribution of k for each attention head (dictionnary)
         """
-        print("ini DEMO")
         self.model.eval()
 
         # Load image features
         img_id = image.split('.')[0]
         feats, boxes, obj_class, visual_attention_mask, obj_num, width, height = self.data_loader.get_feats(img_id)
 
-        print("DATA loaded")
-
         # Reshape data in a batch of size 1 and turn them to tensor
         feats = torch.from_numpy(feats).unsqueeze(0)
         boxes = torch.from_numpy(boxes).unsqueeze(0)
         visual_attention_mask = torch.from_numpy(visual_attention_mask).unsqueeze(0)
         question = [question]
-
-        print("Question loaded")
 
         # We do not use these variables, so we define dummy values
         iou_question = torch.zeros((1, 20, 36))
@@ -546,8 +559,6 @@ class Demo():
         sem_answer_words = torch.zeros((1, 1, 36))
         bboxes_words = torch.zeros((1, 20 + 1, 4))
         vis_mask = torch.from_numpy(np.concatenate((np.ones(min(obj_num, 36)), np.zeros(max(0, 36 - obj_num)))))
-
-        print("input SHAPED")
 
         # To GPU
         # feats, boxes, visual_attention_mask = feats.cuda(), boxes.cuda(), visual_attention_mask.cuda()
@@ -561,7 +572,7 @@ class Demo():
             tkn_sent: tokenized sentence
             att_maps: attention maps
             """
-            print("no-grad")
+
             logit, _, _, _, _, tkn_sent, att_maps, lang_mask, score_srt, label_srt = self.model(feats, boxes, question,
                                                                                                 iou_question,
                                                                                                 iou_answer,
@@ -572,7 +583,6 @@ class Demo():
                                                                                                 verbose=True,
                                                                                                 head_mask=head_mask, )
 
-        print("ASKED IN DEMO")
 
         # Extract alignment for attention map 'vl' layer 3 head 0
         # word2bbox = get_alignment_from_attmap(
@@ -585,7 +595,6 @@ class Demo():
         # Extract k_dist
         k_dist = get_k_dist_from_attmaps(att_maps, lang_mask.squeeze(), vis_mask)
         # k_dist = get_k_dist_from_attmaps(att_maps, lang_mask.cpu().squeeze(), vis_mask)
-        print("K-DIST DONE")
 
         # compute prediction
         # logit = torch.softmax(logit, dim=-1)
@@ -595,7 +604,7 @@ class Demo():
         five_predictions = [(self.label_to_ans[label_srt[i].numpy()], score_srt[i]) for i in range(5)]
         attention_heads = att_maps
 
-        print("Make BBOXES")
+
         # textual and visual input labels
         bboxes_pxl = (boxes.squeeze()[:obj_num] * torch.tensor([width, height, width, height]).unsqueeze(
             0).float()).short().tolist()
@@ -603,8 +612,7 @@ class Demo():
 
         # Input size
         input_size = {'textual': len(tkn_sent[0]), 'visual': obj_num}
-        print("RETURN IN DEMO")
-        return [0, 0], five_predictions, attention_heads, word2bbox, k_dist, input_labels, input_size
+        return five_predictions, attention_heads, word2bbox, k_dist, input_labels, input_size
 
 
 if __name__ == "__main__":

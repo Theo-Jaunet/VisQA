@@ -15,9 +15,6 @@ sys.path.insert(1, 'model/src/')
 sys.path.insert(1, 'model')
 from model.src.tasks.demo import Demo, empty_mask
 
-
-
-
 # app.secret_key = binascii.hexlify(os.urandom(24))
 #
 # COMPRESS_MIMETYPES = ['text/html', 'text/css', 'text/csv', 'text/xml', 'application/json',
@@ -29,10 +26,18 @@ from model.src.tasks.demo import Demo, empty_mask
 # cache.init_app(app)
 # Compress(app)
 
-my_demo = Demo()
+my_demo = Demo("tiny_oracle")
+print("MODEL 1 LOADED !!!")
+my_demo2 = Demo("lxmert_tiny")
+print("MODEL 2 LOADED !!!")
+my_demo3 = Demo("lxmert_tiny_init_oracle_pretrain")
+print("MODEL 3 LOADED !!!")
+
 mod = [("lang", 9, 4), ("vis", 5, 4), ("vl", 5, 4), ("lv", 5, 4), ("vv", 5, 4), ("ll", 5, 4)]
 # my_demo.load_model()
 app = Flask(__name__)
+
+
 def makeOrder(layout):
     res = []
 
@@ -93,40 +98,46 @@ def purgeHeats(data, size):
 @app.route('/ask', methods=["POST"])
 def ask():
     global my_demo
+    global my_demo2
+    global my_demo3
     units = request.form['units'].split(",")
     question = request.form['question']
     image = request.form['image']
+    disp = request.form['disp']
     head_mask = empty_mask()
-    print("init")
-    print(question)
+
     if units is not None and not units == ['']:
         for elem in units:
             temp = elem.split("_")
             # print(temp)
             head_mask[temp[0]][int(temp[1])][int(temp[2])] = 1
-    print("ASKING")
-    top_prediction, five_predictions, attention_heads, alignment, k_dist, input_labels, input_size \
-        = my_demo.ask(question, image, head_mask)
 
-    print("GOT PRED")
+    if disp == "lxmert_tiny":
+        five_predictions, attention_heads, alignment, k_dist, input_labels, input_size = my_demo2.ask(question, image, head_mask)
+
+    elif disp == "lxmert_tiny_init_oracle_pretrain":
+        five_predictions, attention_heads, alignment, k_dist, input_labels, input_size = my_demo3.ask(question, image, head_mask)
+    else:
+        five_predictions, attention_heads, alignment, k_dist, input_labels, input_size = my_demo.ask(question, image, head_mask)
+
     k_vals = toSliptDict(k_dist)
 
     five = {}
     for u in range(len(five_predictions)):
         five[five_predictions[u][0]] = five_predictions[u][1].item()
 
-    heats =  purgeHeats(AtttoSliptDict(attention_heads), input_size)
-    print("DONE RETURNING")
+    heats = purgeHeats(AtttoSliptDict(attention_heads), input_size)
 
-    resp = Response(response= ujson.dumps({
+
+    resp = Response(response=ujson.dumps({
         "k_dist": k_vals,
         "five": five,
         "labels": input_labels,
-        "heatmaps":heats
+        "heatmaps": heats
     }),
-                    status=200,
-                    mimetype="application/json")
-    
+        status=200,
+        mimetype="application/json")
+
     return resp
 
 
@@ -180,13 +191,11 @@ def switchMod():
 
     return 'ok'
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     # my_demo.load_data()
 
     # my_demo.load_model()
 
     # stackDat()
     app.run(host='0.0.0.0', port=5000, debug=False)
-
-

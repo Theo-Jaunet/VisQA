@@ -36,7 +36,7 @@ let models = {};
 let metaDat = {};
 
 let modType = "oracle";
-
+let disp = "tiny_oracle"
 let ogSize = [];
 
 let imShown;
@@ -76,36 +76,41 @@ function switchMod(dat) {
     modType = dat.data;
     asked = false;
     diff_bool = false;
+    mod = dat.mod
+    disp =  dat.display
+    UpdateCounter()
+    drawModel(mod)
+    d3.select("#model").transition().duration(470).style("opacity", "1");
+    $("#loader").css("visibility", "hidden")
 
-
-    $.ajax({
-        type: "POST",
-        url: "/switchMod",
-        processData: false,
-        contentType: false,
-        data: form,
-        success: function (d) {
-            baseUrl = "static/assets/images/" + (dat.data === 'default' ? 'try' : dat.data) + "/"
-            // imgs = imgsBlock[dat.name]
-            let slide = $("#imSlide");
-
-            // d3.select("#sceneGraph").selectAll("*").remove();
-            //
-            // slide.attr("max", imgs.length - 1);
-            // loadImg(baseUrl + imgs[0] + ".jpg");
-            // if (dat.name !== 'oracle') {
-            //     $("#productName").html('')
-            // } else {
-            //     fillQuest(imgs[0])
-            // }
-            mod = dat.mod
-            UpdateCounter()
-            drawModel(mod)
-            d3.select("#model").transition().duration(470).style("opacity", "1");
-            $("#loader").css("visibility", "hidden")
-
-        }
-    })
+    // $.ajax({
+    //     type: "POST",
+    //     url: "/switchMod",
+    //     processData: false,
+    //     contentType: false,
+    //     data: form,
+    //     success: function (d) {
+    //         baseUrl = "static/assets/images/" + (dat.data === 'default' ? 'try' : dat.data) + "/"
+    //         // imgs = imgsBlock[dat.name]
+    //         let slide = $("#imSlide");
+    //
+    //         // d3.select("#sceneGraph").selectAll("*").remove();
+    //         //
+    //         // slide.attr("max", imgs.length - 1);
+    //         // loadImg(baseUrl + imgs[0] + ".jpg");
+    //         // if (dat.name !== 'oracle') {
+    //         //     $("#productName").html('')
+    //         // } else {
+    //         //     fillQuest(imgs[0])
+    //         // }
+    //         mod = dat.mod
+    //         UpdateCounter()
+    //         drawModel(mod)
+    //         d3.select("#model").transition().duration(470).style("opacity", "1");
+    //         $("#loader").css("visibility", "hidden")
+    //
+    //     }
+    // })
 
 
 }
@@ -719,7 +724,7 @@ function updateStats(data) {
     let grs2 = g2.selectAll("g").data(stack(temp2.map(d => d["val"])))
     // let grs = g.selectAll("g").data(stack(teKey.map(d => data["functions"][d])))
 
-    let yScale2 = d3.scaleLinear().domain([50, 200]).range([486-130, 486-220])
+    let yScale2 = d3.scaleLinear().domain([50, 200]).range([486 - 130, 486 - 220])
 
     grs2.selectAll('rect')
         .data(d => d)
@@ -733,7 +738,7 @@ function updateStats(data) {
     for (let i = 0; i < labels2.length; i++) {
 
         let tx = 20 + leftmarg + (bandWidth * i) + (bandPad * i) + bandWidth / 2
-        let ty = (486-90)
+        let ty = (486 - 90)
         tg2.append('text')
             .attr("text-anchor", "end")
             .style("transform", "translate(" + tx + "px," + ty + "px) rotate(-85deg)")
@@ -929,6 +934,8 @@ function loadInst(imgId, thead) {
     form.append("units", attsMaps);
     form.append("question", q["question"]);
     form.append("image", val + ".jpg");
+    form.append("disp", disp);
+
 
     $.ajax({
         type: "POST",

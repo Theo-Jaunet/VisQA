@@ -413,7 +413,7 @@
         form.append("units", attsMaps);
         form.append("question", $("#ask-quest").val());
         form.append("image", curImg + ".jpg");
-
+        form.append("disp", disp);
         $.ajax({
             type: "POST",
             url: "/ask",
@@ -431,6 +431,7 @@
         form.append("units", attsMaps);
         form.append("question", $("#ask-quest").val());
         form.append("image", curImg + ".jpg");
+        form.append("disp", disp);
 
         $.ajax({
             type: "POST",

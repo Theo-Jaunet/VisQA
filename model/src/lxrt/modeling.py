@@ -52,6 +52,7 @@ CONFIG_NAME = 'bert_config.json'
 WEIGHTS_NAME = 'pytorch_model.bin'
 TF_WEIGHTS_NAME = 'model.ckpt'
 
+
 def load_tf_weights_in_bert(model, tf_checkpoint_path):
     """ Load tf checkpoints in a pytorch model
     """
@@ -61,7 +62,7 @@ def load_tf_weights_in_bert(model, tf_checkpoint_path):
         import tensorflow as tf
     except Importtokenization:
         print("Loading a TensorFlow models in PyTorch, requires TensorFlow to be installed. Please see "
-            "https://www.tensorflow.org/install/ for installation instructions.")
+              "https://www.tensorflow.org/install/ for installation instructions.")
         raise
     tf_path = os.path.abspath(tf_checkpoint_path)
     print("Converting TensorFlow checkpoint from {}".format(tf_path))
@@ -128,6 +129,7 @@ class GeLU(nn.Module):
         0.5 * x * (1 + torch.tanh(math.sqrt(2 / math.pi) * (x + 0.044715 * torch.pow(x, 3))))
         Also see https://arxiv.org/abs/1606.08415
     """
+
     def __init__(self):
         super().__init__()
 
@@ -144,6 +146,7 @@ ACT2FN = {"gelu": gelu, "relu": torch.nn.functional.relu, "swish": swish}
 
 class VisualConfig(object):
     VISUAL_LOSSES = ['obj', 'attr', 'feat']
+
     def __init__(self,
                  l_layers=12,
                  x_layers=5,
@@ -160,9 +163,9 @@ class VisualConfig(object):
 
         self.visual_losses = self.VISUAL_LOSSES
         self.visual_loss_config = {
-            'obj': (self.obj_id_num, 'ce', (-1,), 1/0.15),
-            'attr': (self.attr_id_num, 'ce', (-1,), 1/0.15),
-            'feat': (self.visual_feat_dim, 'l2', (-1, self.visual_feat_dim), 1/0.15),
+            'obj': (self.obj_id_num, 'ce', (-1,), 1 / 0.15),
+            'attr': (self.attr_id_num, 'ce', (-1,), 1 / 0.15),
+            'feat': (self.visual_feat_dim, 'l2', (-1, self.visual_feat_dim), 1 / 0.15),
         }
 
     def set_visual_dims(self, feat_dim, pos_dim):
@@ -176,6 +179,7 @@ VISUAL_CONFIG = VisualConfig()
 class BertConfig(object):
     """Configuration class to store the configuration of a `BertModel`.
     """
+
     def __init__(self,
                  vocab_size_or_config_json_file,
                  hidden_size=768,
@@ -213,7 +217,7 @@ class BertConfig(object):
                 initializing all weight matrices.
         """
         if isinstance(vocab_size_or_config_json_file, str) or (sys.version_info[0] == 2
-                        and isinstance(vocab_size_or_config_json_file, unicode)):
+                                                               and isinstance(vocab_size_or_config_json_file, unicode)):
             with open(vocab_size_or_config_json_file, "r", encoding='utf-8') as reader:
                 json_config = json.loads(reader.read())
             for key, value in json_config.items():
@@ -233,7 +237,6 @@ class BertConfig(object):
         else:
             raise ValueError("First argument must be either a vocabulary size (int)"
                              "or the path to a pretrained model config file (str)")
-
 
     @classmethod
     def from_dict(cls, json_object):
@@ -262,10 +265,13 @@ class BertConfig(object):
         """Serializes this instance to a JSON string."""
         return json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n"
 
+
 try:
     from apex.normalization.fused_layer_norm import FusedLayerNorm as BertLayerNorm
 except ImportError:
     logger.info("Better speed can be achieved with apex installed from https://www.github.com/nvidia/apex .")
+
+
     class BertLayerNorm(nn.Module):
         def __init__(self, hidden_size, eps=1e-12):
             """Construct a layernorm module in the TF style (epsilon inside the square root).
@@ -285,6 +291,7 @@ except ImportError:
 class BertEmbeddings(nn.Module):
     """Construct the embeddings from word, position and token_type embeddings.
     """
+
     def __init__(self, config):
         super(BertEmbeddings, self).__init__()
         self.word_embeddings = nn.Embedding(config.vocab_size, config.hidden_size, padding_idx=0)
@@ -326,7 +333,7 @@ class BertOutAttention(nn.Module):
 
         # visual_dim = 2048
         if ctx_dim is None:
-            ctx_dim =config.hidden_size
+            ctx_dim = config.hidden_size
         self.query = nn.Linear(config.hidden_size, self.all_head_size)
         self.key = nn.Linear(ctx_dim, self.all_head_size)
         self.value = nn.Linear(ctx_dim, self.all_head_size)
@@ -352,8 +359,9 @@ class BertOutAttention(nn.Module):
         attention_scores = attention_scores / math.sqrt(self.attention_head_size)
 
         # When head mask is to 1, replace the head by average -> all attention probs goes to 0
-        attention_scores = attention_scores * (1 - head_mask).view(1, self.num_attention_heads, 1, 1).to(attention_scores.device)
-        
+        attention_scores = attention_scores * (1 - head_mask).view(1, self.num_attention_heads, 1, 1).to(
+            attention_scores.device)
+
         # Apply the attention mask is (precomputed for all layers in BertModel forward() function)
         if attention_mask is not None:
             attention_scores = attention_scores + attention_mask
@@ -412,8 +420,9 @@ class BertSelfAttention(nn.Module):
         attention_scores = attention_scores / math.sqrt(self.attention_head_size)
 
         # When head mask is to 1, replace the head by average -> all attention probs goes to 0
-        #print('num_attention_heads', self.num_attention_heads)
-        attention_scores = attention_scores * (1 - head_mask).view(1, self.num_attention_heads, 1, 1).to(attention_scores.device)
+        # print('num_attention_heads', self.num_attention_heads)
+        attention_scores = attention_scores * (1 - head_mask).view(1, self.num_attention_heads, 1, 1).to(
+            attention_scores.device)
 
         # Apply the attention mask is (precomputed for all layers in BertModel forward() function)
         if attention_mask is not None:
@@ -543,17 +552,19 @@ class LXRTXLayer(nn.Module):
 
     def cross_att(self, lang_input, lang_attention_mask, visn_input, visn_attention_mask, head_mask):
         # Cross Attention
-        #input('vl')
-        lang_att_output, maps_1 = self.visual_attention(lang_input, visn_input, ctx_att_mask=visn_attention_mask, head_mask=head_mask['vl'])
-        #input('lv')
-        visn_att_output, maps_2 = self.visual_attention(visn_input, lang_input, ctx_att_mask=lang_attention_mask, head_mask=head_mask['lv'])
+        # input('vl')
+        lang_att_output, maps_1 = self.visual_attention(lang_input, visn_input, ctx_att_mask=visn_attention_mask,
+                                                        head_mask=head_mask['vl'])
+        # input('lv')
+        visn_att_output, maps_2 = self.visual_attention(visn_input, lang_input, ctx_att_mask=lang_attention_mask,
+                                                        head_mask=head_mask['lv'])
         return lang_att_output, visn_att_output, [maps_1, maps_2]
 
     def self_att(self, lang_input, lang_attention_mask, visn_input, visn_attention_mask, head_mask):
         # Self Attention
-        #input('ll')
+        # input('ll')
         lang_att_output, maps_1 = self.lang_self_att(lang_input, lang_attention_mask, head_mask=head_mask['ll'])
-        #input('vv')
+        # input('vv')
         visn_att_output, maps_2 = self.visn_self_att(visn_input, visn_attention_mask, head_mask=head_mask['vv'])
         return lang_att_output, visn_att_output, [maps_1, maps_2]
 
@@ -568,17 +579,19 @@ class LXRTXLayer(nn.Module):
         return lang_output, visn_output
 
     def forward(self, lang_feats, lang_attention_mask,
-                      visn_feats, visn_attention_mask, head_mask):
+                visn_feats, visn_attention_mask, head_mask):
         lang_att_output = lang_feats
         visn_att_output = visn_feats
 
         lang_att_output, visn_att_output, maps_1 = self.cross_att(lang_att_output, lang_attention_mask,
-                                                          visn_att_output, visn_attention_mask, head_mask=head_mask)
+                                                                  visn_att_output, visn_attention_mask,
+                                                                  head_mask=head_mask)
         lang_att_output, visn_att_output, maps_2 = self.self_att(lang_att_output, lang_attention_mask,
-                                                         visn_att_output, visn_attention_mask, head_mask=head_mask)
+                                                                 visn_att_output, visn_attention_mask,
+                                                                 head_mask=head_mask)
         lang_output, visn_output = self.output_fc(lang_att_output, visn_att_output)
 
-        return lang_output, visn_output, maps_1+maps_2  #[cross v->l, cross l->v, self l, self v]
+        return lang_output, visn_output, maps_1 + maps_2  # [cross v->l, cross l->v, self l, self v]
 
 
 class VisualFeatEncoder(nn.Module):
@@ -603,7 +616,7 @@ class VisualFeatEncoder(nn.Module):
         x = self.visn_fc(feats)
         print("VIS ENCODE2")
         x = self.visn_layer_norm(x)
-        y = self.box_fc(boxes)  
+        y = self.box_fc(boxes)
         y = self.box_layer_norm(y)
         output = (x + y) / 2
 
@@ -645,29 +658,30 @@ class LXRTEncoder(nn.Module):
         #       Keep this design to allow loading BERT weights.
         visn_feats = self.visn_fc(visn_feats)
         print("vis FC --- DONE")
-    
-        #att_maps = {'lang':[], 'vis': [], 'cross': []}
-        att_maps = {'lang':[], 'vis': [], 'vv': [], 'vl': [], 'll': [], 'lv': []}  # vl = vision to language (language is receiver)
+
+        # att_maps = {'lang':[], 'vis': [], 'cross': []}
+        att_maps = {'lang': [], 'vis': [], 'vv': [], 'vl': [], 'll': [],
+                    'lv': []}  # vl = vision to language (language is receiver)
 
         # Run language layers
         for l_i, layer_module in enumerate(self.layer):
-            #input('lang')
+            # input('lang')
             lang_feats, maps = layer_module(lang_feats, lang_attention_mask, head_mask=head_mask['lang'][l_i])
             att_maps['lang'].append(maps)
 
         # Run relational layers
         for l_i, layer_module in enumerate(self.r_layers):
-            #input('vis')
+            # input('vis')
             visn_feats, maps = layer_module(visn_feats, visn_attention_mask, head_mask=head_mask['lang'][l_i])
             att_maps['vis'].append(maps)
         print("CROSS --- START")
         # Run cross-modality layers
         for l_i, layer_module in enumerate(self.x_layers):
-            #input('cross')
-            head_mask_cross = {k:v[l_i] for k,v in head_mask.items()}
+            # input('cross')
+            head_mask_cross = {k: v[l_i] for k, v in head_mask.items()}
             lang_feats, visn_feats, maps = layer_module(lang_feats, lang_attention_mask,
-                                                  visn_feats, visn_attention_mask, head_mask_cross)
-            #att_maps['cross'].append(maps)  # each maps is actually a list of maps
+                                                        visn_feats, visn_attention_mask, head_mask_cross)
+            # att_maps['cross'].append(maps)  # each maps is actually a list of maps
             att_maps['vl'].append(maps[0])
             att_maps['lv'].append(maps[1])
             att_maps['ll'].append(maps[2])
@@ -784,6 +798,7 @@ class BertPreTrainedModel(nn.Module):
     """ An abstract class to handle weights initialization and
         a simple interface for dowloading and loading pretrained models.
     """
+
     def __init__(self, config, *inputs, **kwargs):
         super(BertPreTrainedModel, self).__init__()
         if not isinstance(config, BertConfig):
@@ -917,6 +932,7 @@ class BertPreTrainedModel(nn.Module):
             for name, child in module._modules.items():
                 if child is not None:
                     load(child, prefix + name + '.')
+
         start_prefix = ''
         if not hasattr(model, 'bert') and any(s.startswith('bert.') for s in state_dict.keys()):
             start_prefix = 'bert.'
@@ -934,7 +950,7 @@ class BertPreTrainedModel(nn.Module):
         #         model.__class__.__name__, unexpected_keys))
         if len(error_msgs) > 0:
             raise RuntimeError('Error(s) in loading state_dict for {}:\n\t{}'.format(
-                               model.__class__.__name__, "\n\t".join(error_msgs)))
+                model.__class__.__name__, "\n\t".join(error_msgs)))
         return model
 
 
@@ -950,9 +966,8 @@ class LXRTModel(BertPreTrainedModel):
 
     def forward(self, input_ids, token_type_ids=None, attention_mask=None, head_mask=None,
                 visual_feats=None, visual_attention_mask=None):
-        print("FORWARD INIT")
         if head_mask is None:
-            print("NO HEADMASK")
+
             head_mask = {}
             for maptype in ['lang', 'vis', 'vl', 'lv', 'vv', 'll']:
 
@@ -963,14 +978,15 @@ class LXRTModel(BertPreTrainedModel):
                 else:
                     n_layers = args.xlayers
 
-                head_mask[maptype] = torch.zeros((n_layers, args.n_head))  # done later.to(next(self.parameters()).device)
-            print("NO HEADMASK -- END OF INIT")
+                head_mask[maptype] = torch.zeros(
+                    (n_layers, args.n_head))  # done later.to(next(self.parameters()).device)
+
         if attention_mask is None:
             attention_mask = torch.ones_like(input_ids)
-            print("ATTMASK -- END OF INIT")
+
         if token_type_ids is None:
             token_type_ids = torch.zeros_like(input_ids)
-            print("TOKENS -- END OF INIT")
+
         # We create a 3D attention mask from a 2D tensor mask.
         # Sizes are [batch_size, 1, 1, to_seq_length]
         # So we can broadcast to [batch_size, num_heads, from_seq_length, to_seq_length]
@@ -983,20 +999,21 @@ class LXRTModel(BertPreTrainedModel):
         # positions we want to attend and -10000.0 for masked positions.
         # Since we are adding it to the raw scores before the softmax, this is
         # effectively the same as removing these entirely.
-        extended_attention_mask = extended_attention_mask.to(dtype=next(self.parameters()).dtype) # fp16 compatibility
+        extended_attention_mask = extended_attention_mask.to(dtype=next(self.parameters()).dtype)  # fp16 compatibility
         extended_attention_mask = (1.0 - extended_attention_mask) * -10000.0
 
         # Process the visual attention mask
         if visual_attention_mask is not None:
             extended_visual_attention_mask = visual_attention_mask.unsqueeze(1).unsqueeze(2)
-            extended_visual_attention_mask = extended_visual_attention_mask.to(dtype=next(self.parameters()).dtype) # fp16 compatibility
+            extended_visual_attention_mask = extended_visual_attention_mask.to(
+                dtype=next(self.parameters()).dtype)  # fp16 compatibility
             extended_visual_attention_mask = (1.0 - extended_visual_attention_mask) * -10000.0
         else:
             extended_visual_attention_mask = None
-        print("EMBEDINGS -- INIT")
+
         # Positional Word Embeddings
         embedding_output = self.embeddings(input_ids, token_type_ids)
-        print("EMBEDINGS -- END OF INIT")
+
         # Run LXRT backbone
 
         lang_feats, visn_feats, att_maps = self.encoder(
@@ -1006,10 +1023,7 @@ class LXRTModel(BertPreTrainedModel):
             visn_feats=visual_feats,
             visn_attention_mask=extended_visual_attention_mask)
 
-        print("ENCODER -- END OF IT")
         pooled_output = self.pooler(lang_feats)
-
-        print("FORWARD BERT??")
 
         return (lang_feats, visn_feats), pooled_output, att_maps
 
@@ -1029,7 +1043,7 @@ class LXRTPretraining(BertPreTrainedModel):
 
         config.num_attention_heads = args.n_head
         config.hidden_size = args.hidden_size
-        print("Configuration:",config)
+        print("Configuration:", config)
 
         super().__init__(config)
         # Configuration
@@ -1061,7 +1075,7 @@ class LXRTPretraining(BertPreTrainedModel):
         if self.task_pointer in ['KLDiv', 'Triplet']:
             print('Task pointer is %s' % self.task_pointer)
             self.matching_decoder = MatchingDecoderLV(config, metric=matching_metric)
-            
+
         elif self.task_pointer in ['boxTransformer']:
             print('Task pointer is %s' % self.task_pointer)
             self.matching_decoder = BoxTransformer(config)
@@ -1069,7 +1083,8 @@ class LXRTPretraining(BertPreTrainedModel):
         self.apply(self.init_bert_weights)
 
     def forward(self, input_ids, token_type_ids=None, attention_mask=None, masked_lm_labels=None,
-                visual_feats=None, pos=None, obj_labels=None, matched_label=None, ans=None, iou_target=None, anchor_target=None,
+                visual_feats=None, pos=None, obj_labels=None, matched_label=None, ans=None, iou_target=None,
+                anchor_target=None,
                 epoch=None):
         (lang_output, visn_output), pooled_output, att_maps = self.bert(
             input_ids, token_type_ids, attention_mask,
@@ -1083,7 +1098,7 @@ class LXRTPretraining(BertPreTrainedModel):
             # This answer_score would not be used anywhere,
             # just to keep a constant return function signature.
             answer_score = pooled_output[0][0]
-        
+
         if self.task_pointer is not None:
             if self.task_pointer == 'boxTransformer':
                 iou_score = self.matching_decoder(lang_output, visn_output, pos)
@@ -1125,7 +1140,7 @@ class LXRTPretraining(BertPreTrainedModel):
                     visn_prediction_scores.view(-1, output_dim),
                     label.view(*label_shape),
                 )
-                if visn_loss.dim() > 1:     # Regression Losses
+                if visn_loss.dim() > 1:  # Regression Losses
                     visn_loss = visn_loss.mean(1)
                 visn_loss = (visn_loss * mask_conf.view(-1)).mean() * weight
                 total_visn_loss += visn_loss
@@ -1136,21 +1151,23 @@ class LXRTPretraining(BertPreTrainedModel):
             answer_loss = loss_fct(
                 answer_score.view(-1, self.num_answers),
                 ans.view(-1)
-            ) * 2       # Multiply by 2 because > half of the data will not have label
+            ) * 2  # Multiply by 2 because > half of the data will not have label
             # if epoch >= 999:  #TODO!!!!!
             total_loss += answer_loss
             losses += (answer_loss.detach(),)
-        
+
         if iou_target is not None and self.task_pointer is not None:
-            matched_mask = matched_label.float().unsqueeze(-1) # because we do not compute pointing loss if sent and image do not match together
+            matched_mask = matched_label.float().unsqueeze(
+                -1)  # because we do not compute pointing loss if sent and image do not match together
             ALPHA = self.alpha_pointer
+
             def iou_preprocess(iou, obj_conf=None):
                 TRESHOLD = 0.1
                 TOPK = 3
                 # norm_iou = np.exp(iou) / np.sum(np.exp(iou), axis=0)  #iou / (iou.sum() + 1e-9)
                 # f_iou = norm_iou * (iou.sum() >= TRESHOLD)
                 sorted_values = torch.sort(iou, descending=True, dim=-1)[0]
-                t_top = sorted_values[:, :, TOPK-1]
+                t_top = sorted_values[:, :, TOPK - 1]
                 iou_topk = iou.masked_fill(iou < t_top.unsqueeze(-1), -1e9)
                 f_iou = torch.softmax(iou_topk, dim=-1)
                 treshold_mask = (iou_topk.clamp(min=.0).sum(-1) >= TRESHOLD).float()
@@ -1161,9 +1178,9 @@ class LXRTPretraining(BertPreTrainedModel):
                     t_bot = sorted_values[:, :, 10]
                     iou_botk = (iou < t_bot.unsqueeze(-1)).float()
                     # Take topk most confident objects 
-                    conf_top = torch.sort(obj_conf.unsqueeze(1) * iou_botk, descending=True, dim=-1)[0][:, :, TOPK-1]
+                    conf_top = torch.sort(obj_conf.unsqueeze(1) * iou_botk, descending=True, dim=-1)[0][:, :, TOPK - 1]
                     conf_mask = obj_conf.unsqueeze(1).expand(-1, iou.size(1), -1) >= conf_top.unsqueeze(-1)
-                    neg_score = iou_botk * conf_mask.float()                    
+                    neg_score = iou_botk * conf_mask.float()
                     return f_iou, treshold_mask, neg_score
 
             if self.task_pointer == 'KLDiv':
@@ -1171,42 +1188,47 @@ class LXRTPretraining(BertPreTrainedModel):
                 loss_pointer_fct = KLDivLoss(reduction='none')
                 iou_pred = torch.log_softmax(iou_score, dim=-1)
                 matching_loss = loss_pointer_fct(input=iou_pred, target=iou_target_preprocess)
-                matching_loss = ALPHA * (matching_loss.sum(-1) * treshold_mask * matched_mask).sum() / ((treshold_mask * matched_mask).sum() + 1e-9)
+                matching_loss = ALPHA * (matching_loss.sum(-1) * treshold_mask * matched_mask).sum() / (
+                            (treshold_mask * matched_mask).sum() + 1e-9)
             elif self.task_pointer == 'Triplet':
-                iou_target_preprocess, treshold_mask, negative_weights = iou_preprocess(iou_target, obj_labels['obj'][1])
-                TRIPLET_MARGIN = 2 * 0.1 # 10% of d_max
+                iou_target_preprocess, treshold_mask, negative_weights = iou_preprocess(iou_target,
+                                                                                        obj_labels['obj'][1])
+                TRIPLET_MARGIN = 2 * 0.1  # 10% of d_max
                 loss_pointer_fct = my_triplet(margin=TRIPLET_MARGIN)
                 matching_loss = loss_pointer_fct(pos_weights=iou_target_preprocess,
                                                  neg_weights=negative_weights,
                                                  similarity=iou_score)
-                matching_loss = ALPHA * (matching_loss * treshold_mask * matched_mask).sum() / ((treshold_mask * matched_mask).sum() + 1e-9)
+                matching_loss = ALPHA * (matching_loss * treshold_mask * matched_mask).sum() / (
+                            (treshold_mask * matched_mask).sum() + 1e-9)
                 iou_pred = iou_score
             elif self.task_pointer == 'boxTransformer':
                 loss_pointer_fct = SmoothL1Loss(reduction='none')
                 treshold_mask = (anchor_target.sum(-1) != 0).float()
                 matching_loss = loss_pointer_fct(input=iou_score,
-                                                 target=anchor_target,)
-                matching_loss = ALPHA * (matching_loss.sum(-1) * treshold_mask * matched_mask).sum() / ((treshold_mask * matched_mask).sum() + 1e-9)
+                                                 target=anchor_target, )
+                matching_loss = ALPHA * (matching_loss.sum(-1) * treshold_mask * matched_mask).sum() / (
+                            (treshold_mask * matched_mask).sum() + 1e-9)
                 iou_pred = iou_score
-            matching_loss = matching_loss * 2       # Multiply by 2 because > half of the data will not have label
+            matching_loss = matching_loss * 2  # Multiply by 2 because > half of the data will not have label
             total_loss += matching_loss
             losses += (matching_loss.detach(),)
 
-        return total_loss, torch.stack(losses).unsqueeze(0),\
-            answer_score.detach(), iou_pred.detach()
+        return total_loss, torch.stack(losses).unsqueeze(0), \
+               answer_score.detach(), iou_pred.detach()
 
 
 class LXRTFeatureExtraction(BertPreTrainedModel):
     """
     BERT model for classification.
     """
+
     def __init__(self, config, mode='lxr'):
         """
 
         :param config:
         :param mode:  Number of visual layers
         """
-        
+
         """
         Configuration: {
           "attention_probs_dropout_prob": 0.1,
@@ -1224,7 +1246,7 @@ class LXRTFeatureExtraction(BertPreTrainedModel):
         """
         config.num_attention_heads = args.n_head
         config.hidden_size = args.hidden_size
-        print("Configuration:",config)
+        print("Configuration:", config)
 
         super().__init__(config)
         self.bert = LXRTModel(config)
@@ -1234,8 +1256,8 @@ class LXRTFeatureExtraction(BertPreTrainedModel):
     def forward(self, input_ids, token_type_ids=None, attention_mask=None, visual_feats=None,
                 visual_attention_mask=None, head_mask=None):
         feat_seq, pooled_output, att_maps = self.bert(input_ids, token_type_ids, attention_mask,
-                                            head_mask=head_mask, visual_feats=visual_feats,
-                                            visual_attention_mask=visual_attention_mask)
+                                                      head_mask=head_mask, visual_feats=visual_feats,
+                                                      visual_attention_mask=visual_attention_mask)
         if 'x' == self.mode:
             return pooled_output
         elif 'x' in self.mode and ('l' in self.mode or 'r' in self.mode):
@@ -1243,8 +1265,10 @@ class LXRTFeatureExtraction(BertPreTrainedModel):
         elif 'l' in self.mode or 'r' in self.mode:
             return feat_seq
 
+
 class MatchingDecoderLV(nn.Module):
     """Decode language->vision matching from language embeddings"""
+
     def __init__(self, config, metric):
         super(MatchingDecoderLV, self).__init__()
         HIDDEN_DECODER_SIZE = 256
@@ -1271,7 +1295,7 @@ class MatchingDecoderLV(nn.Module):
         if self.metric == 'sdp':
             scaled_dot_product = torch.einsum('bld, bnd -> bln', l, v) / math.sqrt(v.size(-1))
             # in [0, 1]
-            matching = scaled_dot_product  #torch.relu(scaled_dot_product)  #! RELU
+            matching = scaled_dot_product  # torch.relu(scaled_dot_product)  #! RELU
         elif self.metric == 'cosine':
             l_norm2 = l / torch.norm(l, p=2, dim=-1).unsqueeze(-1)
             v_norm2 = v / torch.norm(v, p=2, dim=-1).unsqueeze(-1)
@@ -1279,15 +1303,17 @@ class MatchingDecoderLV(nn.Module):
             matching = dot_product
         return matching
 
+
 class BoxTransformer(nn.Module):
     """Some Information about BoxTransformer"""
+
     def __init__(self, config):
         super(BoxTransformer, self).__init__()
 
         self.num_attention_heads = 1
         self.attention_head_size = int(config.hidden_size / config.num_attention_heads)
         self.all_head_size = self.num_attention_heads * self.attention_head_size
-        
+
         self.query = nn.Linear(config.hidden_size, self.all_head_size)
         self.key = nn.Linear(config.hidden_size, self.all_head_size)
         self.value = nn.Linear(4, 4)
