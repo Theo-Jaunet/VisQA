@@ -612,9 +612,8 @@ class VisualFeatEncoder(nn.Module):
 
     def forward(self, visn_input):
         feats, boxes = visn_input
-        print("VIS ENCODE")
         x = self.visn_fc(feats)
-        print("VIS ENCODE2")
+
         x = self.visn_layer_norm(x)
         y = self.box_fc(boxes)
         y = self.box_layer_norm(y)
@@ -652,12 +651,12 @@ class LXRTEncoder(nn.Module):
 
     def forward(self, lang_feats, lang_attention_mask,
                 visn_feats, head_mask, visn_attention_mask=None):
-        print("IN ENCODER---")
+
         # Run visual embedding layer
         # Note: Word embedding layer was executed outside this module.
         #       Keep this design to allow loading BERT weights.
         visn_feats = self.visn_fc(visn_feats)
-        print("vis FC --- DONE")
+
 
         # att_maps = {'lang':[], 'vis': [], 'cross': []}
         att_maps = {'lang': [], 'vis': [], 'vv': [], 'vl': [], 'll': [],
@@ -674,7 +673,7 @@ class LXRTEncoder(nn.Module):
             # input('vis')
             visn_feats, maps = layer_module(visn_feats, visn_attention_mask, head_mask=head_mask['lang'][l_i])
             att_maps['vis'].append(maps)
-        print("CROSS --- START")
+
         # Run cross-modality layers
         for l_i, layer_module in enumerate(self.x_layers):
             # input('cross')
@@ -686,7 +685,7 @@ class LXRTEncoder(nn.Module):
             att_maps['lv'].append(maps[1])
             att_maps['ll'].append(maps[2])
             att_maps['vv'].append(maps[3])
-        print("ENCODER --- DONE")
+
         return lang_feats, visn_feats, att_maps
 
 

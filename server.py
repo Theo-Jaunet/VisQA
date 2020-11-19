@@ -31,8 +31,7 @@ cache = Cache(config={'CACHE_TYPE': 'simple'})
 cache.init_app(app)
 Compress(app)
 
-my_demo = Demo()
-
+my_demo = Demo("lxmert_tiny_init_oracle_pretrain")
 
 mod = [("lang", 9, 4), ("vis", 5, 4), ("vl", 5, 4), ("lv", 5, 4), ("vv", 5, 4), ("ll", 5, 4)]
 
@@ -318,7 +317,7 @@ def ask():
             # print(temp)
             head_mask[temp[0]][int(temp[1])][int(temp[2])] = 1
 
-    top_prediction, five_predictions, attention_heads, alignment, k_dist, input_labels, input_size \
+    five_predictions, attention_heads, alignment, k_dist, input_labels, input_size \
         = my_demo.ask(question, image, head_mask)
 
     print(input_size["textual"])
@@ -335,15 +334,16 @@ def ask():
 
     print(input_labels)
     print(image)
-    return ujson.dumps({"pred": top_prediction[0],
-                        "confidence": top_prediction[1].item(),
-                        "alignment": alignment,
-                        # "coords": umaper.transform([formatK_dist(k_dist)]).tolist(),
-                        "k_dist": k_vals,
-                        "five": five,
-                        "labels": input_labels,
-                        "heatmaps": purgeHeats(AtttoSliptDict(attention_heads), input_size)
-                        })
+    return ujson.dumps({
+        # "pred": top_prediction[0],
+        # "confidence": top_prediction[1].item(),
+        "alignment": alignment,
+        # "coords": umaper.transform([formatK_dist(k_dist)]).tolist(),
+        "k_dist": k_vals,
+        "five": five,
+        "labels": input_labels,
+        "heatmaps": purgeHeats(AtttoSliptDict(attention_heads), input_size)
+    })
 
 
 def getfilext(path):
@@ -515,7 +515,7 @@ def stackDat():
             #     img += 1
             #     continue
             for k2, v2 in v["questions"].items():
-                top_prediction, five_predictions, attention_heads, alignment, k_dist, input_labels, input_size \
+                five_predictions, attention_heads, alignment, k_dist, input_labels, input_size \
                     = my_demo.ask(v2["question"], k, head_mask)
 
                 k_vals = toSliptDict(k_dist)
@@ -536,7 +536,7 @@ def stackDat():
                     res[k3]["kmeds"].append(int(v3))
             img += 1
 
-        with open('%s.json' % "tiny_oracle_full", 'w') as wjson:
+        with open('%s.json' % "lxmert_tiny_init_oracle_pretrain_full", 'w') as wjson:
             ujson.dump(res, wjson, ensure_ascii=False, sort_keys=True, indent=4)
 
 
@@ -566,10 +566,10 @@ if __name__ == '__main__':
     #
     # my_demo.load_data()
 
-    my_demo.load_model()
+    # my_demo.load_model()
 
-    # stackDat()
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    stackDat()
+    # app.run(host='0.0.0.0', port=5000, debug=False)
 
     # with open("/home/theo/Downloads/val_all_tail0.20_head0.20.json", 'r') as fjson:
     #     imgs = ujson.load(fjson)

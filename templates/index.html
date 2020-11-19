@@ -380,8 +380,8 @@
     $(".actFilted").on("click", function () {
 
         let elem = $(this)
-        let threshes = [20, 35, 70, 101];
-        let bases = [0, 20, 35, 70]
+        let threshes = [12, 25, 50, 101];
+        let bases = [0, 12, 25, 50]
         let nb = elem.attr("num")
 
 
@@ -542,7 +542,7 @@
                 drawHeat(data, id, [0, 0]);
 
 
-                updateStats(headStat[id])
+                updateStats(headStat[disp][id])
                 curHeat = data;
                 curname = id
             }

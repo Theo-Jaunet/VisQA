@@ -1,6 +1,6 @@
 {
     "num_answers": 1842,
-    "tiny_lxmert": 1,
+    "tiny_lxmert": 0,
     "ecai_lxmert": 0,
     "oracle": 1,
     "pretrained_model_lxmert": "model/src/pretrain/lxmert",

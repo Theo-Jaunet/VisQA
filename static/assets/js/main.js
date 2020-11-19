@@ -47,7 +47,7 @@ let order;
 
 let loadedImgs = [0, 0];
 
-let headStat;
+let headStat = {};
 
 
 load_data_light().then(r => init(r));
@@ -61,7 +61,9 @@ async function load_data_light() {
         await d3.json('static/assets/data/k_median.json', d3.autoType),
         await d3.json('static/assets/data/mods.json', d3.autoType),
         await d3.json('static/assets/data/info.json', d3.autoType),
-        await d3.json('static/assets/data/tiny_oracle_full.json', d3.autoType)
+        await d3.json('static/assets/data/tiny_oracle_full.json', d3.autoType),
+        await d3.json('static/assets/data/lxmert_tiny_full.json', d3.autoType),
+        await d3.json('static/assets/data/lxmert_tiny_init_oracle_pretrain_full.json', d3.autoType)
     ]
 }
 
@@ -77,11 +79,12 @@ function switchMod(dat) {
     asked = false;
     diff_bool = false;
     mod = dat.mod
-    disp =  dat.display
+    disp = dat.display
     UpdateCounter()
     drawModel(mod)
     d3.select("#model").transition().duration(470).style("opacity", "1");
     $("#loader").css("visibility", "hidden")
+    $("#ask").click();
 
     // $.ajax({
     //     type: "POST",
@@ -535,9 +538,9 @@ function initStacked() {
         .attr("stroke-width", 1)
 
 
-    let funcs = Object.keys(headStat["lang_0_0"]["functions"]);
+    let funcs = Object.keys(headStat["tiny_oracle"]["lang_0_0"]["functions"]);
     // let groups = Object.keys(headStat["lang_0_0"]["groups"]);
-    let grs = Object.keys(headStat["lang_0_0"]["groups"]);
+    let grs = Object.keys(headStat["tiny_oracle"]["lang_0_0"]["groups"]);
 
 
     let temp = funcs.map(d => [0, 0, 0, 0])
@@ -815,7 +818,9 @@ function init(dat) {
     metaDat = dat[3]
     console.log(metaDat);
 
-    headStat = dat[4]
+    headStat["tiny_oracle"] = dat[4]
+    headStat["lxmert_tiny"] = dat[5]
+    headStat["lxmert_tiny_init_oracle_pretrain"] = dat[6]
 
     let sel = $("#models");
 
