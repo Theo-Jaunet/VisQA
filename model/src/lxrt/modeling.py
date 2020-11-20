@@ -345,7 +345,7 @@ class BertOutAttention(nn.Module):
         x = x.view(*new_x_shape)
         return x.permute(0, 2, 1, 3)
 
-    def forward(self, hidden_states, context, attention_mask=None, head_mask=None):
+    def forward(self, hidden_states, context, attention_mask=None, head_mask=None, force_map=None):
         mixed_query_layer = self.query(hidden_states)
         mixed_key_layer = self.key(context)
         mixed_value_layer = self.value(context)
@@ -357,6 +357,9 @@ class BertOutAttention(nn.Module):
         # Take the dot product between "query" and "key" to get the raw attention scores.
         attention_scores = torch.matmul(query_layer, key_layer.transpose(-1, -2))
         attention_scores = attention_scores / math.sqrt(self.attention_head_size)
+        for i_f, fmap in enumerate(force_map):
+            if fmap is not None:
+                attention_scores[:, i_f] = torch.tensor(fmap) # log prob
 
         # When head mask is to 1, replace the head by average -> all attention probs goes to 0
         attention_scores = attention_scores * (1 - head_mask).view(1, self.num_attention_heads, 1, 1).to(
@@ -406,7 +409,7 @@ class BertSelfAttention(nn.Module):
         x = x.view(*new_x_shape)
         return x.permute(0, 2, 1, 3)
 
-    def forward(self, hidden_states, attention_mask=None, head_mask=None):
+    def forward(self, hidden_states, attention_mask=None, head_mask=None, force_map=None):
         mixed_query_layer = self.query(hidden_states)
         mixed_key_layer = self.key(hidden_states)
         mixed_value_layer = self.value(hidden_states)
@@ -418,6 +421,9 @@ class BertSelfAttention(nn.Module):
         # Take the dot product between "query" and "key" to get the raw attention scores.
         attention_scores = torch.matmul(query_layer, key_layer.transpose(-1, -2))
         attention_scores = attention_scores / math.sqrt(self.attention_head_size)
+        for i_f, fmap in enumerate(force_map):
+            if fmap is not None:
+                attention_scores[:, i_f] = torch.tensor(fmap) # log prob
 
         # When head mask is to 1, replace the head by average -> all attention probs goes to 0
         # print('num_attention_heads', self.num_attention_heads)
@@ -432,6 +438,7 @@ class BertSelfAttention(nn.Module):
         attention_probs = nn.Softmax(dim=-1)(attention_scores)
 
         maps = attention_probs.detach().clone()
+
         # maps = attention_probs.detach().clone().cpu()
 
         # This is actually dropping out entire tokens to attend to, which might
@@ -467,8 +474,8 @@ class BertXAttention(nn.Module):
         self.att = BertOutAttention(config, ctx_dim=ctx_dim)
         self.output = BertSelfOutput(config)
 
-    def forward(self, input_tensor, ctx_tensor, ctx_att_mask=None, head_mask=None):
-        output, maps = self.att(input_tensor, ctx_tensor, ctx_att_mask, head_mask=head_mask)
+    def forward(self, input_tensor, ctx_tensor, ctx_att_mask=None, head_mask=None, force_map=None):
+        output, maps = self.att(input_tensor, ctx_tensor, ctx_att_mask, head_mask=head_mask, force_map=force_map)
         attention_output = self.output(output, input_tensor)
         return attention_output, maps
 
@@ -479,8 +486,8 @@ class BertAttention(nn.Module):
         self.self = BertSelfAttention(config)
         self.output = BertSelfOutput(config)
 
-    def forward(self, input_tensor, attention_mask, head_mask):
-        self_output, maps = self.self(input_tensor, attention_mask, head_mask)
+    def forward(self, input_tensor, attention_mask, head_mask, force_map):
+        self_output, maps = self.self(input_tensor, attention_mask, head_mask, force_map=force_map)
         attention_output = self.output(self_output, input_tensor)
         return attention_output, maps
 
@@ -521,8 +528,8 @@ class BertLayer(nn.Module):
         self.intermediate = BertIntermediate(config)
         self.output = BertOutput(config)
 
-    def forward(self, hidden_states, attention_mask, head_mask):
-        attention_output, maps = self.attention(hidden_states, attention_mask, head_mask)
+    def forward(self, hidden_states, attention_mask, head_mask, force_map):
+        attention_output, maps = self.attention(hidden_states, attention_mask, head_mask, force_map=force_map)
         intermediate_output = self.intermediate(attention_output)
         layer_output = self.output(intermediate_output, attention_output)
         return layer_output, maps
@@ -550,22 +557,22 @@ class LXRTXLayer(nn.Module):
         # The cross attention layer
         self.visual_attention = BertXAttention(config)
 
-    def cross_att(self, lang_input, lang_attention_mask, visn_input, visn_attention_mask, head_mask):
+    def cross_att(self, lang_input, lang_attention_mask, visn_input, visn_attention_mask, head_mask, force_map=None):
         # Cross Attention
         # input('vl')
         lang_att_output, maps_1 = self.visual_attention(lang_input, visn_input, ctx_att_mask=visn_attention_mask,
-                                                        head_mask=head_mask['vl'])
+                                                        head_mask=head_mask['vl'], force_map=force_map['vl'])
         # input('lv')
         visn_att_output, maps_2 = self.visual_attention(visn_input, lang_input, ctx_att_mask=lang_attention_mask,
-                                                        head_mask=head_mask['lv'])
+                                                        head_mask=head_mask['lv'], force_map=force_map['lv'])
         return lang_att_output, visn_att_output, [maps_1, maps_2]
 
-    def self_att(self, lang_input, lang_attention_mask, visn_input, visn_attention_mask, head_mask):
+    def self_att(self, lang_input, lang_attention_mask, visn_input, visn_attention_mask, head_mask, force_map=None):
         # Self Attention
         # input('ll')
-        lang_att_output, maps_1 = self.lang_self_att(lang_input, lang_attention_mask, head_mask=head_mask['ll'])
+        lang_att_output, maps_1 = self.lang_self_att(lang_input, lang_attention_mask, head_mask=head_mask['ll'], force_map=force_map['ll'])
         # input('vv')
-        visn_att_output, maps_2 = self.visn_self_att(visn_input, visn_attention_mask, head_mask=head_mask['vv'])
+        visn_att_output, maps_2 = self.visn_self_att(visn_input, visn_attention_mask, head_mask=head_mask['vv'], force_map=force_map['vv'])
         return lang_att_output, visn_att_output, [maps_1, maps_2]
 
     def output_fc(self, lang_input, visn_input):
@@ -579,16 +586,16 @@ class LXRTXLayer(nn.Module):
         return lang_output, visn_output
 
     def forward(self, lang_feats, lang_attention_mask,
-                visn_feats, visn_attention_mask, head_mask):
+                visn_feats, visn_attention_mask, head_mask, force_map=None):
         lang_att_output = lang_feats
         visn_att_output = visn_feats
 
         lang_att_output, visn_att_output, maps_1 = self.cross_att(lang_att_output, lang_attention_mask,
                                                                   visn_att_output, visn_attention_mask,
-                                                                  head_mask=head_mask)
+                                                                  head_mask=head_mask, force_map=force_map)
         lang_att_output, visn_att_output, maps_2 = self.self_att(lang_att_output, lang_attention_mask,
                                                                  visn_att_output, visn_attention_mask,
-                                                                 head_mask=head_mask)
+                                                                 head_mask=head_mask, force_map=force_map)
         lang_output, visn_output = self.output_fc(lang_att_output, visn_att_output)
 
         return lang_output, visn_output, maps_1 + maps_2  # [cross v->l, cross l->v, self l, self v]
@@ -650,7 +657,8 @@ class LXRTEncoder(nn.Module):
         )
 
     def forward(self, lang_feats, lang_attention_mask,
-                visn_feats, head_mask, visn_attention_mask=None):
+                visn_feats, head_mask, visn_attention_mask=None,
+                force_attmaps=None):
 
         # Run visual embedding layer
         # Note: Word embedding layer was executed outside this module.
@@ -665,21 +673,24 @@ class LXRTEncoder(nn.Module):
         # Run language layers
         for l_i, layer_module in enumerate(self.layer):
             # input('lang')
-            lang_feats, maps = layer_module(lang_feats, lang_attention_mask, head_mask=head_mask['lang'][l_i])
+            lang_feats, maps = layer_module(lang_feats, lang_attention_mask, head_mask=head_mask['lang'][l_i],
+                                            force_map = force_attmaps['lang'][l_i])
             att_maps['lang'].append(maps)
 
         # Run relational layers
         for l_i, layer_module in enumerate(self.r_layers):
             # input('vis')
-            visn_feats, maps = layer_module(visn_feats, visn_attention_mask, head_mask=head_mask['lang'][l_i])
+            visn_feats, maps = layer_module(visn_feats, visn_attention_mask, head_mask=head_mask['vis'][l_i],
+                                            force_map = force_attmaps['vis'][l_i])
             att_maps['vis'].append(maps)
 
         # Run cross-modality layers
         for l_i, layer_module in enumerate(self.x_layers):
             # input('cross')
             head_mask_cross = {k: v[l_i] for k, v in head_mask.items()}
+            force_map_cross = {k: v[l_i] for k, v in force_attmaps.items()}
             lang_feats, visn_feats, maps = layer_module(lang_feats, lang_attention_mask,
-                                                        visn_feats, visn_attention_mask, head_mask_cross)
+                                                        visn_feats, visn_attention_mask, head_mask_cross, force_map=force_map_cross)
             # att_maps['cross'].append(maps)  # each maps is actually a list of maps
             att_maps['vl'].append(maps[0])
             att_maps['lv'].append(maps[1])
@@ -964,7 +975,7 @@ class LXRTModel(BertPreTrainedModel):
         self.apply(self.init_bert_weights)
 
     def forward(self, input_ids, token_type_ids=None, attention_mask=None, head_mask=None,
-                visual_feats=None, visual_attention_mask=None):
+                visual_feats=None, visual_attention_mask=None, force_attmaps=None):
         if head_mask is None:
 
             head_mask = {}
@@ -979,6 +990,20 @@ class LXRTModel(BertPreTrainedModel):
 
                 head_mask[maptype] = torch.zeros(
                     (n_layers, args.n_head))  # done later.to(next(self.parameters()).device)
+
+        if force_attmaps is None:
+            force_attmaps = {}
+            for maptype in ['lang', 'vis', 'vl', 'lv', 'vv', 'll']:
+
+                if maptype == 'lang':
+                    n_layers = args.llayers
+                elif maptype == 'vis':
+                    n_layers = args.rlayers
+                else:
+                    n_layers = args.xlayers
+
+                force_attmaps[maptype] = [[None] * args.n_head] * n_layers
+
 
         if attention_mask is None:
             attention_mask = torch.ones_like(input_ids)
@@ -1020,7 +1045,8 @@ class LXRTModel(BertPreTrainedModel):
             extended_attention_mask,
             head_mask=head_mask,
             visn_feats=visual_feats,
-            visn_attention_mask=extended_visual_attention_mask)
+            visn_attention_mask=extended_visual_attention_mask,
+            force_attmaps=force_attmaps)
 
         pooled_output = self.pooler(lang_feats)
 
@@ -1253,10 +1279,11 @@ class LXRTFeatureExtraction(BertPreTrainedModel):
         self.apply(self.init_bert_weights)
 
     def forward(self, input_ids, token_type_ids=None, attention_mask=None, visual_feats=None,
-                visual_attention_mask=None, head_mask=None):
+                visual_attention_mask=None, head_mask=None, force_attmaps=None):
         feat_seq, pooled_output, att_maps = self.bert(input_ids, token_type_ids, attention_mask,
                                                       head_mask=head_mask, visual_feats=visual_feats,
-                                                      visual_attention_mask=visual_attention_mask)
+                                                      visual_attention_mask=visual_attention_mask,
+                                                      force_attmaps=force_attmaps)
         if 'x' == self.mode:
             return pooled_output
         elif 'x' in self.mode and ('l' in self.mode or 'r' in self.mode):

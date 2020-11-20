@@ -524,7 +524,7 @@ class Demo():
         else:
             self.displayer.draw_k_dist(k_dist)
 
-    def ask(self, question, image, head_mask, show_heads=False):
+    def ask(self, question, image, head_mask, show_heads=False, force_attmaps=None):
         """
         Ask a question about an (pre-processed) image,
         @input:
@@ -532,6 +532,7 @@ class Demo():
             *image: path of the image (e.g "./2383391.jpg")
             *mask: dictionnary assigning a binary masking to each attention head
             *show_heads=True: display the heads attention.
+            *force_attmaps: do inference while forcing attention maps values. Must be logprob. The whole batch will be forced accordingly
         @return:
             *top_prediction: (top_answer, predicted_score)
             *five_predictions: top five predictions [(1_answer, 1_score),...,(5_answer, 5_score)]
@@ -565,6 +566,23 @@ class Demo():
         # iou_question, iou_answer = iou_question.cuda(), iou_answer.cuda()
         # sem_question_words, sem_answer_words, bboxes_words = sem_question_words.cuda(), sem_answer_words.cuda(), bboxes_words.cuda()
 
+        #* Forcing attention maps: example!
+        #* 1) I simulate an attention map extracted from another question
+        # n_layers = {'lang':9, 'vis':5, 'vl':5, 'lv':5, 'vv':5, 'll':5}
+        # dim = {'lang':(20,20), 'vis':(36,36), 'vl':(20,36), 'lv':(36,20), 'vv':(36,36), 'll':(20,20)} # (receive, send)
+        # force_attmaps = {}
+        # for maptype in ['lang', 'vis', 'vl', 'lv', 'vv', 'll']:
+        #     force_attmaps[maptype] = []
+        #     for layer in range(n_layers[maptype]):
+        #         heads_attmap = []
+        #         for head in range(4):
+        #             heads_attmap.append(torch.log(torch.rand(dim[maptype]).softmax(dim=-1)+1e-9))    
+        #         force_attmaps[maptype].append(heads_attmap)
+        #* 2) be sure to have logprob (not softmax)
+        #* 3) If you want, you can let some heads free. To do so, assign them a None value.
+        #* These heads will be computed as usual.
+        #force_attmaps['lang'][0][0] = None
+
         # Inference
         with torch.no_grad():
             """
@@ -581,8 +599,8 @@ class Demo():
                                                                                                 bboxes_words,
                                                                                                 visual_attention_mask,
                                                                                                 verbose=True,
-                                                                                                head_mask=head_mask, )
-
+                                                                                                head_mask=head_mask,
+                                                                                                force_attmaps=force_attmaps,)
 
         # Extract alignment for attention map 'vl' layer 3 head 0
         # word2bbox = get_alignment_from_attmap(
