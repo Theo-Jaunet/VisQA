@@ -209,7 +209,7 @@ class LXRTEncoder(nn.Module):
 
     def forward(self, sents, feats, head_mask, visual_attention_mask=None,
                 iou_question=None, iou_answer=None, sem_question_words=None, sem_answer_words=None, bboxes_words=None,
-                pool_only=False):
+                pool_only=False, force_attmaps=None):
         if not self.already_converted:
             train_features, iou_target, tkn_sent = convert_sents_to_features(
                 sents, self.max_seq_length, self.tokenizer, iou_question,
@@ -228,7 +228,7 @@ class LXRTEncoder(nn.Module):
             input_ids, segment_ids, input_mask,
             head_mask=head_mask,
             visual_feats=feats,
-            visual_attention_mask=visual_attention_mask)
+            visual_attention_mask=visual_attention_mask, force_attmaps=force_attmaps)
         return output, lang_feat, vis_feat, iou_target, tkn_sent, input_mask, att_maps
 
     def save(self, path):
