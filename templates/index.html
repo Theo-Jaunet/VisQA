@@ -312,25 +312,30 @@
 
 <div class="container" style="margin-bottom: 5%;margin-left: auto;width:1750px!important;max-width: 1750px">
     <div class="row">
-        <div class="twelve column" style="margin-top: 1.2%;position: relative">
+        <div class="twelve column" style="margin-top: 0.5%;position: relative">
             <div id="questDisp" style="width: 100%;height: 35px"></div>
-            <div style="border: thin solid #adadad;padding: 0.25em;height: 84px;display: flex"
+            <div style="border: thin solid #adadad;padding: 0.25em;height: 84px;display: inline-block"
                  id="selFlat">
-                <div id="tail" style="height: 100%;width: 45%;display: flex;overflow-x: scroll;overflow-y: hidden">
+                <div id="tail"
+                     style="height: 100%;width: 95.5%;display: inline-block;overflow-x: scroll;overflow-y: hidden">
 
                 </div>
-                <div id="midSel" style="height: 100%;width: 10%;display: inline-block;position: relative">
-                    <img src="/static/assets/images/add.png" id="plusTail" class="plusBtn"
-                         style="height: 40px;width: auto;top: 20%;left: 6%;position: absolute">
-                    <img src="/static/assets/images/more.png"
-                         style="height: 40px;width: auto;top: 20%;left: 38.5%;position: absolute">
-                    <img src="/static/assets/images/add.png" id="plusHead" class="plusBtn"
-                         style="height: 40px;width: auto;top: 20%;right: 6%;position: absolute">
-                </div>
-                <div id="head" style="height: 100%;width: 45%;display: flex;overflow-x: scroll;overflow-y: hidden">
+                <!--                <div id="midSel" style="height: 100%;width: 10%;display: inline-block;position: relative">
 
-                </div>
+                                    <img src="/static/assets/images/more.png"
+                                         style="height: 40px;width: auto;top: 20%;left: 38.5%;position: absolute">
+                                    <img src="/static/assets/images/add.png" id="plusHead" class="plusBtn"
+                                         style="height: 40px;width: auto;top: 20%;right: 6%;position: absolute">
+                                </div>-->
+                <!--                <div id="head" style="height: 100%;width: 45%;display: flex;overflow-x: scroll;overflow-y: hidden">-->
+
+                <!--                </div>-->
             </div>
+            <div style="display: inline-block">
+                <img src="/static/assets/images/add.png" id="plusTail" class="plusBtn"
+                     style="height: 40px;width: auto;top: 31%;right: 1.2%;position: absolute">
+            </div>
+
             <svg id="qDistrib"
                  style="width: 100%;height: 30px;margin-top: 0px">
 
@@ -372,7 +377,8 @@
                     <button id="fullDiff">
                         Compare
                     </button>
-                    <select style="display: inline-block;margin-right: 25px;cursor:pointer;" class="one-half" id="models">
+                    <select style="display: inline-block;margin-right: 25px;cursor:pointer;" class="one-half"
+                            id="models">
 
                     </select>
                     <span style="margin-top: -20%">K=0</span>
@@ -756,7 +762,7 @@
 
         } else if (type === "2") {
             let temp = [elem.attr("id")]
-
+            fix
             if (keymap[16]) {
                 attsMaps = union_arrays(attsMaps, temp)
             } else {

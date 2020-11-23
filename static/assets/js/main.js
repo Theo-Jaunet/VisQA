@@ -1028,8 +1028,8 @@ function init(dat) {
     drawModel(mod);
     setDPI(document.getElementById("heatm"), 960)
 
-    loadedImgs = [40, 40];
-    fillFlat(order.slice(0, 40), order.slice(-40), 740, 75)
+    loadedImgs = [60, 40];
+    fillFlat(order.slice(0, 60), order.slice(-40), 740, 75)
 
 
     loadInst(order[0]["id"], false)
@@ -1979,7 +1979,7 @@ function addImageProcess(src, size) {
 async function fillFlat(tails, heads, width, height) {
 
     let tail = $("#tail");
-    let head = $("#head");
+    // let head = $("#head");
 
 
     for (let iter = 0; iter < tails.length; iter++) {
@@ -2007,23 +2007,23 @@ async function fillFlat(tails, heads, width, height) {
 
     }
 
-
-    for (let iter = 0; iter < heads.length; iter++) {
-        // let img = await addImageProcess(baseUrl + heads[iter]["id"] + ".jpg", [height, height])
-        // img.setAttribute("num", order.length - heads.length + iter)
-        // head.append(img)
-
-
-        let div = $('<div/>')
-
-        div.attr("num", order.length - heads.length + iter)
-        div.css("background-image", "url(" + (baseUrl + heads[iter]["id"] + ".jpg") + ")")
-
-
-        head.append(div)
-
-    }
-    head.animate({scrollLeft: loadedImgs[0] * 60}, 0);
+    //
+    // for (let iter = 0; iter < heads.length; iter++) {
+    //     // let img = await addImageProcess(baseUrl + heads[iter]["id"] + ".jpg", [height, height])
+    //     // img.setAttribute("num", order.length - heads.length + iter)
+    //     // head.append(img)
+    //
+    //
+    //     let div = $('<div/>')
+    //
+    //     div.attr("num", order.length - heads.length + iter)
+    //     div.css("background-image", "url(" + (baseUrl + heads[iter]["id"] + ".jpg") + ")")
+    //
+    //
+    //     head.append(div)
+    //
+    // }
+    // head.animate({scrollLeft: loadedImgs[0] * 60}, 0);
 
     initFlatDone = true
 
