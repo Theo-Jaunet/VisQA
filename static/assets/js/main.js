@@ -8,6 +8,9 @@ let mod = {lang: 9, vis: 5, cross: 5, head: 4};
 
 let refKmean = {};
 
+let kmods = 1
+let hideResbool = false;
+
 let xscale;
 let yscale;
 
@@ -23,7 +26,7 @@ let oldHeatmaps = {};
 let oldHeatLabels = {};
 
 
-let mono_col = d3.scaleLinear().domain([0, 0.35, 1]).range(['#ffffe1', '#FEEAA9', '#cf582f']).interpolate(d3.interpolateHcl);
+let mono_col = d3.scaleLinear().domain([0, 0.35, 1]).range(['#ffffe1', '#FEEAA9', '#9b4a28']).interpolate(d3.interpolateHcl);
 let diff_col = d3.scaleLinear().domain([0, 0.08, 0.5, 0.9]).range(["EFF0E8", '#f2e7e9', "#aa5b65", "#6b111c"]).interpolate(d3.interpolateHcl);
 let fDuff_col = d3.scaleSequential(d3.interpolatePuOr).domain([-0.8, 0.8]);
 
@@ -44,12 +47,11 @@ let imShown;
 let curHeat;
 let curname;
 let order;
-
+let initFlatDone = false;
 let loadedImgs = [0, 0];
-
 let headStat = {};
 
-
+let currQuest;
 load_data_light().then(r => init(r));
 
 
@@ -146,7 +148,7 @@ function loadImg(src) {
 
         let cont = can.getContext('2d');
 
-        let rate = fixRatio2([im.width, im.height], [300, 300])
+        let rate = fixRatio2([im.width, im.height], [350, 300])
 
         can.width = rate[0]
         can.height = rate[1]
@@ -169,7 +171,7 @@ function loadImg2(src, x, y, w, h, name, wr, hr) {
 
     let cont = can.getContext('2d');
 
-    let rate = fixRatio2([imShown.width, imShown.height], [300, 300])
+    let rate = fixRatio2([imShown.width, imShown.height], [350, 300])
 
     can.width = rate[0]
     can.height = rate[1]
@@ -244,7 +246,7 @@ function drawModel(mod) {
     let blockHeight = ((268 - top_marg * 3) - ((yinter * 2) + top_marg)) / 2
 
 
-    let block_xinter = 10;
+    let block_xinter = 20;
 
     let rectHeight = blockHeight - yinter * 2
     let rectWidth = ((980) / mlen)
@@ -254,8 +256,11 @@ function drawModel(mod) {
 
     let crossSt = Math.max((((rectWidth + pad) * mod.lang)), (((rectWidth + pad) * mod.vis)))
 
+    let crossWidth = rectWidth * 2 + xinter * 3
+    let crossHeight = rectHeight * 2 + xinter * 3
 
-    crossSt += pad * 6;
+    let crossySt = (260 - crossHeight) / 2
+    crossSt += pad * 11;
 
     //LANG
 
@@ -272,6 +277,13 @@ function drawModel(mod) {
         .attr("stroke", '#555555')
         .attr("stroke-width", '1');
 
+    svg.append("path")
+        .attr("d", `M${((xinter + (rectWidth + xinter) * mod.lang) + block_xinter)} ${(top_marg + blockHeight / 2)}    C${((xinter + (rectWidth + xinter) * mod.lang) + block_xinter) + 20}  ${(top_marg + blockHeight / 2) - 4}      ${crossSt - 20} ${(crossySt + crossHeight / 2)}    ${crossSt} ${crossySt + crossHeight / 2 - 4}`)
+        .attr("stroke", "rgba(115,115,115,0.53)")
+        .attr("fill", "none")
+        .attr("stroke-width", "2")
+        .attr("stroke-dasharray", "9,2")
+
 
     svg.append("text")
         .attr("x", (block_xinter + ((xinter + ((rectWidth + xinter) * mod.lang)) / 2)) - 85)
@@ -287,6 +299,7 @@ function drawModel(mod) {
     for (let i = 0; i < mod.lang; i++) {
         x += pad;
         svg.append("rect")
+            .attr("class", "subBlock")
             .attr("name", "lang")
             .attr("type", "1")
             .attr("nb", i)
@@ -294,8 +307,6 @@ function drawModel(mod) {
             .attr("y", y)
             .attr("width", rectWidth)
             .attr("height", rectHeight)
-            .attr("fill", 'steelblue')
-            // .attr("fill", 'steelblue')
             .attr("stroke", '#555555')
             .attr("stroke-width", '1');
 
@@ -320,6 +331,18 @@ function drawModel(mod) {
         .attr("stroke", '#555555')
         .attr("stroke-width", '1')
 
+
+    let rect_twidth = (xinter + ((rectWidth + xinter) * mod.vis)) + pad * 4
+    let rect_th = top_marg + blockHeight + top_marg + blockHeight / 2
+
+    svg.append("path")
+        .attr("d", `M${rect_twidth} ${rect_th}    C${rect_twidth + 100}  ${rect_th + 10}      ${crossSt - 100} ${(crossySt + crossHeight / 2) - 10}    ${crossSt} ${crossySt + crossHeight / 2}`)
+        .attr("stroke", "rgba(115,115,115,0.53)")
+        .attr("fill", "none")
+        .attr("stroke-width", "2")
+        .attr("stroke-dasharray", "9,2")
+
+
     svg.append("text")
         .attr("x", (block_xinter + ((xinter + ((rectWidth + xinter) * mod.vis)) / 2)) - 70)
         .attr("y", (blockHeight * 2 + (top_marg * 3)))
@@ -336,6 +359,7 @@ function drawModel(mod) {
     for (let i = 0; i < mod.vis; i++) {
         x += pad;
         svg.append("rect")
+            .attr("class", "subBlock")
             .attr("name", "vis")
             .attr("type", "1")
             .attr("nb", i)
@@ -343,7 +367,6 @@ function drawModel(mod) {
             .attr("y", y)
             .attr("width", rectWidth)
             .attr("height", rectHeight)
-            .attr("fill", 'steelblue')
             .attr("stroke", '#555555')
             .attr("stroke-width", '1');
 
@@ -355,10 +378,6 @@ function drawModel(mod) {
 
     // cross
 
-    let crossWidth = rectWidth * 2 + xinter * 3
-    let crossHeight = rectHeight * 2 + xinter * 3
-
-    let crossySt = (300 - crossHeight) / 2
 
     for (let i = 0; i < mod.cross; i++) {
 
@@ -376,6 +395,18 @@ function drawModel(mod) {
             .attr("stroke-width", '1')
 
 
+        let tw = crossSt + (crossWidth * (i + 1)) + (block_xinter * (i))
+        let th = crossySt + crossHeight / 2
+
+        console.log("LLAAAA --" + tw + "--" + th + " ||" + (tw + block_xinter));
+        svg.append("path")
+            .attr("d", `M${tw} ${th} ${tw + block_xinter} ${th}`)
+            .attr("stroke", "rgba(115,115,115,0.53)")
+            .attr("fill", "none")
+            .attr("stroke-width", "2")
+            .attr("stroke-dasharray", "9,2")
+
+
         // x = crossSt + ((pad + (sqSize + pad * 2) * 2) * i) + (pad)
         x = (crossSt + (crossWidth * i) + (block_xinter * i)) + xinter
         y = crossySt + yinter
@@ -391,7 +422,7 @@ function drawModel(mod) {
                 .attr("y", y)
                 .attr("width", rectWidth)
                 .attr("height", rectHeight)
-                .attr("fill", 'steelblue')
+                .attr("class", "subBlock")
                 .attr("stroke", '#555555')
                 .attr("stroke-width", '1');
 
@@ -416,7 +447,7 @@ function drawModel(mod) {
                 .attr("y", y + (rectHeight) + yinter)
                 .attr("width", rectWidth)
                 .attr("height", rectHeight)
-                .attr("fill", 'steelblue')
+                .attr("class", "subBlock")
                 .attr("stroke", '#555555')
                 .attr("stroke-width", '1');
 
@@ -461,22 +492,23 @@ function drawHeads(svg, nb, x, y, width, height, name) {
         let col = getCol(refKmean[name + "_" + i])
 
         svg.append("rect")
+            .attr("class", "rectMod")
             .attr("type", "2")
             .attr("id", name + "_" + i)
             .attr("x", x + offx)
             .attr("y", y + offy)
             .attr("width", attWidth)
             .attr("height", attHeight)
+            .attr("ow", attWidth)
+            .attr("oh", attHeight)
             .attr("fill", col)
             .attr("stroke", "rgba(19,19,19,0.82)")
             .attr("stroke-width", '1');
-
     }
 }
 
 
 function getCol(val) {
-
 
     let col = "#ffb3ba"
     if (val < 12) {
@@ -499,7 +531,7 @@ function findElems(data, thresh, base) {
 
     for (let i = 0; i < names.length; i++) {
 
-        if (data[names[i]] < thresh && data[names[i]] >= base) {
+        if (data[names[i]][kmods] < thresh && data[names[i]][kmods] >= base) {
             res.push(names[i])
         }
     }
@@ -537,8 +569,8 @@ function initStacked() {
         .attr("stroke", "#555555")
         .attr("stroke-width", 1)
 
-
     let funcs = Object.keys(headStat["tiny_oracle"]["lang_0_0"]["functions"]);
+
     // let groups = Object.keys(headStat["lang_0_0"]["groups"]);
     let grs = Object.keys(headStat["tiny_oracle"]["lang_0_0"]["groups"]);
 
@@ -640,6 +672,23 @@ function initStacked() {
 
     let vals = [12, 25, 50]
 
+    svg.append("text")
+        .attr("x", leftmarg - 35)
+        .attr("y", 12)
+        .style("font-size", "12pt")
+        .style("font-family", "arial")
+        .style("font-weight", 300)
+        .text("k=0")
+
+    svg.append("text")
+        .attr("x", leftmarg - 55)
+        .attr("y", 485)
+        .style("font-family", "arial")
+        .style("font-size", "12pt")
+        .style("font-weight", 300)
+        .text("k=100")
+
+
     for (let i = 0; i < vals.length; i++) {
         console.log(tScale(vals[i]));
 
@@ -651,6 +700,13 @@ function initStacked() {
             .attr("stroke", "rgba(85,85,85,0.67)")
             .attr("stroke-width", 1)
 
+        svg.append("text")
+            .attr("x", 2)
+            .attr("y", tScale(vals[i]) - 2)
+            .style("font-size", "12pt")
+            .style("font-family", "arial")
+            .style("font-weight", 300)
+            .text(vals[i])
     }
 
 
@@ -659,37 +715,92 @@ function initStacked() {
         .attr("id", "karea");
 
 
+    let gcur = svg.append('g').attr("id", "cursorKmed").style('opacity', 0)
+
+    gcur.append("line")
+        .attr("x1", leftmarg)
+        .attr("x2", lineMarg)
+        .attr("y1", 0)
+        .attr("y2", 0)
+        .attr("stroke", "#882131")
+        .attr("stroke-width", "2")
+
+    // gcur.append("text")
+    //     .attr("x", 2)
+    //     .attr("y", -2)
+    //     .style("font-size", "12pt")
+    //     .style("font-family", "arial")
+    //     .style("font-weight", 300)
+    //     .attr("color", "#882131")
+    //     .text("curr")
+
 }
 
 
-function updateStats(data) {
+function sortQues(a, b) {
+
+    if (a["val"][0] > b["val"][0]) {
+        return -1
+    } else if (b["val"][0] > a["val"][0]) {
+        return 1
+    } else if (a["val"][0] == b["val"][0]) {
+        if (a["val"][1] > b["val"][1]) {
+            return -1
+        } else if (b["val"][1] > a["val"][1]) {
+            return 1
+        } else if (a["val"][1] == b["val"][1]) {
+            if (a["val"][2] > b["val"][2]) {
+                return -1
+            } else if (b["val"][2] > a["val"][2]) {
+                return 1
+            } else if (a["val"][2] == b["val"][2]) {
+                if (a["val"][3] > b["val"][3]) {
+                    return -1
+                } else if (b["val"][3] > a["val"][3]) {
+                    return 1
+                }
+            }
+        }
+
+    }
+    return 0
+}
+
+function updateStats(data, id) {
 
     let stack = d3.stack()
-        .keys([0, 1, 2, 3])
+        .keys([0, 1, 2, 3]);
 
-    let leftmarg = 120
-    let lineMarg = 5
-    let bandWidth = 15
-    let bandPad = 6
+    let leftmarg = 120;
+    let lineMarg = 5;
+    let bandWidth = 15;
+    let bandPad = 6;
+    let gr = ""
+    let op = ""
+
+    if (currQuest != -1) {
+        gr = currQuest["groups"]["global"]
+        op = currQuest["operations"]
+    }
 
 
-    let g = d3.select("#topBars")
-    let teKey = Object.keys(data['functions'])
+    let g = d3.select("#topBars");
+    let teKey = Object.keys(data['functions']);
 
     let dat = teKey.map(d => {
         return {"val": data["functions"][d], "key": d}
-    })
-    let temp = dat.sort((a, b) => (a["val"][0] > b["val"][0]) ? -1 : ((b["val"][0] > a["val"][0]) ? 1 : 0))
+    });
+    // let temp = dat.sort((a, b) => (a["val"][0] > b["val"][0]) ? -1 : ((b["val"][0] > a["val"][0]) ? 1 : 0))
+    let temp = dat.sort((a, b) => sortQues(a, b));
 
 
     let labels = temp.map(d => d["key"]);
 
     // let labels = ;
-
     let grs = g.selectAll("g").data(stack(temp.map(d => d["val"])))
     // let grs = g.selectAll("g").data(stack(teKey.map(d => data["functions"][d])))
 
-    let yScale = d3.scaleLinear().domain([50, 200]).range([(486 - 300) / 2, 20])
+    let yScale = d3.scaleLinear().domain([150, 1500]).range([(486 - 265) / 2, 20]).nice()
 
     grs.selectAll('rect')
         .data(d => d)
@@ -700,13 +811,18 @@ function updateStats(data) {
 
     tg.selectAll("text").remove()
 
+
     for (let i = 0; i < labels.length; i++) {
 
         let tx = 20 + leftmarg + (bandWidth * i) + (bandPad * i) + bandWidth / 2
         let ty = (122)
+
+
         tg.append('text')
             .attr("text-anchor", "end")
             .style("transform", "translate(" + tx + "px," + ty + "px) rotate(-85deg)")
+            .style("fill", (op.includes(labels[i]) ? "#df0106" : ''))
+            .style("font-weight", (op.includes(labels[i]) ? "700" : '400'))
             .text(labels[i])
     }
 
@@ -717,7 +833,7 @@ function updateStats(data) {
     let dat2 = teKey2.map(d => {
         return {"val": data["groups"][d], "key": d}
     })
-    let temp2 = dat2.sort((a, b) => (a["val"][0] > b["val"][0]) ? -1 : ((b["val"][0] > a["val"][0]) ? 1 : 0))
+    let temp2 = dat2.sort((a, b) => sortQues(a, b))
 
 
     let labels2 = temp2.map(d => d["key"]);
@@ -727,7 +843,7 @@ function updateStats(data) {
     let grs2 = g2.selectAll("g").data(stack(temp2.map(d => d["val"])))
     // let grs = g.selectAll("g").data(stack(teKey.map(d => data["functions"][d])))
 
-    let yScale2 = d3.scaleLinear().domain([50, 200]).range([486 - 130, 486 - 220])
+    let yScale2 = d3.scaleLinear().domain([50, 500]).range([486 - 130, 486 - 220])
 
     grs2.selectAll('rect')
         .data(d => d)
@@ -745,15 +861,17 @@ function updateStats(data) {
         tg2.append('text')
             .attr("text-anchor", "end")
             .style("transform", "translate(" + tx + "px," + ty + "px) rotate(-85deg)")
+            .style("fill", (gr == labels2[i]) ? "#df0106" : '')
+            .style("font-weight", (gr == labels2[i]) ? "700" : '400')
             .text(labels2[i])
     }
 
 
-    drawKaera(data["kmeds"])
+    drawKaera(data["kmeds"], id)
 
 }
 
-function drawKaera(data) {
+function drawKaera(data, id) {
     var counts = {};
 
     let path = d3.select("#karea")
@@ -775,7 +893,11 @@ function drawKaera(data) {
 
     let tdat = Object.keys(counts).map(d => {
         return {"key": d, "val": counts[d]}
-    })
+    });
+
+
+    d3.select("#cursorKmed").style("opacity", 1)
+        .transition().duration(300).attr("transform", "translate(" + 0 + "," + yScale(currKmean[id][kmods]) + ")")
 
     // console.log(tdat);
 
@@ -818,9 +940,9 @@ function init(dat) {
     metaDat = dat[3]
     console.log(metaDat);
 
-    headStat["tiny_oracle"] = dat[4]
-    headStat["lxmert_tiny"] = dat[5]
-    headStat["lxmert_tiny_init_oracle_pretrain"] = dat[6]
+    headStat["tiny_oracle"] = dat[4];
+    headStat["lxmert_tiny"] = dat[5];
+    headStat["lxmert_tiny_init_oracle_pretrain"] = dat[6];
 
     let sel = $("#models");
 
@@ -828,6 +950,35 @@ function init(dat) {
         sel.append(new Option(models[i].display, models[i].display))
     }
 
+    let tres = countDistrib()
+    let tscale = d3.scaleLinear().domain([0, (tres[0] + tres[1] + tres[2])]).range([0, $("#qDistrib").width()])
+
+
+    let cols = ["green", "gray", "red"]
+    let labels = ["tail", "middle", "head"]
+    let h = $("#qDistrib").height() * 0.4 - 2
+    let qdis = d3.select("#qDistrib")
+    let x = 0;
+    for (let i = 0; i < tres.length; i++) {
+
+        qdis.append("rect")
+            .attr("x", x)
+            .attr("y", 0)
+            .attr("width", tscale(tres[i]))
+            .attr("height", h)
+            .attr("fill", cols[i])
+            .attr("stroke", "#555555")
+            .attr("stroke-width")
+
+        qdis.append("text")
+            .attr("x", x + tscale(tres[i]) / 2)
+            .attr("y", h + 14)
+            .text(labels[i] + " " + tres[i])
+            .style("text-anchor", "middle")
+
+
+        x += tscale(tres[i])
+    }
 
 // let data = dat[0].map((d, i) => {
 //     d.k_dist = dat[2]['proj'][i];
@@ -877,8 +1028,8 @@ function init(dat) {
     drawModel(mod);
     setDPI(document.getElementById("heatm"), 960)
 
-    loadedImgs = [20, 20];
-    fillFlat(order.slice(0, 20), order.slice(-20), 740, 75)
+    loadedImgs = [40, 40];
+    fillFlat(order.slice(0, 40), order.slice(-40), 740, 75)
 
 
     loadInst(order[0]["id"], false)
@@ -894,6 +1045,35 @@ function init(dat) {
 //         }
 //     }
 // });
+}
+
+
+function linkInput(imgW, imgH) {
+
+
+    let svg = d3.select("#inputLinks")
+
+    svg.selectAll("*").remove()
+
+    let ratio = d3.scaleLinear().domain([193, 352]).range([15, 180])
+
+
+    svg.append("path")
+        .attr("d", `M${205} ${20}    C${250}  ${5}      ${250} ${180}    ${305} ${155}`)
+        .attr("stroke", "rgba(85,85,85,0.7)")
+        .attr("fill", "none")
+        .attr("stroke-width", "2")
+        .attr("stroke-dasharray", "9,2")
+
+
+    svg.append("path")
+        .attr("d", `M${ratio(imgW)} ${55 + imgH / 2}    C${ratio(imgW) + 80}  ${35 + imgH / 2}      ${230} ${300}    ${305} ${275}`)
+        .attr("stroke", "rgba(85,85,85,0.7)")
+        .attr("fill", "none")
+        .attr("stroke-width", "2")
+        .attr("stroke-dasharray", "9,2")
+
+
 }
 
 function loadInst(imgId, thead) {
@@ -915,7 +1095,8 @@ function loadInst(imgId, thead) {
         let cont = can.getContext('2d');
 
         imShown = im
-        let rate = fixRatio2([im.width, im.height], [300, 300])
+        let rate = fixRatio2([im.width, im.height], [350, 300])
+        linkInput(rate[0], rate[1])
 
         can.width = rate[0]
         can.height = rate[1]
@@ -934,6 +1115,7 @@ function loadInst(imgId, thead) {
     // metaDat[imgId].filter(d => d["questionId"] == questId)[0]
 
     console.log(q);
+    currQuest = q
 
     let form = new FormData();
     form.append("units", attsMaps);
@@ -984,9 +1166,7 @@ function fillQuest(id) {
     for (let i = 0; i < quests.length; i++) {
         let temp = metaDat[id]["questions"][quests[i]]
         elem.append(new Option(temp.question, temp.question))
-
     }
-
 }
 
 function fillScene(data) {
@@ -1239,19 +1419,24 @@ function ask(data) {
 
 function DrawRes(data) {
 
-    let svg = d3.select("#res")
+    let svg = d3.select("#model")
 
-    svg.selectAll("*").remove()
+
+    svg.selectAll(".res").remove()
 
     let barHeight = 15
     let barPad = 17
 
     let textPad = 10;
 
+    let leftMarg = 1115
+    let topMarg = 65
+    let opa = (hideResbool ? 0 : 1);
 
-    const sortable = Object.fromEntries(
-        Object.entries(data).sort(([, a], [, b]) => a - b)
-    );
+
+    // const sortable = Object.fromEntries(
+    //     Object.entries(data).sort(([, a], [, b]) => a - b)
+    // );
 
     let ordered = Object.entries(data)
 
@@ -1259,31 +1444,46 @@ function DrawRes(data) {
 
     for (let i = 0; i < ordered.length; i++) {
 
-
         svg.append("rect")
-            .attr("x", 2)
-            .attr("y", 5 + (((barHeight + barPad) * i)))
+            .attr("x", leftMarg + 2)
+            .attr("y", topMarg + 5 + (((barHeight + barPad) * i)))
             .attr("height", barHeight)
             .attr("width", lscale(1))
             .attr("fill", "#f3f3f3")
             .attr("stroke", "#a9a9a9")
             .attr("strokeWidth", "1px")
-
+            .attr("class", "res")
+            .style("opacity", opa)
 
         svg.append("rect")
-            .attr("x", 2)
-            .attr("y", 5 + (barHeight + barPad) * i)
+            .attr("x", leftMarg + 2)
+            .attr("y", topMarg + 5 + (barHeight + barPad) * i)
             .attr("height", barHeight)
             .attr("width", lscale(ordered[i][1]))
             .attr("fill", (i === 0 ? "#a92234" : "steelblue"))
+            .attr("class", "res")
+            .style("opacity", opa)
         // .attr("stroke", "#f3f3f3")
         // .attr("strokeWidth", "1px")
 
-
         svg.append("text")
-            .attr("x", lscale(1) + textPad)
-            .attr("y", 5 + ((barHeight + barPad) * i) + (barHeight / 2) + 3)
+            .attr("class", "res")
+            .attr("x", leftMarg + lscale(1) + textPad)
+            .attr("y", topMarg + 5 + ((barHeight + barPad) * i) + (barHeight / 2) + 3)
             .text(ordered[i][0])
+            .style("opacity", opa)
+
+
+        let dist = leftMarg - 1015
+
+        svg.append("path")
+            .attr("class", 'res')
+            .attr("d", `M${1030} ${125 + (1 * i)} C${1015 + dist * 0.45} ${130 + (18 * i)} ${1015 + dist * 0.55} ${topMarg + 5 + (((barHeight + barPad) * i)) - 15}    ${leftMarg + 2} ${topMarg + 5 + (((barHeight + barPad) * i)) + barHeight / 2}`)
+            .attr("stroke", "rgba(85,85,85,0.7)")
+            .attr("fill", "none")
+            .attr("stroke-width", "2")
+            .attr("stroke-dasharray", "9,2")
+            .style("opacity", opa)
 
 
     }
@@ -1301,7 +1501,7 @@ function fillHeads(data) {
     for (let i = 0; i < names.length; i++) {
 
         // console.log("Making name _: #" + names[i] + " Of value: " + data[names[i]]);
-        let col = getCol(data[names[i]])
+        let col = getCol(data[names[i]][kmods])
 
 
         svg.select("#" + names[i]).attr("fill", col);
@@ -1500,7 +1700,7 @@ function highlightItem(items) {
     // console.log(val);
 
 
-    let rate = fixRatio2([imShown.width, imShown.height], [300, 300])
+    let rate = fixRatio2([imShown.width, imShown.height], [350, 300])
 
     can.width = rate[0]
     can.height = rate[1]
@@ -1551,11 +1751,44 @@ function highlightItem(items) {
 }
 
 
-function findLab(name) {
+function coord2Inds(coords, name, data) {
+    let marg = 15;
+    let pad = 5;
+    let st = 130;
+    let can = document.getElementById("heatm");
+
+    let cw = (((can.width - st) - (marg * 2)) - (pad * data[0].length)) / data[0].length;
+    let ch = (((can.height - st) - (marg * 2)) - (pad * data.length)) / data.length
+
+    let inds = findRC(coords, cw, ch, st, marg, pad)
+
+    let type = name.split("_")[0]
+
+    if (type == "vis" || type == "vv") {
+
+        return [inds, ["v", "v"]]
+
+    } else if (type == "lang" || type == "ll") {
+        return [inds, ["l", "l"]]
+    } else if (type == "vl") {
+        return [inds, ["v", "l"]]
+    } else if (type == "lv") {
+        return [inds, ["l", "v"]]
+    }
+
+}
 
 
-    if (currHeatLabels.textual.indexOf("name") !== -1) {
+function getLimit(type, inds, limitV, limitL) {
 
+    if (type == "vis" || type == "vv") {
+        return inds[0] < limitV && inds[1] < limitV
+    } else if (type == "lang" || type == "ll") {
+        return inds[0] < limitL && inds[1] < limitL
+    } else if (type == "vl") {
+        return inds[0] < limitV && inds[1] < limitL
+    } else if (type == "lv") {
+        return inds[0] < limitL && inds[1] < limitV
     }
 
 }
@@ -1589,7 +1822,10 @@ function drawHeat(data, name, coords) {
 
     let inds = findRC(coords, cw, ch, st, marg, pad)
 
-    if ((inds[0] >= 0 && inds[1] >= 0) && (inds[0] < currHeatLabels.visual.length && inds[1] < currHeatLabels.visual.length)) {
+    // console.log(inds);
+
+    // if ((inds[0] >= 0 && inds[1] >= 0) && (inds[0] < currHeatLabels.visual.length && inds[1] < currHeatLabels.visual.length)) {
+    if ((inds[0] >= 0 && inds[1] >= 0) && getLimit(type, inds, currHeatLabels.visual.length, currHeatLabels.textual.length)) {
         cont.fillStyle = "rgba(255,0,2,0.62)"
         cont.fillRect(0, st + marg + ((ch + pad) * inds[1]), can.width, ch + pad * 2)
         cont.fillRect(st + marg + ((cw + pad) * inds[0]) - pad, 0, cw + pad * 2, can.height)
@@ -1601,7 +1837,16 @@ function drawHeat(data, name, coords) {
         } else if (type == "lv") {
             highlightItem([inds[1]])
         }
+    } else {
+        cont.fillStyle = "rgba(21,10,255,0.62)"
+        if (inds[0] < 0 && inds[1] >= 0) {
 
+            cont.fillRect(0, st + marg + ((ch + pad) * inds[1]), can.width, ch + pad * 2)
+
+
+        } else if (inds[1] < 0 && inds[0] >= 0) {
+            cont.fillRect(st + marg + ((cw + pad) * inds[0]) - pad, 0, cw + pad * 2, can.height)
+        }
     }
 
     for (let i = 0; i < data.length; i++) { // Iter Horizontally
@@ -1637,13 +1882,9 @@ function drawHeat(data, name, coords) {
                 cont.fillStyle = mono_col(data[i][j]);
             }
 
-
             // cont.fillRect(st + marg + ((cw + pad) * j), st + marg + ((ch + pad) * i) + pad, cw, ch)
             cont.fillRect(st + marg + ((cw + pad) * j), st + marg + ((ch + pad) * i) + pad, cw, ch)
             cont.strokeRect(st + marg + ((cw + pad) * j), st + marg + ((ch + pad) * i) + pad, cw, ch)
-
-            // cont.stroke()
-            // cont.fill()
         }
     }
 }
@@ -1656,6 +1897,7 @@ function agDiff(data) {
 }
 
 function findRC(coords, cw, ch, st, marg, pad) {
+
     let xscale = d3.scaleLinear().domain([88, 500]).range([145, 985])
     let yscale = d3.scaleLinear().domain([75, 500]).range([150, 990])
     // console.log(coords[1]);
@@ -1671,7 +1913,6 @@ function findRC(coords, cw, ch, st, marg, pad) {
     if (coly > 0) {
         coly = Math.floor(coly - 0.05)
     }
-
     return [colx, coly]
 }
 
@@ -1738,28 +1979,200 @@ async function fillFlat(tails, heads, width, height) {
 
     for (let iter = 0; iter < tails.length; iter++) {
 
+        let div = $('<div/>')
 
-        let img = await addImageProcess(baseUrl + tails[iter]["id"] + ".jpg", [height, height])
 
-        img.setAttribute("num", iter)
-        if (iter == 0) {
-            img.setAttribute("class", "selectedIm")
+        if (iter === 0) {
+            div.attr("class", "selectedIm")
         }
-        tail.append(img)
+        div.attr("num", iter)
+        div.css("background-image", "url(" + (baseUrl + tails[iter]["id"] + ".jpg") + ")")
+
+
+        tail.append(div)
+
+        // let img = await addImageProcess(baseUrl + tails[iter]["id"] + ".jpg", [height, height])
+        //
+        // img.setAttribute("num", iter)
+        // if (iter == 0) {
+        //     img.setAttribute("class", "selectedIm")
+        // }
+        // tail.append(img)
 
 
     }
 
 
     for (let iter = 0; iter < heads.length; iter++) {
-        let img = await addImageProcess(baseUrl + heads[iter]["id"] + ".jpg", [height, height])
-        img.setAttribute("num", order.length - heads.length + iter)
-        head.append(img)
+        // let img = await addImageProcess(baseUrl + heads[iter]["id"] + ".jpg", [height, height])
+        // img.setAttribute("num", order.length - heads.length + iter)
+        // head.append(img)
+
+
+        let div = $('<div/>')
+
+        div.attr("num", order.length - heads.length + iter)
+        div.css("background-image", "url(" + (baseUrl + heads[iter]["id"] + ".jpg") + ")")
+
+
+        head.append(div)
 
     }
+    head.animate({scrollLeft: loadedImgs[0] * 60}, 0);
+
+    initFlatDone = true
 
     // fixRatio2()
 
+}
+
+
+function getHighHeads(ids, types) {
+
+    let thresh = 0.5;
+
+    let keys = Object.keys(currHeatmaps)
+
+    let heads = {};
+
+    for (let i = 0; i < keys.length; i++) {
+
+        let heat = currHeatmaps[keys[i]]
+
+        if (ids.length === 1) {
+
+            if (types[0] === "l") {
+
+                if (keys[i].includes("lang") || keys[i].includes("ll")) {
+
+                    if (checkRowHeat(heat, ids[0]) > thresh) {
+                        heads[keys[i]] = true
+                    } else if (checkColHeat(heat, ids[0]) > thresh) {
+                        heads[keys[i]] = true
+                    }
+
+                } else if (keys[i].includes("vl")) {
+
+                    if (checkRowHeat(heat, ids[0]) > thresh) {
+                        heads[keys[i]] = true
+                    }
+
+                } else if (keys[i].includes("lv")) {
+                    if (checkColHeat(heat, ids[0]) > thresh) {
+                        heads[keys[i]] = true
+                    }
+                }
+
+            } else if (types[0] === "v") {
+                if (keys[i].includes("vis") || keys[i].includes("vv")) {
+                    if (checkRowHeat(heat, ids[0]) > thresh) {
+                        heads[keys[i]] = true
+                    } else if (checkColHeat(heat, ids[0]) > thresh) {
+                        heads[keys[i]] = true
+                    }
+
+                } else if (keys[i].includes("vl")) {
+                    if (checkColHeat(heat, ids[0]) > thresh) {
+                        heads[keys[i]] = true
+                    }
+                } else if (keys[i].includes("lv")) {
+                    if (checkRowHeat(heat, ids[0]) > thresh) {
+                        heads[keys[i]] = true
+                    }
+                }
+
+            }
+        } else if (types[0] === types[1]) { // Two of the same type
+            if (types[0] === "l") {
+                if (keys[i].includes("lang") || keys[i].includes("ll")) {
+                    let temp = ids.slice().reverse()
+                    if (checkCellHeat(heat, temp) > thresh) {
+                        heads[keys[i]] = true
+                    }
+                }
+
+            } else if (types[0] === "v") {
+                if (keys[i].includes("vis") || keys[i].includes("vv")) {
+                    let temp = ids.slice().reverse()
+                    if (checkCellHeat(heat, temp) > thresh) {
+                        heads[keys[i]] = true
+                    }
+                }
+            }
+        } else { // TWO of different types
+            if (keys[i].includes("vl")) {
+                if (types[0] == "v") {
+                    let temp = ids.slice().reverse()
+                    if (checkCellHeat(heat, temp) > thresh) {
+                        heads[keys[i]] = true
+                    }
+
+                } else {
+                    if (checkCellHeat(heat, ids) > thresh) {
+                        heads[keys[i]] = true
+                    }
+                }
+            } else if (keys[i].includes("lv")) {
+                if (types[0] == "l") {
+
+                    let temp = ids.slice().reverse()
+                    // console.log((checkCellHeat(heat, temp) > thresh) + " -- " + keys[i] + "---" + checkCellHeat(heat, temp)+ "---"+ thresh);
+                    if (checkCellHeat(heat, temp) > thresh) {
+
+                        // console.log("adding");
+                        heads[keys[i]] = true
+                    }
+                } else {
+                    // console.log((checkCellHeat(heat, ids) > thresh) + " -- " + keys[i] + "---" + checkCellHeat(heat, ids)+ "---"+ thresh);
+                    if (checkCellHeat(heat, ids) > thresh) {
+                        heads[keys[i]] = true
+                    }
+                }
+            }
+        }
+    }
+    return heads
+}
+
+function checkRowHeat(data, id) {
+    return Math.max(...data[id])
+}
+
+function checkColHeat(data, id) {
+    let temp = data.map(d => d[id]);
+    return Math.max(...temp)
+}
+
+function checkCellHeat(data, ids) {
+    return parseFloat(data[ids[0]][ids[1]])
+}
+
+
+function countDistrib() {
+
+    let res = [0, 0, 0]
+    let imgs = Object.keys(metaDat)
+
+    for (let i = 0; i < imgs.length; i++) {
+
+        let tkeys = Object.keys(metaDat[imgs[i]]["questions"])
+
+        for (let j = 0; j < tkeys.length; j++) {
+
+            let q = metaDat[imgs[i]]["questions"][j];
+
+            if (q["ood"] === "tail") {
+                res[0] += 1
+            } else if (q["ood"] === "middle") {
+                res[1] += 1
+            } else if (q["ood"] === "head") {
+                res[2] += 1
+            }
+
+        }
+
+    }
+    return res
 }
 
 function setDPI(canvas, dpi) {
@@ -1790,4 +2203,19 @@ function setDPI(canvas, dpi) {
     // let cont = can.getContext('2d');
 
     ctx.scale(0.1, 0.1)
+}
+
+
+function saveSvg(svgEl, name) {
+    svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    var svgData = svgEl.outerHTML;
+    var preface = '<?xml version="1.0" standalone="no"?>\r\n';
+    var svgBlob = new Blob([preface, svgData], {type: "image/svg+xml;charset=utf-8"});
+    var svgUrl = URL.createObjectURL(svgBlob);
+    var downloadLink = document.createElement("a");
+    downloadLink.href = svgUrl;
+    downloadLink.download = name;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
 }

@@ -32,6 +32,10 @@
 
     <style>
 
+        .subBlock {
+            fill: #0e1a6a9e;
+        }
+
         input::-webkit-calendar-picker-indicator {
             opacity: 100;
         }
@@ -87,13 +91,42 @@
             user-select: none;
         }
 
-        #head img, #tail img {
+        #head div, #tail div {
             border: #555555 solid 1px;
             margin: 1px;
+            filter: saturate(35%) brightness(70%) opacity(70%);
+            border-radius: 3px;
+            height: 65px;
+            width: 35px;
+            display: inline-table;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            cursor: pointer;
+        }
+
+
+        .reducedRect {
+            width: 0;
+            height: 0;
+        }
+
+        #heatm {
+            cursor: pointer;
+        }
+
+        #head div:hover, #tail div:hover {
+
+            filter: none !important;
+            border: #498db4 solid 1px !important;
+
+
         }
 
         .selectedIm {
             border: red solid 1px !important;
+            filter: none !important;
         }
 
         .plusBtn {
@@ -102,6 +135,168 @@
 
         .plusBtn:hover {
             transform: scale(1.2, 1.2);
+        }
+
+
+        .__range input {
+            outline: none;
+            -webkit-appearance: none;
+            background-color: #aaa;
+            height: 6px;
+            width: 100%;
+            margin: 10px auto;
+            cursor: pointer;
+        }
+
+        .__range input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background-color: #017ea6;
+            border-radius: 50%;
+            cursor: -moz-grab;
+            cursor: -webkit-grab;
+            cursor: pointer;
+        }
+
+        .__range input::-moz-range-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background-color: #017ea6;
+            border-radius: 50%;
+            cursor: -moz-grab;
+            cursor: -webkit-grab;
+        }
+
+        .__range input::-ms-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background-color: #017ea6;
+            border-radius: 50%;
+            cursor: -moz-grab;
+            cursor: -webkit-grab;
+        }
+
+        .__range-step {
+            position: relative;
+        }
+
+        .__range-max {
+            float: right;
+        }
+
+        .__range-step input::-webkit-slider-thumb {
+            background: transparent;
+        }
+
+        .__range-step input::-moz-range-thumb {
+            background: transparent;
+        }
+
+        .__range-step input::-ms-thumb {
+            background: transparent;
+        }
+
+        .__range-step datalist {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            height: auto;
+            bottom: 23px;
+            /* disable text selection */
+            -webkit-user-select: none; /* Safari */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* IE10+/Edge */
+            user-select: none; /* Standard */
+            /* disable click events */
+            pointer-events: none;
+            text-indent: -8px;
+            cursor: pointer;
+        }
+
+        .__range-step datalist option {
+            width: 10px;
+            height: 10px;
+            min-height: 10px;
+            border-radius: 100px;
+            /* hide text */
+            white-space: nowrap;
+            padding: 5px;
+            line-height: 50px;
+            cursor: pointer;
+        }
+
+
+        .__range-step-popup output {
+            position: absolute;
+            background-color: #017ea6;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            color: white;
+            border-radius: 100px;
+            display: inline-block;
+            font-size: 12px;
+            bottom: 100%;
+            left: 0;
+            vertical-align: middle;
+            line-height: 30px;
+        }
+
+        .__range-step-popup .__range-output-square {
+            padding: 0 5px;
+            min-width: 25px;
+            width: auto !important;
+            border-radius: 5px !important;
+        }
+
+        .__range-step-popup output:after {
+            content: "";
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-top: 10px solid #017ea6;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            top: 90%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -1px;
+        }
+
+        .__range-step-popup datalist {
+            overflow: hidden;
+        }
+
+        .__range-step {
+            margin: 0 40px;
+        }
+
+        .__range-step-popup {
+            margin: 40px 40px;
+        }
+
+        input::-webkit-calendar-picker-indicator {
+            display: none; /* remove default arrow */
+        }
+
+        .myarrow:after {
+            content: url(https://i.stack.imgur.com/i9WFO.png);
+            margin-left: -20px;
+            padding: .1em;
+            pointer-events: none;
+        }
+
+
+        #questDisp {
+            overflow: hidden;
+        }
+
+        #questDisp p {
+            display: inline-block;
+            margin-right: 15px;
         }
 
     </style>
@@ -117,10 +312,11 @@
 
 <div class="container" style="margin-bottom: 5%;margin-left: auto;width:1750px!important;max-width: 1750px">
     <div class="row">
-        <div class="twelve column" style="margin-top: 2%;position: relative">
-            <div style=";background-color: #fafafa;border: thin solid #f3f3f3;padding: 0.25em;height: 98px;display: flex"
+        <div class="twelve column" style="margin-top: 1.2%;position: relative">
+            <div id="questDisp" style="width: 100%;height: 35px"></div>
+            <div style="border: thin solid #adadad;padding: 0.25em;height: 84px;display: flex"
                  id="selFlat">
-                <div id="tail" style="height: 100%;width: 44%;display: flex;overflow-x: scroll;overflow-y: hidden">
+                <div id="tail" style="height: 100%;width: 45%;display: flex;overflow-x: scroll;overflow-y: hidden">
 
                 </div>
                 <div id="midSel" style="height: 100%;width: 10%;display: inline-block;position: relative">
@@ -131,74 +327,110 @@
                     <img src="/static/assets/images/add.png" id="plusHead" class="plusBtn"
                          style="height: 40px;width: auto;top: 20%;right: 6%;position: absolute">
                 </div>
-                <div id="head" style="height: 100%;width: 44%;display: flex;overflow-x: scroll;overflow-y: hidden">
+                <div id="head" style="height: 100%;width: 45%;display: flex;overflow-x: scroll;overflow-y: hidden">
 
                 </div>
             </div>
+            <svg id="qDistrib"
+                 style="width: 100%;height: 30px;margin-top: 0px">
 
+            </svg>
         </div>
     </div>
 
     <div class="row" style="margin-top: 1.4%;position: relative">
         <div id="asker" class="three columns">
-            <div style=";background-color: #fafafa;border: thin solid #f3f3f3;padding: .325em 0 .325em 0.2em;">
-                <input type="text" id="ask-quest" style="width: 314px"
-                       placeholder="Ask a question about the picture" list="productName">
+            <div style=";background-color: #fafafa;border: thin solid #f3f3f3;padding: .325em 0 .325em 0.2em;z-index: 99;position: relative">
+
+          <span class="myarrow">
+              <input type="text" id="ask-quest" style="width: 314px"
+                     placeholder="Ask a question about the picture"
+                     list="productName" onmousedown="placeholder=value;value = '';">
+          </span>
                 <datalist id="productName">
                     <option value="bob">bob</option>
                 </datalist>
                 <button class="button-primary" style="display:inline-block;padding: 0 12px" id="ask">Ask</button>
             </div>
-            <div style="width: 300px;height: 320px;margin-top:20px">
+            <div style="width: 350px;height: 320px;margin-top:20px;text-align: center">
                 <canvas id="inVis"
-                        style=";background-color: #fafafa;border: thin solid #f3f3f3;padding: 1.125em;"></canvas>
+                        style=";border: solid #555555 2px;z-index: 99;position: relative;display: inline-block"></canvas>
                 <!--                <input type="range" id="imSlide" min="0" value="0" class="u-full-width">-->
             </div>
+
+            <svg id="inputLinks"
+                 style="width: 305px;height: 365px;position: absolute;top:4px;left:177px;z-index: 0"></svg>
 
 
         </div>
         <div class="nine columns">
-            <div style="display: inline-block;">
+            <div style="display: inline-block;position: relative;z-index: 99">
 
                 <div style="position: relative;display: inline-block;left: 0">
                     <button id="saveState"> Save</button>
                     <!--                        <button id="makeDiff"> AbsDiff</button>-->
                     <button id="fullDiff">
-                        Comapre
+                        Compare
                     </button>
-                    <select style="display: inline-block;margin-right: 25px" class="one-half" id="models">
+                    <select style="display: inline-block;margin-right: 25px;cursor:pointer;" class="one-half" id="models">
 
                     </select>
-                    <span style="margin-top: -20%">K-Median 0</span>
+                    <span style="margin-top: -20%">K=0</span>
                     <div style="display: inline-block;vertical-align: middle">
-                        <div style="background-color: #bbd8e6;width: 30px;height: 30px" class="actFilted"
-                             num="0"></div>
-                        <div style="background-color: #cbecaf;width: 30px;height: 30px" class="actFilted"
-                             num="1"></div>
-                        <div style="background-color: #f8e4c5;width: 30px;height: 30px" class="actFilted"
-                             num="2"></div>
-                        <div style="background-color: #f3cfdb;width: 30px;height: 30px" class="actFilted"
-                             num="3"></div>
+                        <div style="background-color: #bbd8e6;width: 36px;height: 36px;vertical-align: middle;"
+                             class="actFilted"
+                             num="0">
+                            <p style="margin-top: 4px;margin-left: 3px">k<12</p>
+                        </div>
+                        <div style="background-color: #cbecaf;width: 36px;height: 36px;vertical-align: middle;"
+                             class="actFilted"
+                             num="1">
+                            <p style="margin-top: 4px;margin-left: 3px">k<25</p>
+                        </div>
+                        <div style="background-color: #f8e4c5;width: 36px;height: 36px;vertical-align: middle;"
+                             class="actFilted"
+                             num="2">
+                            <p style="margin-top: 4px;margin-left: 3px">k<50</p>
+                        </div>
+                        <div style="background-color: #f3cfdb;width: 36px;height: 36px;    vertical-align: middle;"
+                             class="actFilted"
+                             num="3">
+                            <p style="margin-top: 4px;margin-left: 3px">k<99</p>
+                        </div>
                     </div>
-                    <span> K-Median 100 </span>
+                    <span> K=100 </span>
 
-                    <div id="counter">
+                    <div style="position: absolute;left:48.2%" class="__range __range-step ">
+                        <input type="range" min="0" max="2" value="1" id="kmod" style="width: 130px" list="ticks1">
+
+                        <datalist id="ticks1">
+                            <option value="0">min</option>
+                            <option value="1">med</option>
+                            <option value="2">max</option>
+
+                        </datalist>
+                        <!--                        <p style="display: inline-block"> min</p>-->
+                        <!--                        <p style="display: inline-block"> med</p>-->
+                        <!--                        <p style="display: inline-block"> max</p>-->
+                    </div>
+
+                    <button class="button" id="resetMod"> reset Selection
+                    </button>
+                    <div id="counter" style="display: inline-block">
                         Masked Heads:
                     </div>
                 </div>
-                <button class="button" id="resetMod" style="position: absolute;margin-left: 20px"> reset Selection
-                </button>
             </div>
 
 
             <div style="width: 100%;position: relative">
 
                 <svg id="model"
-                     style="width: 980px;height: 260px;margin-top: 30px;background-color: #fafafa;border: thin solid #f3f3f3;padding: 1.125em;"></svg>
-                <svg width="150" id="res"
-                     style=";background-color: #fafafa;border: thin solid #f3f3f3;padding: 1.125em;position: absolute;right: 0;top:25%">
+                     style="width: 100%;height: 260px;margin-top: 30px"></svg>
+                <!--                <svg width="150" id="res"-->
+                <!--                     style=";background-color: #fafafa;border: thin solid #f3f3f3;padding: 1.125em;position: absolute;right: 0;top:25%">-->
 
-                </svg>
+                <!--                </svg>-->
                 <div style="position: absolute;left: 50%;top: 32%;visibility: hidden" id="loader">
                     <img src="static/assets/images/load.gif" style="width: 85px"/>
                     <h3> Loading ... </h3>
@@ -221,13 +453,15 @@
             </div>
 
         </div>
-        <div class="eight columns">
+        <div class="nine columns" style="display: inline-block;position: relative;text-align: center">
+            <h4 id="detailab"
+                style="position: absolute;top: -28px;margin-left: -27px;font-size: 18pt;display: inline"></h4>
 
-            <div style="width:100%;height: 540px;position: relative;background-color: #fafafa;border: thin solid #f3f3f3;padding: 0.125em;">
+            <div style="width:100%;height: 540px;position: relative;border-top: solid rgba(65,65,65,0.5) thin;">
                 <div style="width:500px;height: 500px;position: relative;display: inline-block;">
                     <canvas style="width: 100%;height: 100%" id="heatm"></canvas>
                 </div>
-                <div style="width:54%;height: 90%;position: relative;display: inline-block;padding-left: 12px">
+                <div style="width:55%;height: 90%;position: relative;display: inline-block;margin-left: 2%">
                     <svg id="stacked" style="width: 100%;height: 100%;">
 
                     </svg>
@@ -245,6 +479,44 @@
 <script>
     // load_data_light().then(r => init(r));
 
+
+    document.querySelectorAll(".__range-step").forEach(function (ctrl) {
+        var el = ctrl.querySelector('input');
+        var output = ctrl.querySelector('output');
+        var newPoint, newPlace, offset;
+        el.oninput = function () {
+            // colorize step options
+            ctrl.querySelectorAll("option").forEach(function (opt) {
+                if (opt.value <= el.valueAsNumber)
+                    opt.style.backgroundColor = '#017ea6';
+                else
+                    opt.style.backgroundColor = '#aaa';
+            });
+            // colorize before and after
+            var valPercent = (el.valueAsNumber - parseInt(el.min)) / (parseInt(el.max) - parseInt(el.min));
+            var style = 'background-image: -webkit-gradient(linear, 0% 0%, 100% 0%, color-stop(' +
+                valPercent + ', #017ea6), color-stop(' +
+                valPercent + ', #aaa));';
+            el.style = style;
+
+            // Popup
+            if ((' ' + ctrl.className + ' ').indexOf(' ' + '__range-step-popup' + ' ') > -1) {
+                var selectedOpt = ctrl.querySelector('option[value="' + el.value + '"]');
+                output.innerText = selectedOpt.text;
+                output.style.left = "50%";
+                output.style.left = ((selectedOpt.offsetLeft + selectedOpt.offsetWidth / 2) - output.offsetWidth / 2) + 'px';
+            }
+        };
+        el.oninput();
+    });
+
+    window.onresize = function () {
+        document.querySelectorAll(".__range").forEach(function (ctrl) {
+            var el = ctrl.querySelector('input');
+            el.oninput();
+        });
+    };
+
     const keymap = {};
     onkeyup = function (e) {
         if (e.keyCode in keymap) {
@@ -255,6 +527,16 @@
     onkeydown = function (e) {
         e = e || event;
         keymap[e.keyCode] = e.type === 'keydown';
+
+        if (keymap[9]) {
+            hideResbool = !hideResbool;
+
+            if (hideResbool) {
+                d3.selectAll(".res").transition().duration(250).style("opacity", 0)
+            } else {
+                d3.selectAll(".res").transition().duration(250).style("opacity", 1)
+            }
+        }
 
     };
 
@@ -315,37 +597,14 @@
 
     });
 
-    $("#ggroup").change(function () {
-
-        d3.selectAll(".umapDot").style("opacity", 0.05)
-        d3.selectAll(".umapDot").filter(d => d.global_group === this.value).style("opacity", 0.8).attr("r", 4)
-    })
-
-
-    $("#function").change(function () {
-
-        d3.selectAll(".umapDot").style("opacity", 0.05)
-        d3.selectAll(".umapDot").filter(d => d.functions.indexOf(this.value) >= 0).style("opacity", 0.8).attr("r", 4)
-    })
-
-
-    $("#reset").on("click", function () {
-
-        d3.selectAll(".umapDot").style("opacicty", 0.8).attr("r", 2.5)
-
-    })
-
-
-    $("#question").change(function () {
-        d3.selectAll(".umapDot").style("opacity", 0.05)
-        d3.selectAll(".umapDot").filter(d => d.question.toLowerCase().includes(this.value.toLowerCase())).style("opacity", 0.8).attr("r", 4)
-    })
-
-
     $("#resetMod").click(function () {
         attsMaps = [];
-        d3.selectAll("#model rect").attr("class", "");
+        d3.selectAll("#model .rectMod").attr("class", "rectMod");
         $(".kmeanSelected").toggleClass("kmeanSelected")
+        let ref = d3.select("#lang_0_0");
+        let w = ref.attr("ow");
+        let h = ref.attr("oh");
+        d3.selectAll(".rectMod").transition().duration(200).attr("width", w).attr("height", h).style("transform", "translate(" + (0) + "px," + (0) + "px)").style("opacity", "1")
     })
 
     $("#go").click(function () {
@@ -397,7 +656,7 @@
             $(".kmeanSelected").toggleClass("kmeanSelected")
         }
 
-        d3.selectAll("#model rect").attr("class", "");
+        d3.selectAll("#model .rectMod").attr("class", "rectMod");
         for (let i = 0; i < attsMaps.length; i++) {
             d3.select("#" + attsMaps[i]).attr("class", "selected")
         }
@@ -408,12 +667,31 @@
     });
 
 
+    function getQFromText(q) {
+        let d = metaDat[curImg]["questions"]
+
+        let temp = Object.keys(d)
+        temp = temp.map(d => metaDat[curImg]["questions"][temp])
+        let res = temp.filter(d => d.question == q)
+
+        if (res.length > 0) {
+            return res[0]
+        } else {
+            return -1
+        }
+
+    }
+
     $("#ask-quest").change(function () {
         let form = new FormData();
         form.append("units", attsMaps);
         form.append("question", $("#ask-quest").val());
         form.append("image", curImg + ".jpg");
         form.append("disp", disp);
+
+        currQuest = getQFromText($("#ask-quest").val());
+
+
         $.ajax({
             type: "POST",
             url: "/ask",
@@ -470,7 +748,6 @@
 
         } else if (type === "1") {
             let temp = layer2names(name, nb);
-
             if (keymap[16]) {
                 attsMaps = union_arrays(attsMaps, temp)
             } else {
@@ -490,9 +767,9 @@
 
         console.log(attsMaps);
 
-        d3.selectAll("#model rect").attr("class", "");
+        d3.selectAll("#model .rectMod").attr("class", "rectMod");
         for (let i = 0; i < attsMaps.length; i++) {
-            d3.select("#" + attsMaps[i]).attr("class", "selected")
+            d3.select("#" + attsMaps[i]).attr("class", "selected rectMod")
         }
         UpdateCounter()
     });
@@ -532,7 +809,6 @@
             if (asked && elem.attr("type") == 2) {
 
                 let id = elem.attr("id")
-
                 let data = currHeatmaps[id];
 
                 if (diff_bool || fdiff_bool) {
@@ -541,8 +817,8 @@
 
                 drawHeat(data, id, [0, 0]);
 
-
-                updateStats(headStat[disp][id])
+                $("#detailab").html("Head " + id)
+                updateStats(headStat[disp][id], id)
                 curHeat = data;
                 curname = id
             }
@@ -550,7 +826,7 @@
     });
 
 
-    $("#tail").on("mouseover", "img", function () {
+    $("#tail").on("click", "div", function () {
 
         let elem = $(this);
         if (!keymap[17]) {
@@ -565,7 +841,7 @@
     });
 
 
-    $("#head").on("mouseover", "img", function () {
+    $("#head").on("click", "div", function () {
 
         let elem = $(this);
         if (!keymap[17]) {
@@ -593,6 +869,46 @@
         }
     })
 
+    d3.select("#heatm").on("click", function () {
+        if (curname) {
+
+            let data = currHeatmaps[curname];
+
+            if (diff_bool || fdiff_bool) {
+                data = currDiffHeat[curname]
+            }
+
+
+            let res = coord2Inds(d3.mouse(this), curname, data);
+
+            if (res[0][0] < 0) {
+                res[0] = res[0].slice(1)
+                res[1] = res[1].slice(1)
+            } else if (res[0][1] < 0) {
+                res[0] = res[0].slice(0, 1)
+                res[1] = res[1].slice(0, 1)
+            }
+
+            console.log(res);
+            let heads = Object.keys(getHighHeads(res[0], res[1]))
+
+            let ref = d3.select("#lang_0_0");
+            let w = ref.attr("ow");
+            let h = ref.attr("oh");
+
+            d3.selectAll(".rectMod").transition().duration(300).attr("width", w * 0.33).attr("height", h * 0.33).style("transform", "translate(" + (w * 0.33) + "px," + (h * 0.33) + "px)").style("opacity", "0.4")
+
+            for (let i = 0; i < heads.length; i++) {
+                d3.select("#" + heads[i]).transition().duration(200).attr("width", w).attr("height", h).style("transform", "translate(" + (0) + "px," + (0) + "px)").style("opacity", "1")
+            }
+
+
+            // let data = (diff_bool ? currDiffHeat[curname] : currHeatmaps[curname])
+            // drawHeat(data, curname, d3.mouse(this))
+        }
+    })
+
+
     $("#models").on("input", function () {
         let elem = $(this)
         // console.log()
@@ -613,40 +929,131 @@
 
     })
 
+
     $("#plusHead").on("click", function () {
         fillSide($("#head"), order.slice(order.length + 1 - (loadedImgs[1] + 20), order.length + 1 - loadedImgs[1]).reverse(), true)
     })
 
+
+    $("#tail").scroll(function () {
+
+        let cont = $("#tail")
+
+
+        if ((loadedImgs[0] * 37) * 0.98 < cont.scrollLeft() + cont.width()) {
+
+
+            fillSide(cont, order.slice(loadedImgs[0], loadedImgs[0] + 20), false)
+        }
+
+    })
+
+
+    // $("#head").scroll(async function () {
+    //     let cont = $("#head")
+    //
+    //     if (55 > cont.scrollLeft() && initFlatDone) {
+    //
+    //         initFlatDone = false;
+    //         console.log("la");
+    //
+    //         cont.scrollLeft(20 * 400)
+    //
+    //         await fillSide(cont, order.slice(order.length + 1 - (loadedImgs[1] + 20), order.length + 1 - loadedImgs[1]).reverse(), true)
+    //         cont.scrollLeft(20 * 400)
+    //
+    //
+    //     } else {
+    //         initFlatDone = true;
+    //     }
+    //
+    // })
 
     async function fillSide(elem, data, thead) {
 
         for (let iter = 0; iter < data.length; iter++) {
 
 
-            let img = await addImageProcess(baseUrl + data[iter]["id"] + ".jpg", [75, 75]);
+            let div = $('<div/>')
 
-            img.setAttribute("num", iter)
+            div.attr("num", iter)
+            div.css("background-image", "url(" + (baseUrl + data[iter]["id"] + ".jpg") + ")")
+
 
             if (thead) {
-                elem.prepend(img)
-                img.setAttribute("num", order.length - (loadedImgs[1] + iter))
+                elem.prepend(div)
+                div.attr("num", order.length - (loadedImgs[1] + iter))
             } else {
-                elem.append(img)
-                img.setAttribute("num", loadedImgs[0] + iter)
+                elem.append(div)
+                div.attr("num", loadedImgs[0] + iter)
             }
 
         }
 
         if (thead) {
             loadedImgs[1] += data.length
-            elem.animate({scrollLeft: 0}, 200);
+            // elem.animate({scrollLeft: 0}, 200);
         } else {
             loadedImgs[0] += data.length
-            elem.animate({scrollLeft: loadedImgs[0] * 60}, 200);
+            // elem.animate({scrollLeft: loadedImgs[0] * 60}, 200);
         }
 
     }
 
+    $("#kmod").on("input", function () {
+
+        kmods = $(this).val()
+
+        fillHeads(currKmean)
+
+    })
+
+
+    $("#tail").on("mouseover", "div", function () {
+
+
+        let cont = $("#questDisp")
+        let elem = $(this);
+
+        if (!keymap[17]) {
+
+            cont.html("")
+
+            let id = order[elem.attr("num")]["id"]
+
+            let quests = Object.keys(metaDat[id]["questions"]);
+
+            for (let i = 0; i < quests.length; i++) {
+                let temp = metaDat[id]["questions"][quests[i]]
+                cont.append("<p>" + temp.question + "</p>")
+            }
+        }
+    });
+
+
+    $("#head").on("mouseover", "div", function () {
+
+
+        let cont = $("#questDisp")
+        let elem = $(this);
+
+        if (!keymap[17]) {
+
+            cont.html("")
+
+            let id = order[elem.attr("num")]["id"]
+
+            let quests = Object.keys(metaDat[id]["questions"]);
+
+            for (let i = 0; i < quests.length; i++) {
+                let temp = metaDat[id]["questions"][quests[i]]
+
+                cont.append("<p>" + temp.question + "</p>")
+
+
+            }
+        }
+    })
 
 </script>
 

@@ -63,8 +63,11 @@ def toSliptDict(data):
     # print(data['lang'][0][0])
     for elem in order:
         temp = elem.split("_")
-        res[elem] = round(np.median(data[temp[0]][int(temp[1])][int(temp[2])]))
-
+        res[elem] = [
+            round(np.min(data[temp[0]][int(temp[1])][int(temp[2])])),
+            round(np.median(data[temp[0]][int(temp[1])][int(temp[2])])),
+            round(np.max(data[temp[0]][int(temp[1])][int(temp[2])]))
+        ]
     return res
 
 
