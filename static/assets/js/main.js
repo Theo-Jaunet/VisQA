@@ -1705,8 +1705,11 @@ function highlightItem(items) {
     can.width = rate[0]
     can.height = rate[1]
     cont.strokeStyle = "red";
-    cont.drawImage(imShown, 0, 0, rate[0], rate[1])
 
+    cont.clearRect(0, 0, 999, 999)
+    cont.globalAlpha = 0.4;
+    cont.drawImage(imShown, 0, 0, rate[0], rate[1])
+    cont.globalAlpha = 1;
     for (let i = 0; i < items.length; i++) {
 
         // let it = ids.filter(d => {
@@ -1726,6 +1729,8 @@ function highlightItem(items) {
         cont.lineWidth = "2";
 
         cont.strokeRect(it[0] * wr, it[1] * hr, it[2] * wr, it[3] * hr)
+
+        cont.drawImage(imShown, it[0], it[1], it[2], it[3], it[0] * wr, it[1] * hr, it[2] * wr, it[3] * hr)
 
         cont.font = '24px serif';
         let tx = 5
