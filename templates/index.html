@@ -98,12 +98,13 @@
             border-radius: 3px;
             height: 65px;
             width: 35px;
-            display: inline-table;
+            display: inline-block;
             overflow: hidden;
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             cursor: pointer;
+            position: relative;
         }
 
 
@@ -314,10 +315,12 @@
     <div class="row">
         <div class="twelve column" style="margin-top: 0.5%;position: relative">
             <div id="questDisp" style="width: 100%;height: 35px"></div>
-            <div style="border: thin solid #adadad;padding: 0.25em;height: 84px;display: inline-block"
+            <div style="border: thin solid #adadad;padding: 0.25em;height: 84px;width: 100%;display: inline-block"
                  id="selFlat">
                 <div id="tail"
-                     style="height: 100%;width: 95.5%;display: inline-block;overflow-x: scroll;overflow-y: hidden">
+                     style="height: 100%;width: 95.5%;display: block;  overflow-x: scroll; overflow-y: hidden;   white-space: nowrap;">
+                    <!--                     style="height: 100%;width: 95.5%;display: inline-block;overflow-x: scroll;overflow-y: hidden">-->
+
 
                 </div>
                 <!--                <div id="midSel" style="height: 100%;width: 10%;display: inline-block;position: relative">
@@ -333,7 +336,7 @@
             </div>
             <div style="display: inline-block">
                 <img src="/static/assets/images/add.png" id="plusTail" class="plusBtn"
-                     style="height: 40px;width: auto;top: 31%;right: 1.2%;position: absolute">
+                     style="height: 40px;width: auto;top: 31%;right: 0.2%;position: absolute">
             </div>
 
             <svg id="qDistrib"
