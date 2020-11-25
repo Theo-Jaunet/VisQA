@@ -1077,7 +1077,7 @@ function linkInput(imgW, imgH) {
 
 function loadInst(imgId, thead) {
 
-
+    curImg - imgId
     let questId = metaDat[imgId]["ids"]["max"];
     if (thead || questId == undefined) {
         questId = (metaDat[imgId]["ids"]["min"] !== undefined ? metaDat[imgId]["ids"]["min"] : questId)
@@ -1422,7 +1422,7 @@ function ask(data) {
         .attr("class", "tempInf")
         .attr("x", leftMarg - 5)
         .attr("y", topMarg + 15)
-        .style("text-anchor","end")
+        .style("text-anchor", "end")
         .text("ood: " + currQuest["ood"])
 
     // svg.apend("text")
