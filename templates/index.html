@@ -667,7 +667,7 @@
 
         d3.selectAll("#model .rectMod").attr("class", "rectMod");
         for (let i = 0; i < attsMaps.length; i++) {
-            d3.select("#" + attsMaps[i]).attr("class", "selected")
+            d3.select("#" + attsMaps[i]).attr("class", "rectMod selected")
         }
 
         elem.toggleClass("kmeanSelected")
@@ -680,7 +680,8 @@
         let d = metaDat[curImg]["questions"]
 
         let temp = Object.keys(d)
-        temp = temp.map(d => metaDat[curImg]["questions"][temp])
+        console.log(temp);
+        temp = temp.map((d,i) => metaDat[curImg]["questions"][d])
         let res = temp.filter(d => d.question == q)
 
         if (res.length > 0) {
@@ -700,6 +701,8 @@
 
         currQuest = getQFromText($("#ask-quest").val());
 
+
+        console.log(currQuest);
 
         $.ajax({
             type: "POST",

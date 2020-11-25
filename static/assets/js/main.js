@@ -1057,7 +1057,6 @@ function linkInput(imgW, imgH) {
 
     let ratio = d3.scaleLinear().domain([193, 352]).range([15, 180])
 
-
     svg.append("path")
         .attr("d", `M${205} ${20}    C${250}  ${5}      ${250} ${180}    ${305} ${155}`)
         .attr("stroke", "rgba(85,85,85,0.7)")
@@ -1124,6 +1123,7 @@ function loadInst(imgId, thead) {
     form.append("disp", disp);
 
 
+    console.log(getQFromText(q["question"]));
     $.ajax({
         type: "POST",
         url: "/ask",
@@ -1387,7 +1387,50 @@ function ask(data) {
     // $("#result").html("Answer: <br> " + d.pred + " at " + (Math.round(d.confidence * 10000) / 100) + "%")
     console.log(d);
 
-    DrawRes(d.five)
+    DrawRes(d.five);
+
+
+    let leftMarg = 1125;
+    let topMarg = 25;
+
+    let col = "red";
+
+
+    if (Object.keys(d.five)[0] == currQuest["answer"]) {
+        col = "green"
+    }
+
+    let svg = d3.select("#model")
+
+    svg.selectAll(".tempInf").remove();
+
+    svg.append("rect")
+        .attr("class", "tempInf")
+        .attr("x", leftMarg)
+        .attr("y", topMarg)
+        .attr("width", 20)
+        .attr("height", 20)
+        .attr("fill", col)
+
+    svg.append("text")
+        .attr("class", "tempInf")
+        .attr("x", leftMarg + 25)
+        .attr("y", topMarg + 15)
+        .text("GT: " + currQuest["answer"])
+
+    svg.append("text")
+        .attr("class", "tempInf")
+        .attr("x", leftMarg - 5)
+        .attr("y", topMarg + 15)
+        .style("text-anchor","end")
+        .text("ood: " + currQuest["ood"])
+
+    // svg.apend("text")
+    //     .attr("x", leftMarg)
+    //     .attr("y", topMarg)
+    //     .text("Pred: " + Object.keys(d.five)[0])
+
+
     // filler(d.alignment)
     // let svg = d3.select("#proj");
 
