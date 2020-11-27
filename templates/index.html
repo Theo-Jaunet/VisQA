@@ -32,6 +32,15 @@
 
     <style>
 
+        #productName span:hover {
+
+            background-color: rgba(107, 107, 107, 0.49);
+            cursor: pointer;
+
+
+        }
+
+
         .subBlock {
             fill: #0e1a6a9e;
         }
@@ -311,10 +320,10 @@
 
 <!--Icons made by <a href="https://www.flaticon.com/authors/dmitri13" title="dmitri13">dmitri13</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a>-->
 
-<div class="container" style="margin-bottom: 5%;margin-left: auto;width:1750px!important;max-width: 1750px">
+<div class="container" style="margin-left: auto;width:1750px!important;max-width: 1750px">
     <div class="row">
-        <div class="twelve column" style="margin-top: 0.5%;position: relative">
-            <div id="questDisp" style="width: 100%;height: 35px"></div>
+        <div class="twelve column" style="margin-top: 0.8%;position: relative">
+            <!--            <div id="questDisp" style="width: 100%;height: 35px"></div>-->
             <div style="border: thin solid #adadad;padding: 0.25em;height: 84px;width: 100%;display: inline-block"
                  id="selFlat">
                 <div id="tail"
@@ -336,38 +345,44 @@
             </div>
             <div style="display: inline-block">
                 <img src="/static/assets/images/add.png" id="plusTail" class="plusBtn"
-                     style="height: 40px;width: auto;top: 31%;right: 0.2%;position: absolute">
+                     style="height: 40px;width: auto;top: 16%;right: 0.2%;position: absolute">
             </div>
 
             <svg id="qDistrib"
-                 style="width: 100%;height: 30px;margin-top: 0px">
+                 style="width: 100%;height: 30px;margin-top: -25px">
 
             </svg>
         </div>
     </div>
 
-    <div class="row" style="margin-top: 1.4%;position: relative">
+    <div class="row" style="margin-top: 1%;position: relative">
         <div id="asker" class="three columns">
-            <div style=";background-color: #fafafa;border: thin solid #f3f3f3;padding: .325em 0 .325em 0.2em;z-index: 99;position: relative">
+            <div style=";z-index: 99;position: relative">
 
-          <span class="myarrow">
-              <input type="text" id="ask-quest" style="width: 314px"
-                     placeholder="Ask a question about the picture"
-                     list="productName" onmousedown="placeholder=value;value = '';">
-          </span>
-                <datalist id="productName">
-                    <option value="bob">bob</option>
-                </datalist>
-                <button class="button-primary" style="display:inline-block;padding: 0 12px" id="ask">Ask</button>
+                <!--          <span class="myarrow">-->
+                <input type="text" id="ask-quest"
+                       style="width: 382px;border: none;border-bottom: solid #555555 thin;border-radius: 0;padding: 0;height: 21.5px"
+                       placeholder="Ask a question about the picture"
+                       list="productName">
+                <!--          </span>-->
+                <div id="productName"
+                     style="height: 250px;direction: rtl;overflow-y: auto;padding-left: 5px;margin-left: -2px">
+
+                </div>
+
+                <!--                <datalist id="productName">-->
+                <!--                    <option value="bob">bob</option>-->
+                <!--                </datalist>-->
+
             </div>
-            <div style="width: 350px;height: 320px;margin-top:20px;text-align: center">
+            <div style="width: 350px;height: 320px;position:relative;top:48px;text-align: center">
                 <canvas id="inVis"
-                        style=";border: solid #555555 2px;z-index: 99;position: relative;display: inline-block"></canvas>
+                        style=";border: solid rgba(65,65,65,0.5) thin;z-index: 99;position: relative;display: inline-block"></canvas>
                 <!--                <input type="range" id="imSlide" min="0" value="0" class="u-full-width">-->
             </div>
 
             <svg id="inputLinks"
-                 style="width: 305px;height: 365px;position: absolute;top:4px;left:177px;z-index: 0"></svg>
+                 style="width: 305px;height: 550px;position: absolute;top:4px;left:177px;z-index: 0"></svg>
 
 
         </div>
@@ -375,6 +390,7 @@
             <div style="display: inline-block;position: relative;z-index: 99">
 
                 <div style="position: relative;display: inline-block;left: 0">
+                    <button class="button-primary" style="display:inline-block;padding: 0 12px" id="ask">Ask</button>
                     <button id="saveState"> Save</button>
                     <!--                        <button id="makeDiff"> AbsDiff</button>-->
                     <button id="fullDiff">
@@ -384,8 +400,8 @@
                             id="models">
 
                     </select>
-                    <span style="margin-top: -20%">K=0</span>
-                    <div style="display: inline-block;vertical-align: middle">
+                    <span style="position:relative;top: -20px">K=0</span>
+                    <div style="display: inline-block;vertical-align: middle;margin-top: -40px">
                         <div style="background-color: #bbd8e6;width: 36px;height: 36px;vertical-align: middle;"
                              class="actFilted"
                              num="0">
@@ -407,9 +423,9 @@
                             <p style="margin-top: 4px;margin-left: 3px">k<99</p>
                         </div>
                     </div>
-                    <span> K=100 </span>
+                    <span style="position:relative;top: -20px"> K=100 </span>
 
-                    <div style="position: absolute;left:48.2%" class="__range __range-step ">
+                    <div style="position: absolute;left:50.6%;top: 32px" class="__range __range-step ">
                         <input type="range" min="0" max="2" value="1" id="kmod" style="width: 130px" list="ticks1">
 
                         <datalist id="ticks1">
@@ -451,22 +467,32 @@
 
     </div>
 
-    <div class="row">
-        <div class="three columns">
+    <div class="row" style="margin-top: -220px">
+        <!--        <div class="three columns">
 
 
-            <div style="margin-top: 60px">
-                <svg id="sceneGraph"
-                     style="width: 80%;height:
-                         400px;background-color: #fafafa;border: thin solid #f3f3f3;padding: 0.125em;"></svg>
-            </div>
+                    <div style="margin-top: 60px">
+                        <svg id="sceneGraph"
+                             style="width: 80%;height:
+                                 400px;background-color: #fafafa;border: thin solid #f3f3f3;padding: 0.125em;"></svg>
+                    </div>
 
-        </div>
-        <div class="nine columns" style="display: inline-block;position: relative;text-align: center">
+                </div>-->
+        <div class="nine columns" style="display: inline-block;position: relative;text-align: center;float: right">
             <h4 id="detailab"
-                style="position: absolute;top: -28px;margin-left: -27px;font-size: 18pt;display: inline"></h4>
+                style="position: absolute;top: -25px;margin-left: -500px;font-size: 16pt;display: inline"></h4>
 
-            <div style="width:100%;height: 540px;position: relative;border-top: solid rgba(65,65,65,0.5) thin;">
+            <h4 id="detailab2"
+                style="position: absolute;top: -25px;margin-left: 185px;font-size: 16pt;display: inline"></h4>
+
+            <h5
+                    style="position: absolute;top: 16px;right: 15px;font-size: 14pt;display: inline">Per Operation</h5>
+
+            <h5
+                    style="position: absolute;top: 300px;right: 15px;font-size: 14pt;display: inline">Per group</h5>
+
+
+            <div style="width:100%;height: 540px;position: relative;border-top: solid rgba(65,65,65,0.5) thin;border-left: solid rgba(65,65,65,0.5) thin;">
                 <div style="width:500px;height: 500px;position: relative;display: inline-block;">
                     <canvas style="width: 100%;height: 100%" id="heatm"></canvas>
                 </div>
@@ -481,6 +507,8 @@
 
     </div>
 
+
+    <!--    <svg id="temptree" width="800" height="800"></svg>-->
 
 </div>
 
@@ -608,6 +636,8 @@
 
     $("#resetMod").click(function () {
         attsMaps = [];
+        let total = Object.keys(currKmean).length
+        $("#counter").html("Masked Heads: " + 0 + "/" + total)
         d3.selectAll("#model .rectMod").attr("class", "rectMod");
         $(".kmeanSelected").toggleClass("kmeanSelected")
         let ref = d3.select("#lang_0_0");
@@ -681,7 +711,7 @@
 
         let temp = Object.keys(d)
         console.log(temp);
-        temp = temp.map((d,i) => metaDat[curImg]["questions"][d])
+        temp = temp.map((d, i) => metaDat[curImg]["questions"][d])
         let res = temp.filter(d => d.question == q)
 
         if (res.length > 0) {
@@ -689,8 +719,36 @@
         } else {
             return -1
         }
-
     }
+
+
+    $("#productName").on("click", "span", function () {
+
+        $("#ask-quest").val($(this).html())
+        let form = new FormData();
+        form.append("units", attsMaps);
+        form.append("question", $("#ask-quest").val());
+        form.append("image", curImg + ".jpg");
+        form.append("disp", disp);
+
+        currQuest = getQFromText($("#ask-quest").val());
+
+
+        console.log(currQuest);
+
+        $.ajax({
+            type: "POST",
+            url: "/ask",
+            processData: false,
+            contentType: false,
+            data: form,
+            success: function (d) {
+                ask(d)
+            }
+        })
+
+
+    })
 
     $("#ask-quest").change(function () {
         let form = new FormData();
@@ -768,7 +826,7 @@
 
         } else if (type === "2") {
             let temp = [elem.attr("id")]
-            fix
+
             if (keymap[16]) {
                 attsMaps = union_arrays(attsMaps, temp)
             } else {
@@ -829,7 +887,10 @@
 
                 drawHeat(data, id, [0, 0]);
 
-                $("#detailab").html("Head " + id)
+                $("#detailab").html("Attention Map for head <span style='font-weight:600;" +
+                    "font-style: italic;'>" + id + "</span>")
+                $("#detailab2").html("Global statistics for head <span style='font-weight:600;" +
+                    "    font-style: italic;'>" + id + "</span>")
                 updateStats(headStat[disp][id], id)
                 curHeat = data;
                 curname = id
@@ -961,6 +1022,23 @@
     })
 
 
+    $("#heatm").on("mouseout", function () {
+
+        let can = document.getElementById("inVis")
+        let cont = can.getContext("2d");
+
+
+        let wr = can.width / imShown.width
+        let hr = can.height / imShown.height
+        let rate = fixRatio2([imShown.width, imShown.height], [350, 300])
+
+        can.width = rate[0]
+        can.height = rate[1]
+        cont.globalAlpha = 1
+        cont.drawImage(imShown, 0, 0, rate[0], rate[1])
+
+    })
+
     // $("#head").scroll(async function () {
     //     let cont = $("#head")
     //
@@ -1024,22 +1102,77 @@
     $("#tail").on("mouseover", "div", function () {
 
 
-        let cont = $("#questDisp")
+        // let cont = $("#questDisp")
         let elem = $(this);
 
         if (!keymap[17]) {
 
-            cont.html("")
+            // cont.html("")
 
             let id = order[elem.attr("num")]["id"]
 
-            let quests = Object.keys(metaDat[id]["questions"]);
+            // let quests = Object.keys(metaDat[id]["questions"]);
 
-            for (let i = 0; i < quests.length; i++) {
-                let temp = metaDat[id]["questions"][quests[i]]
-                cont.append("<p>" + temp.question + "</p>")
-            }
+
+            fillQuest(id)
+
+
+            let im = new Image();
+            let val = id
+
+            im.onload = function () {
+
+                let can = document.getElementById("inVis")
+
+                let cont = can.getContext('2d');
+
+                imShown = im
+                let rate = fixRatio2([im.width, im.height], [350, 300])
+                linkInput(rate[0], rate[1])
+
+                can.width = rate[0]
+                can.height = rate[1]
+
+                cont.drawImage(im, 0, 0, rate[0], rate[1])
+            };
+
+            im.src = baseUrl + val + ".jpg"
         }
+
+
+        // for (let i = 0; i < quests.length; i++) {
+        //     let temp = metaDat[id]["questions"][quests[i]]
+        //     cont.append("<p>" + temp.question + "</p>")
+        // }
+
+    })
+    ;
+
+
+    $("#tail").on("mouseleave", function () {
+
+        fillQuest(curImg)
+
+        let im = new Image();
+        let val = curImg
+
+        im.onload = function () {
+
+            let can = document.getElementById("inVis")
+
+            let cont = can.getContext('2d');
+
+            imShown = im
+            let rate = fixRatio2([im.width, im.height], [350, 300])
+            linkInput(rate[0], rate[1])
+
+            can.width = rate[0]
+            can.height = rate[1]
+
+            cont.drawImage(im, 0, 0, rate[0], rate[1])
+        };
+
+        im.src = baseUrl + val + ".jpg"
     });
 
 

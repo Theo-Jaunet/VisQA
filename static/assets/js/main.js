@@ -448,7 +448,7 @@ function drawModel(mod) {
                 .attr("width", rectWidth)
                 .attr("height", rectHeight)
                 .attr("class", "subBlock")
-                .attr("stroke", '#555555')
+                .attr("stroke", 'rgba(19, 19, 19, 0.72);')
                 .attr("stroke-width", '1');
 
 
@@ -843,7 +843,7 @@ function updateStats(data, id) {
     let grs2 = g2.selectAll("g").data(stack(temp2.map(d => d["val"])))
     // let grs = g.selectAll("g").data(stack(teKey.map(d => data["functions"][d])))
 
-    let yScale2 = d3.scaleLinear().domain([50, 500]).range([486 - 130, 486 - 220])
+    let yScale2 = d3.scaleLinear().domain([50, 500]).range([486 - 108, 486 - 220])
 
     grs2.selectAll('rect')
         .data(d => d)
@@ -939,6 +939,9 @@ function init(dat) {
     console.log(models);
     metaDat = dat[3]
     console.log(metaDat);
+
+
+    delete metaDat["2412518"]
 
     headStat["tiny_oracle"] = dat[4];
     headStat["lxmert_tiny"] = dat[5];
@@ -1055,7 +1058,9 @@ function linkInput(imgW, imgH) {
 
     svg.selectAll("*").remove()
 
-    let ratio = d3.scaleLinear().domain([193, 352]).range([15, 180])
+    let imgst = 260
+
+    let ratio = d3.scaleLinear().domain([193, 450]).range([15, 230])
 
     svg.append("path")
         .attr("d", `M${205} ${20}    C${250}  ${5}      ${250} ${180}    ${305} ${155}`)
@@ -1066,7 +1071,7 @@ function linkInput(imgW, imgH) {
 
 
     svg.append("path")
-        .attr("d", `M${ratio(imgW)} ${55 + imgH / 2}    C${ratio(imgW) + 80}  ${35 + imgH / 2}      ${230} ${300}    ${305} ${275}`)
+        .attr("d", `M${ratio(imgW)} ${imgst + 55 + imgH / 2}    C${ratio(imgW) + 80}  ${+imgst + 85 + imgH / 2}      ${230} ${225}    ${305} ${255}`)
         .attr("stroke", "rgba(85,85,85,0.7)")
         .attr("fill", "none")
         .attr("stroke-width", "2")
@@ -1077,12 +1082,13 @@ function linkInput(imgW, imgH) {
 
 function loadInst(imgId, thead) {
 
-    curImg - imgId
+    curImg = imgId
     let questId = metaDat[imgId]["ids"]["max"];
-    if (thead || questId == undefined) {
+    if (thead || questId == "") {
         questId = (metaDat[imgId]["ids"]["min"] !== undefined ? metaDat[imgId]["ids"]["min"] : questId)
     }
 
+    console.log(questId);
 
     let im = new Image();
     let val = imgId
@@ -1123,7 +1129,7 @@ function loadInst(imgId, thead) {
     form.append("disp", disp);
 
 
-    console.log(getQFromText(q["question"]));
+    // console.log(getQFromText(q["question"]));
     $.ajax({
         type: "POST",
         url: "/ask",
@@ -1133,7 +1139,7 @@ function loadInst(imgId, thead) {
         success: function (d) {
             ask(d)
 
-            $("#ask-quest").attr("value", q["question"])
+            $("#ask-quest").val(q["question"])
         }
     })
 }
@@ -1161,11 +1167,12 @@ function fillQuest(id) {
     elem.html('');
     // console.log(metaDat[id]["scene"]);
 
-    fillScene(metaDat[id]["scene"])
+    // fillScene(metaDat[id]["scene"])
 
     for (let i = 0; i < quests.length; i++) {
         let temp = metaDat[id]["questions"][quests[i]]
-        elem.append(new Option(temp.question, temp.question))
+        // elem.append(new Option(temp.question, temp.question))
+        elem.append("<span style='display: block;direction:ltr;'>" + temp.question + "</span>")
     }
 }
 
@@ -1355,6 +1362,231 @@ function handleNodeOut() {
     nd.transition().duration(50).attr("r", 7).attr("fill", "rgb(124,101,148)")
 }
 
+
+function purgeBranch(ref, array) {
+
+
+    for (let i = 0; i < array.length; i++) {
+
+        let pat = getLonguestUnique(array.slice(), array[i]);
+
+        let chil = ref.children
+
+        let mes = ""
+        let path = ""
+
+        for (let j = 0; j < pat.length - 1; j++) {
+            path += chil[pat[j]].name + "->"
+
+            if (j < pat.length - 2) {
+                chil = chil[pat[j]].children;
+            } else {
+                chil = chil[pat[j]]
+            }
+
+        }
+
+        if (pat.length == 1) {
+            chil = ref.children[pat[0]]
+            pat.push(0)
+        }
+
+        let temp = chil
+
+        console.log(chil);
+        array[i].push(0)
+
+
+        for (let j = 0; j < (array[i].length - pat.length); j++) {
+
+            mes += temp.children[array[i][(pat.length - 1) + j]].name + " "
+            if (temp.children.length > 0) {
+                temp = temp.children[array[i][(pat.length - 1) + j]]
+            } else {
+                break
+            }
+
+            ;
+        }
+
+        chil.children[pat[pat.length - 1]] = {name: mes}
+    }
+
+}
+
+function arrays_equal(a, b) {
+    return !!a && !!b && !(a < b || b < a);
+}
+
+function getLonguestUnique(array, pth) {
+
+    let tid = array.indexOf(pth);
+
+
+    array.splice(tid, 1);
+
+
+    for (let i = 1; i < pth.length; i++) {
+
+        let test = false;
+        let pattern = pth.slice(0, i)
+
+        for (let j = 0; j < array.length; j++) {
+
+            if (arrays_equal(array[j].slice(0, pattern.length), pattern)) {
+                test = true;
+                break
+            }
+        }
+
+        if (!test) {
+            return pattern
+        }
+
+    }
+
+    return pth
+}
+
+function fillTree() {
+
+    let data = Object.keys(metaDat[curImg]["questions"]).map(d => metaDat[curImg]["questions"][d])
+
+    let res = {name: "", children: []};
+
+    let next;
+    let path = [];
+    let id = 0
+    /*
+        let tempSv = d3.select("#comparePlot");
+
+          tempSv.selectAll("*").remove()*/
+
+
+    for (let i = 0; i < data.length; i++) {
+        let prev = res.children;
+        let tpath = [];
+        // let words = data[i]["question"].split(" ").reverse()
+        let words = data[i]["question"].split(" ")
+        for (let j = 0; j < words.length; j++) {
+
+            let row = prev.filter(d => d.name === words[j])
+
+            if (row.length == 0) {
+                // prev.push({name: nani[j], children: []})
+                prev.push({name: words[j], children: []})
+                id = prev.length - 1
+
+            } else {
+                id = prev.indexOf(row[0])
+            }
+            tpath.push(id)
+            prev = prev[id].children
+        }
+        path.push(tpath)
+
+
+        /*        tempSv.append("text")
+                    .attr("x",10)
+                    .attr("y",15*(i+1))
+                    .attr("font-family", "sans-serif")
+                    .attr("font-size", 14)
+                    .text(data[i]["question"])*/
+    }
+    console.log(path);
+
+    console.log(res);
+
+
+    if (path.length > 1) {
+        purgeBranch(res, path);
+    }
+
+    /// ----- Purge --------------
+
+
+    tree = data => {
+        const root = d3.hierarchy(data);
+        root.dx = 10;
+        root.dy = 400 / (root.height + 1);
+        return d3.tree().nodeSize([root.dx, root.dy])(root);
+    }
+
+
+    const root = tree(res);
+
+    let x0 = Infinity;
+    let x1 = -x0;
+    root.each(d => {
+        if (d.x > x1) x1 = d.x;
+        if (d.x < x0) x0 = d.x;
+
+        console.log(d);
+
+
+        d.y = d.y * 0.5
+        console.log(d.y);
+        if (d.parent != null && d.data.children) {
+            // d.y+= d.data.name.length*10
+            console.log(d.data.name);
+            console.log(d.data.name.length);
+        }
+        // d.y += d.data.name.length * 2
+    });
+
+    const svg = d3.select("#temptree")
+
+    svg.selectAll("*").remove()
+    const g = svg.append("g")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", 14)
+        .attr("transform", `translate(${root.dy / 3},${root.dx - x0})`);
+
+    const link = g.append("g")
+        .attr("fill", "none")
+        .attr("stroke", "#555")
+        .attr("stroke-opacity", 0.4)
+        .attr("stroke-width", 1.5)
+        .selectAll("path")
+        .data(root.links())
+        .join("path")
+        .attr("opacity", d => {
+            return d.source.depth == 0 ? "0" : 1
+        })
+        .attr("d", d3.linkHorizontal()
+            .x(d => d.y)
+            .y(d => d.x));
+
+    const node = g.append("g")
+        .attr("stroke-linejoin", "round")
+        .attr("stroke-width", 3)
+        .selectAll("g")
+        .data(root.descendants())
+        .attr("opacity", d => {
+            return d.depth == 0 ? "0" : 1
+        })
+        .join("g")
+        .attr("transform", d => `translate(${d.y},${d.x})`);
+
+    node.append("circle")
+        .attr("opacity", d => {
+            return d.depth == 0 ? "0" : 1
+        })
+        .attr("fill", d => d.children ? "#555" : "#999")
+        .attr("r", 2.5);
+
+    node.append("text")
+        .attr("dy", "0.31em")
+        .attr("x", d => d.children ? -6 : 6)
+        .attr("text-anchor", d => d.children ? "end" : "start")
+        .text(d => d.data.name)
+        .clone(true).lower()
+        .attr("stroke", "white");
+
+
+}
+
+
 // drag = simulation => {
 //
 //     function dragstarted(event) {
@@ -1390,41 +1622,44 @@ function ask(data) {
     DrawRes(d.five);
 
 
-    let leftMarg = 1125;
-    let topMarg = 25;
-
-    let col = "red";
-
-
-    if (Object.keys(d.five)[0] == currQuest["answer"]) {
-        col = "green"
-    }
-
     let svg = d3.select("#model")
 
     svg.selectAll(".tempInf").remove();
 
-    svg.append("rect")
-        .attr("class", "tempInf")
-        .attr("x", leftMarg)
-        .attr("y", topMarg)
-        .attr("width", 20)
-        .attr("height", 20)
-        .attr("fill", col)
+    if (currQuest !==-1) {
 
-    svg.append("text")
-        .attr("class", "tempInf")
-        .attr("x", leftMarg + 25)
-        .attr("y", topMarg + 15)
-        .text("GT: " + currQuest["answer"])
+        let leftMarg = 1170;
+        let topMarg = 25;
 
-    svg.append("text")
-        .attr("class", "tempInf")
-        .attr("x", leftMarg - 5)
-        .attr("y", topMarg + 15)
-        .style("text-anchor", "end")
-        .text("ood: " + currQuest["ood"])
+        let col = "red";
 
+
+        if (Object.keys(d.five)[0] == currQuest["answer"]) {
+            col = "green"
+        }
+
+        svg.append("rect")
+            .attr("class", "tempInf res")
+            .attr("x", leftMarg)
+            .attr("y", topMarg)
+            .attr("width", 20)
+            .attr("height", 20)
+            .attr("fill", col)
+
+        svg.append("text")
+            .attr("class", "tempInf res")
+            .attr("x", leftMarg + 25)
+            .attr("y", topMarg + 15)
+            .text("GT: " + currQuest["answer"])
+
+        svg.append("text")
+            .attr("class", "tempInf res")
+            .attr("x", leftMarg - 5)
+            .attr("y", topMarg + 15)
+            .style("text-anchor", "end")
+            .text("ood: " + currQuest["ood"])
+
+    }
     // svg.apend("text")
     //     .attr("x", leftMarg)
     //     .attr("y", topMarg)
@@ -1483,6 +1718,7 @@ function DrawRes(data) {
 
     let ordered = Object.entries(data)
 
+
     let lscale = d3.scaleLinear().domain([0, 1]).range([3, 40]);
 
     for (let i = 0; i < ordered.length; i++) {
@@ -1509,12 +1745,7 @@ function DrawRes(data) {
         // .attr("stroke", "#f3f3f3")
         // .attr("strokeWidth", "1px")
 
-        svg.append("text")
-            .attr("class", "res")
-            .attr("x", leftMarg + lscale(1) + textPad)
-            .attr("y", topMarg + 5 + ((barHeight + barPad) * i) + (barHeight / 2) + 3)
-            .text(ordered[i][0])
-            .style("opacity", opa)
+        let mes = ordered[i][0]
 
 
         let dist = leftMarg - 1015
@@ -1528,12 +1759,51 @@ function DrawRes(data) {
             .attr("stroke-dasharray", "9,2")
             .style("opacity", opa)
 
+        if (currQuest !== -1) {
+            let type = "M";
+            let percent = ""
+            let hquest = getType(currQuest.head, ordered[i][0])
+            if (hquest > -1) {
+                type = "H"
+                percent = "(" + Math.round(currQuest.head[hquest]["alpha"] * 100) + "%)"
+                mes += "   | " + type + "-- " + percent
+            } else {
+                hquest = getType(currQuest.tail, ordered[i][0])
+
+                if (hquest > -1) {
+                    type = "T"
+                    percent = "(" + Math.round(currQuest.tail[hquest]["alpha"] * 100) + "%)"
+                    mes += "   | " + type + "-- " + percent
+                } else {
+                    mes += "   | " + type
+                }
+
+            }
+        }
+
+
+        svg.append("text")
+            .attr("class", "res")
+            .attr("x", leftMarg + lscale(1) + textPad)
+            .attr("y", topMarg + 5 + ((barHeight + barPad) * i) + (barHeight / 2) + 3)
+            .text(mes)
+            .style("opacity", opa)
+
 
     }
     // console.log(sortable);
 
 }
 
+function getType(data, ans) {
+
+    for (let i = 0; i < data.length; i++) {
+        if (data[i]["ans"] === ans) {
+            return i
+        }
+    }
+    return -1
+}
 
 function fillHeads(data) {
 
@@ -1698,7 +1968,6 @@ function UpdateCounter() {
 
     let nb = attsMaps.length;
     let total = Object.keys(currKmean).length
-
     $("#counter").html("Masked Heads: " + nb + "/" + total)
 }
 
