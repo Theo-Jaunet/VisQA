@@ -887,11 +887,15 @@
 
                 drawHeat(data, id, [0, 0]);
 
+                console.log(headStat[disp][id]);
+
                 $("#detailab").html("Attention Map for head <span style='font-weight:600;" +
                     "font-style: italic;'>" + id + "</span>")
                 $("#detailab2").html("Global statistics for head <span style='font-weight:600;" +
                     "    font-style: italic;'>" + id + "</span>")
                 updateStats(headStat[disp][id], id)
+
+
                 curHeat = data;
                 curname = id
             }
@@ -1095,6 +1099,7 @@
         kmods = $(this).val()
 
         fillHeads(currKmean)
+        updateStats(headStat[disp][curname],curname)
 
     })
 

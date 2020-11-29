@@ -739,7 +739,20 @@ function initStacked() {
 
 function sortQues(a, b) {
 
-    if (a["val"][0] > b["val"][0]) {
+    let greenRatio = 0.85
+    let orangeRatio = 0.65
+    let redRatio = 0.43
+
+    if (a["val"][0] + (greenRatio * a["val"][1]) + (orangeRatio * a["val"][2]) + (redRatio * a["val"][3]) >
+        b["val"][0] + (greenRatio * b["val"][1]) + (orangeRatio * b["val"][2]) + (redRatio * b["val"][3])) {
+        return -1
+    } else if (a["val"][0] + (greenRatio * a["val"][1]) + (orangeRatio * a["val"][2]) + (redRatio * a["val"][3]) <
+        b["val"][0] + (greenRatio * b["val"][1]) + (orangeRatio * b["val"][2]) + (redRatio * b["val"][3])) {
+        return 1
+    }
+
+
+    /*if (a["val"][0] > b["val"][0]) {
         return -1
     } else if (b["val"][0] > a["val"][0]) {
         return 1
@@ -762,8 +775,14 @@ function sortQues(a, b) {
             }
         }
 
-    }
+    }*/
+
     return 0
+}
+
+
+function onlyUnique(value, index, self) {
+  return self.indexOf(value) === index;
 }
 
 function updateStats(data, id) {
@@ -780,7 +799,7 @@ function updateStats(data, id) {
 
     if (currQuest != -1) {
         gr = currQuest["groups"]["global"]
-        op = currQuest["operations"]
+        op = currQuest["operations"].filter(onlyUnique);
     }
 
 
@@ -788,13 +807,24 @@ function updateStats(data, id) {
     let teKey = Object.keys(data['functions']);
 
     let dat = teKey.map(d => {
-        return {"val": data["functions"][d], "key": d}
+        return {"val": data["functions"][d][kmods], "key": d}
     });
     // let temp = dat.sort((a, b) => (a["val"][0] > b["val"][0]) ? -1 : ((b["val"][0] > a["val"][0]) ? 1 : 0))
-    let temp = dat.sort((a, b) => sortQues(a, b));
+    let labels = dat.map(d => d["key"]);
+    let ophold = [];
+
+    for (let i = 0; i < op.length; i++) {
+        let ind = labels.indexOf(op[i])
+
+        ophold.push(dat[ind])
+        dat.splice(ind, 1)
+        labels.splice(ind, 1)
+    }
+
+    let temp = ophold.sort((a, b) => sortQues(a, b)).concat(dat.sort((a, b) => sortQues(a, b)));
 
 
-    let labels = temp.map(d => d["key"]);
+    labels = temp.map(d => d["key"]);
 
     // let labels = ;
     let grs = g.selectAll("g").data(stack(temp.map(d => d["val"])))
@@ -811,7 +841,6 @@ function updateStats(data, id) {
 
     tg.selectAll("text").remove()
 
-
     for (let i = 0; i < labels.length; i++) {
 
         let tx = 20 + leftmarg + (bandWidth * i) + (bandPad * i) + bandWidth / 2
@@ -826,17 +855,33 @@ function updateStats(data, id) {
             .text(labels[i])
     }
 
+    /// --------- SWITCH TO GROUPS HERE ------
+
 
     let g2 = d3.select("#botBars")
     let teKey2 = Object.keys(data['groups'])
 
     let dat2 = teKey2.map(d => {
-        return {"val": data["groups"][d], "key": d}
+        return {"val": data["groups"][d][kmods], "key": d}
     })
-    let temp2 = dat2.sort((a, b) => sortQues(a, b))
+
+    let labels2 = dat2.map(d => d["key"]);
+    let temp2
+
+    if (gr) {
+
+        let ophold2 = [];
+        let ind = labels2.indexOf(gr)
+        ophold2.push(dat2[ind])
+        dat2.splice(ind, 1)
+
+        temp2 = ophold2.concat(dat2.sort((a, b) => sortQues(a, b)))
+    } else {
+        temp2 = dat2.sort((a, b) => sortQues(a, b))
+    }
 
 
-    let labels2 = temp2.map(d => d["key"]);
+    labels2 = temp2.map(d => d["key"]);
 
     // let labels = ;
 
@@ -867,7 +912,7 @@ function updateStats(data, id) {
     }
 
 
-    drawKaera(data["kmeds"], id)
+    drawKaera(data["kmeds"][kmods], id)
 
 }
 
@@ -1626,7 +1671,7 @@ function ask(data) {
 
     svg.selectAll(".tempInf").remove();
 
-    if (currQuest !==-1) {
+    if (currQuest !== -1) {
 
         let leftMarg = 1170;
         let topMarg = 25;

@@ -116,12 +116,15 @@ def ask():
             head_mask[temp[0]][int(temp[1])][int(temp[2])] = 1
 
     if disp == "lxmert_tiny":
-        five_predictions, attention_heads, alignment, k_dist, input_labels, input_size = my_demo2.ask(question, image, head_mask)
+        five_predictions, attention_heads, alignment, k_dist, input_labels, input_size = my_demo2.ask(question, image,
+                                                                                                      head_mask)
 
     elif disp == "lxmert_tiny_init_oracle_pretrain":
-        five_predictions, attention_heads, alignment, k_dist, input_labels, input_size = my_demo3.ask(question, image, head_mask)
+        five_predictions, attention_heads, alignment, k_dist, input_labels, input_size = my_demo3.ask(question, image,
+                                                                                                      head_mask)
     else:
-        five_predictions, attention_heads, alignment, k_dist, input_labels, input_size = my_demo.ask(question, image, head_mask)
+        five_predictions, attention_heads, alignment, k_dist, input_labels, input_size = my_demo.ask(question, image,
+                                                                                                     head_mask)
 
     k_vals = toSliptDict(k_dist)
 
@@ -130,7 +133,6 @@ def ask():
         five[five_predictions[u][0]] = five_predictions[u][1].item()
 
     heats = purgeHeats(AtttoSliptDict(attention_heads), input_size)
-
 
     resp = Response(response=ujson.dumps({
         "k_dist": k_vals,
@@ -195,10 +197,44 @@ def switchMod():
     return 'ok'
 
 
+def RCNNStats():
+    res = {}
+    ok = []
+    fail = []
+    spoon = []
+    with open("static/assets/data/info.json", 'r') as fjson:
+        imgs = ujson.load(fjson)
+        head_mask = empty_mask()
+        item = "knife"
+        for k, v in imgs.items():
+            if hasItem(v["scene"]["objects"], item):
+                five_predictions, attention_heads, alignment, k_dist, input_labels, input_size \
+                    = my_demo2.ask(v["questions"]["0"]["question"], k, head_mask)
+
+                if item in input_labels["visual"]:
+                    ok.append(k)
+                else:
+                    if "spoon" in input_labels["visual"] or "fork" in input_labels["visual"]:
+                        spoon.append(k)
+                    else:
+                        fail.append(k)
+
+            # TODO CHECK if input labels has item
+    print(ok)
+    print(spoon)
+    print(fail)
+    pass
+
+
+def hasItem(data, item):
+    for k, v in data.items():
+        if v["name"] == item:
+            return True
+
+    return False
+
+
 if __name__ == '__main__':
-    # my_demo.load_data()
+    # RCNNStats()
 
-    # my_demo.load_model()
-
-    # stackDat()
     app.run(host='0.0.0.0', port=5000, debug=False)

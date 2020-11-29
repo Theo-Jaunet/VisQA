@@ -31,7 +31,7 @@ cache = Cache(config={'CACHE_TYPE': 'simple'})
 cache.init_app(app)
 Compress(app)
 
-my_demo = Demo("lxmert_tiny_init_oracle_pretrain")
+my_demo = Demo("tiny_oracle")
 # my_demo = Demo("tiny_oracle")
 # my_demo = Demo("lxmert_tiny")
 
@@ -260,9 +260,11 @@ def toSliptD(data):
     print(data['lang'][0][0])
     for elem in order:
         temp = elem.split("_")
-        res[elem] = [round(np.median(data[temp[0]][int(temp[1])][int(temp[2])])),
-                     round(np.min(data[temp[0]][int(temp[1])][int(temp[2])])),
-                     round(np.max(data[temp[0]][int(temp[1])][int(temp[2])]))]
+        res[elem] = [
+            round(np.min(data[temp[0]][int(temp[1])][int(temp[2])])),
+            round(np.median(data[temp[0]][int(temp[1])][int(temp[2])])),
+            round(np.max(data[temp[0]][int(temp[1])][int(temp[2])]))
+        ]
 
     return res
 
@@ -274,10 +276,10 @@ def toSliptDict(data):
     for elem in order:
         temp = elem.split("_")
         res[elem] = [
+            round(np.min(data[temp[0]][int(temp[1])][int(temp[2])])),
             round(np.median(data[temp[0]][int(temp[1])][int(temp[2])])),
             round(np.max(data[temp[0]][int(temp[1])][int(temp[2])]))
         ]
-
     return res
 
 
@@ -516,7 +518,7 @@ def stackDat():
         res = {}
         head_mask = empty_mask()
         for elem in order:
-            res[elem] = {"functions": {}, "groups": {}, "kmeds": []}
+            res[elem] = {"functions": {}, "groups": {}, "kmeds": [[], [], []]}
         # skip = [51,54,101,138,151,204,206]
         img = 0
         for k, v in data.items():
@@ -532,21 +534,31 @@ def stackDat():
                 k_vals = toSliptDict(k_dist)
 
                 for k3, v3 in k_vals.items():
-
                     for op in v2["operations"]:
 
                         if not op in res[k3]["functions"]:
-                            res[k3]["functions"][op] = k_split([0, 0, 0, 0], v3)
+                            res[k3]["functions"][op] = [k_split([0, 0, 0, 0], v3[0]),
+                                                        k_split([0, 0, 0, 0], v3[1]),
+                                                        k_split([0, 0, 0, 0], v3[2])]
                         else:
-                            res[k3]["functions"][op] = k_split(res[k3]["functions"][op], v3)
+                            res[k3]["functions"][op][0] = k_split(res[k3]["functions"][op][0], v3[0])
+                            res[k3]["functions"][op][1] = k_split(res[k3]["functions"][op][1], v3[1])
+                            res[k3]["functions"][op][2] = k_split(res[k3]["functions"][op][2], v3[2])
 
                     if not v2["groups"]["global"] is None:
                         if not v2["groups"]["global"] in res[k3]["groups"]:
-                            res[k3]["groups"][v2["groups"]["global"]] = k_split([0, 0, 0, 0], v3)
+                            res[k3]["groups"][v2["groups"]["global"]] = [k_split([0, 0, 0, 0], v3[0]),
+                                                                         k_split([0, 0, 0, 0], v3[1]),
+                                                                         k_split([0, 0, 0, 0], v3[2])]
                         else:
-                            res[k3]["groups"][v2["groups"]["global"]] = k_split(
-                                res[k3]["groups"][v2["groups"]["global"]], v3)
-                    res[k3]["kmeds"].append(int(v3))
+                            tab = res[k3]["groups"][v2["groups"]["global"]]
+                            tab[0] = k_split(tab[0], v3[0])
+                            tab[0] = k_split(tab[1], v3[1])
+                            tab[0] = k_split(tab[2], v3[1])
+
+                    res[k3]["kmeds"][0].append(int(v3[0]))
+                    res[k3]["kmeds"][1].append(int(v3[1]))
+                    res[k3]["kmeds"][2].append(int(v3[2]))
 
                     # if not v2["functions"] in res[k3]["functions"]:
                     #     res[k3]["functions"][v2["functions"]] = k_split([0, 0, 0, 0], v3)
@@ -562,7 +574,7 @@ def stackDat():
                     # res[k3]["kmeds"].append(int(v3))
             img += 1
 
-        with open('%s.json' % "lxmert_tiny_init_oracle_pretrain_full", 'w') as wjson:
+        with open('%s.json' % "tiny_oracle_full", 'w') as wjson:
             ujson.dump(res, wjson, ensure_ascii=False, sort_keys=True, indent=4)
 
 
@@ -594,14 +606,14 @@ if __name__ == '__main__':
 
     # my_demo.load_model()
 
-    # stackDat()
+    stackDat()
     # app.run(host='0.0.0.0', port=5000, debug=False)
 
     # with open("/home/theo/Downloads/val_all_tail0.20_head0.20.json", 'r') as fjson:
     #     imgs = ujson.load(fjson)
     #     print(imgs["001002646"])
 
-    merger()
+    # merger()
 
     # merger2()
 
