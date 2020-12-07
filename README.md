@@ -12,7 +12,11 @@ Clone this repo and install Python dependecies as it follows (you may want to us
 pip install -r requirements.txt
 ```
 
-Then, you must add models into "model/src/pretrain":
+For the following, please refer to LXMERT's repo : 
+ https://github.com/airsplay/lxmert
+ 
+ 
+You must add models into "model/src/pretrain", for instance, the following:
 
 ```
 mv ~/Downloads/lxmert.pth model/src/pretrain/lxmert.pth
@@ -22,7 +26,7 @@ mv ~/Downloads/oracle.pth model/src/pretrain/oracle.pth
 mv ~/Downloads/tiny_lxmert.pth model/src/pretrain/tiny_lxmert.pth
 ```
 
-And the TSV, also in the drive:
+And the features TSV:
 
 ```
 mkdir -p model/gqa_testdev_obj36/vg_gqa_imgfeat; mv ~/Downloads/gqa_testdev_obj36.tsv $_
@@ -37,7 +41,6 @@ You can launch the server with the script 'visqa.py' at the root of this repo:
 ```
 python3 visqa.py
 ```
-
 
 
 
