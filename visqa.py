@@ -1,14 +1,8 @@
-import binascii
-import pickle
-
 import ujson as ujson
 import numpy as np
 from flask import Flask, render_template, request, session, redirect, logging, jsonify, Response
-from flask_caching import Cache
-from flask_compress import Compress
-import os
+
 import sys
-from shutil import copyfile
 
 sys.path.insert(1, 'model/src/tasks')
 sys.path.insert(1, 'model/src/')
@@ -169,11 +163,6 @@ def switchMod():
         my_demo.cfg["tiny_lxmert"] = 1
         my_demo.cfg["oracle"] = 1
 
-    # if mod["head"] == 4:
-    #     my_demo.cfg["tiny_lxmert"] = 1
-    # else:
-    #     my_demo.cfg["tiny_lxmert"] = 0
-
     if dataName == "oracle":
         # my_demo.cfg["oracle"] = 1
         my_demo.cfg['data_split'] = 'val'
@@ -198,7 +187,7 @@ def switchMod():
 
 
 def RCNNStats():
-    res = {}
+    res = {"total": [[], []]}
     ok = []
     fail = []
     spoon = []
@@ -207,6 +196,7 @@ def RCNNStats():
         head_mask = empty_mask()
         item = "knife"
         for k, v in imgs.items():
+
             if hasItem(v["scene"]["objects"], item):
                 five_predictions, attention_heads, alignment, k_dist, input_labels, input_size \
                     = my_demo2.ask(v["questions"]["0"]["question"], k, head_mask)
@@ -219,7 +209,7 @@ def RCNNStats():
                     else:
                         fail.append(k)
 
-            # TODO CHECK if input labels has item
+        # TODO CHECK if input labels has item
     print(ok)
     print(spoon)
     print(fail)
@@ -230,11 +220,105 @@ def hasItem(data, item):
     for k, v in data.items():
         if v["name"] == item:
             return True
-
     return False
+
+
+def pruneStats():
+    head_mask = empty_mask()
+    # units = ["lang_4_0", "lang_6_1", "lang_6_0", "lang_5_0", "lang_3_3"]
+    # units = ["lang_8_1", "lang_7_1", "lang_7_2", "lang_6_0", "lang_7_3", "lang_6_3", "lang_8_0"]
+    # units = ["lv_0_0", "lv_0_1", "lv_0_2", "lv_0_3","lang_8_2","lang_8_3","lang_8_1","lang_8_0"]
+    units = ["lang_8_0","lang_6_2","lang_6_3","lang_6_1","lang_6_0"]
+    # units = ["vl_2_3", "lang_1_2", "lang_2_1", "lang_3_2", "lang_5_2", "lang_6_3", "lang_6_0", "lang_7_0", "lang_8_3",
+    #          "lang_8_2", "lang_7_2", "lang_6_2", "lang_6_1", "lang_5_3", "lang_4_0", "lang_3_3", "lang_2_0", "lang_1_1",
+    #          "ll_0_0"]
+    head_mask2 = empty_mask()
+    stats1 = [0, 0, 0]
+    stats2 = [0, 0, 0]
+    jf = [0, 0]
+    jf2 = [0, 0]
+    ref = ["H", "M", "T"]
+    if units is not None and not units == ['']:
+        for elem in units:
+            temp = elem.split("_")
+            # print(temp)
+            head_mask[temp[0]][int(temp[1])][int(temp[2])] = 1
+
+        with open("static/assets/data/info.json", 'r') as fjson:
+            imgs = ujson.load(fjson)
+            for k, v in imgs.items():
+
+                for k2, v2 in v["questions"].items():
+                    # print(v2)
+                    if "and" in v2["operations"]:
+                    # if "tail" == v2["ood"]: # "relate" in v2["operations"]:
+                        # temp = v2["question"].split(" ")
+                        #
+                        # rof = temp.index("and")
+                        # # print(temp)
+                        # bob = temp[rof - 1]
+                        #
+                        # if "?" in temp[rof + 1]:
+                        #     temp[rof - 1] = temp[rof + 1].replace("?","")
+                        #     temp[rof + 1] = bob+"?"
+                        # else:
+                        #     temp[rof - 1] = temp[rof + 1]
+                        #     temp[rof + 1] = bob
+
+
+                        # v2["question"] =" ".join(temp)
+
+                        five_predictions, attention_heads, alignment, k_dist, input_labels, input_size = my_demo3.ask(
+                            v2["question"], k, head_mask2)
+
+                        five_predictions2, _, _, _, _, _ = my_demo3.ask(
+                            v2["question"], k, head_mask)
+
+                        ood1 = getOod(v2, five_predictions[0][0])
+                        ood2 = getOod(v2, five_predictions2[0][0])
+
+                        if v2["answer"] == five_predictions[0][0]:
+                            jf[0] += 1
+                        else:
+                            jf[1] += 1
+
+                        if v2["answer"] == five_predictions2[0][0]:
+                            jf2[0] += 1
+                        else:
+                            jf2[1] += 1
+
+                        stats1[ref.index(ood1)] += 1
+                        # if ood2 == "T":
+                        #     print(five_predictions2)
+                        #     print(k, " --- ", v2["question"], ' --- ', five_predictions2[0][0], " --conf-- ",
+                        #           five_predictions2[0][1].item())
+                        stats2[ref.index(ood2)] += 1
+                    # print(k, "-- ", v2["question"], "-- GT", v2["answer"], "---", five_predictions2[0][0], "--", v2["answer"] == five_predictions2[0][0])
+
+            print(stats1)
+            print(stats2)
+
+            print("--*-")
+            print(jf)
+            print(jf2)
+
+            # five_predictions, attention_heads, alignment, k_dist, input_labels, input_size \
+            #     = my_demo2.ask(v["questions"]["0"]["question"], k, head_mask)
+
+
+def getOod(question, word):
+    for elem in question["tail"]:
+        if elem["ans"] == word:
+            return "T"
+
+    for elem in question["head"]:
+        if elem["ans"] == word:
+            return "H"
+
+    return "M"
 
 
 if __name__ == '__main__':
     # RCNNStats()
-
+    # pruneStats()
     app.run(host='0.0.0.0', port=5000, debug=False)

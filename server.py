@@ -1,15 +1,13 @@
 import binascii
 import pickle
-
 import ujson as ujson
-import umap.umap_ as umap
 import numpy as np
-from flask import Flask, render_template, request, session, redirect, logging, jsonify, Response
+from flask import Flask, render_template, request
 from flask_caching import Cache
 from flask_compress import Compress
 import os
 import sys
-from shutil import copyfile
+
 
 sys.path.insert(1, 'model/src/tasks')
 sys.path.insert(1, 'model/src/')
