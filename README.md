@@ -1,4 +1,4 @@
-# PatternReasoning
+# VisQA
 
 
 
@@ -12,7 +12,7 @@ Clone this repo and install Python dependecies as it follows (you may want to us
 pip install -r requirements.txt
 ```
 
-Then, you must copy the models downloaded from the given Google Drive into "model/src/pretrain":
+Then, you must add models into "model/src/pretrain":
 
 ```
 mv ~/Downloads/lxmert.pth model/src/pretrain/lxmert.pth
@@ -31,12 +31,11 @@ mkdir -p model/gqa_testdev_obj36/vg_gqa_imgfeat; mv ~/Downloads/gqa_testdev_obj3
 This command creates non-existant Dirs, and moves the tsv, you may need to change it based on your OS (in linux **$_** at the end is needed)
 
 
-
-You can launch the server with the script 'server.py' at the root of this repo:
+You can launch the server with the script 'visqa.py' at the root of this repo:
 
 
 ```
-python3 server.py
+python3 visqa.py
 ```
 
 
