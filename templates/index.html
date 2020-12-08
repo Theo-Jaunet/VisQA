@@ -153,8 +153,8 @@
             -webkit-appearance: none;
             background-color: #aaa;
             height: 6px;
-            width: 100%;
-            margin: 10px auto;
+            width: 98%;
+            /*margin: 10px auto;*/
             cursor: pointer;
         }
 
@@ -214,7 +214,7 @@
             display: flex;
             justify-content: space-between;
             height: auto;
-            bottom: 23px;
+            bottom: 21px;
             /* disable text selection */
             -webkit-user-select: none; /* Safari */
             -moz-user-select: none; /* Firefox */
@@ -324,7 +324,7 @@
     <div class="row">
         <div class="twelve column" style="margin-top: 0.8%;position: relative">
             <!--            <div id="questDisp" style="width: 100%;height: 35px"></div>-->
-            <div style="border: thin solid #adadad;padding: 0.25em;height: 84px;width: 100%;display: inline-block"
+            <div style="padding: 0.25em;height: 84px;width: 100%;display: inline-block"
                  id="selFlat">
                 <div id="tail"
                      style="height: 100%;width: 96.6%;display: block;  overflow-x: scroll; overflow-y: hidden;   white-space: nowrap;">
@@ -345,17 +345,17 @@
             </div>
             <div style="display: inline-block">
                 <img src="/static/assets/images/add.png" id="plusTail" class="plusBtn"
-                     style="height: 40px;width: auto;top: 16%;right: 0.2%;position: absolute">
+                     style="height: 40px;width: auto;top: 15%;right: 0.2%;position: absolute">
             </div>
 
             <svg id="qDistrib"
-                 style="width: 100%;height: 30px;margin-top: -25px">
+                 style="width: 100%;height: 30px;margin-top: -6px;position: absolute">
 
             </svg>
         </div>
     </div>
 
-    <div class="row" style="margin-top: 1%;position: relative">
+    <div class="row" style="margin-top: 1.5%;position: relative">
         <div id="asker" class="three columns">
             <div style=";z-index: 99;position: relative">
 
@@ -425,7 +425,7 @@
                     </div>
                     <span style="position:relative;top: -20px"> K=100 </span>
 
-                    <div style="position: absolute;left:50.6%;top: 32px" class="__range __range-step ">
+                    <div style="position: absolute;left:50.6%;top: 32px;width:130px" class="__range __range-step ">
                         <input type="range" min="0" max="2" value="1" id="kmod" style="width: 130px" list="ticks1">
 
                         <datalist id="ticks1">
@@ -484,6 +484,11 @@
 
             <h4 id="detailab2"
                 style="position: absolute;top: -25px;margin-left: 185px;font-size: 16pt;display: inline"></h4>
+
+            <button id="norm"
+                    style="line-height: 25px;padding: 0 3px;position: absolute;height: auto;margin-left: 36px;margin-top: 2px;z-index: 99">
+                norm
+            </button>
 
             <h5
                     style="position: absolute;top: 16px;right: 15px;font-size: 14pt;display: inline">Per Operation</h5>
@@ -578,6 +583,14 @@
     };
 
 
+    $("#norm").on("click", function () {
+        normed = !normed
+
+        $(this).toggleClass("button-primary")
+        updateStats(headStat[disp][curname], curname)
+    })
+
+
     $("#saveState").on("click", function () {
 
         oldKmean = JSON.parse(JSON.stringify(currKmean)) // DEEP COPY
@@ -611,25 +624,23 @@
 
     $("#fullDiff").on("click", function () {
 
-        let hk = Object.keys(currHeatmaps)
 
         $(this).toggleClass("button-primary")
-
-        let diffHeat = {};
-        let svg = d3.select("#model")
-        for (let i = 0; i < hk.length; i++) {
-            diffHeat[hk[i]] = makeDiff2(currHeatmaps[hk[i]], oldHeatmaps[hk[i]])
-            console.log(hk[i]);
-            console.log(currHeatmaps[hk[i]]);
-            console.log(oldHeatmaps[hk[i]]);
-            console.log(diffHeat[hk[i]]);
-            console.log("-------------");
-            svg.select("#" + hk[i]).attr("fill", diff_col(agDiff(diffHeat[hk[i]])));
-
-        }
-
-        currDiffHeat = diffHeat;
         fdiff_bool = !fdiff_bool;
+        if (fdiff_bool) {
+            // console.log(oldHeatmaps);
+            let hk = Object.keys(currHeatmaps)
+            let diffHeat = {};
+            let svg = d3.select("#model")
+            for (let i = 0; i < hk.length; i++) {
+                diffHeat[hk[i]] = makeDiff2(currHeatmaps[hk[i]], oldHeatmaps[hk[i]])
+                svg.select("#" + hk[i]).attr("fill", diff_col(agDiff(diffHeat[hk[i]])));
+            }
+
+            currDiffHeat = diffHeat;
+        } else {
+            fillHeads(currKmean)
+        }
 
 
     });
@@ -690,7 +701,7 @@
         if (keymap[16]) {
             attsMaps = union_arrays(attsMaps, temp)
         } else {
-            console.log('lalala');
+            // console.log('lalala');
             attsMaps = temp
             $(".kmeanSelected").toggleClass("kmeanSelected")
         }
@@ -710,7 +721,7 @@
         let d = metaDat[curImg]["questions"]
 
         let temp = Object.keys(d)
-        console.log(temp);
+        // console.log(temp);
         temp = temp.map((d, i) => metaDat[curImg]["questions"][d])
         let res = temp.filter(d => d.question == q)
 
@@ -734,7 +745,7 @@
         currQuest = getQFromText($("#ask-quest").val());
 
 
-        console.log(currQuest);
+        // console.log(currQuest);
 
         $.ajax({
             type: "POST",
@@ -760,7 +771,7 @@
         currQuest = getQFromText($("#ask-quest").val());
 
 
-        console.log(currQuest);
+        // console.log(currQuest);
 
         $.ajax({
             type: "POST",
@@ -797,7 +808,7 @@
 
 
     $("#model").on("click", "rect", function () {
-        console.log('lalal');
+        // console.log('lalal');
 
         let elem = $(this);
         let type = elem.attr("type");
@@ -806,7 +817,7 @@
 
 
         if (type === "0") {
-            console.log("block");
+            // console.log("block");
 
             let temp = block2names(name, nb);
 
@@ -835,7 +846,7 @@
 
         }
 
-        console.log(attsMaps);
+        // console.log(attsMaps);
 
         d3.selectAll("#model .rectMod").attr("class", "rectMod");
         for (let i = 0; i < attsMaps.length; i++) {
@@ -886,8 +897,6 @@
                 }
 
                 drawHeat(data, id, [0, 0]);
-
-                console.log(headStat[disp][id]);
 
                 $("#detailab").html("Attention Map for head <span style='font-weight:600;" +
                     "font-style: italic;'>" + id + "</span>")
@@ -965,7 +974,7 @@
                 res[1] = res[1].slice(0, 1)
             }
 
-            console.log(res);
+            // console.log(res);
             let heads = Object.keys(getHighHeads(res[0], res[1]))
 
             let ref = d3.select("#lang_0_0");
@@ -991,7 +1000,7 @@
         let dis = elem.val()
 
         let mode = models.filter(d => d.display == dis)[0]
-        console.log(mode);
+        // console.log(mode);
 
         d3.select("#model").transition().duration(470).style("opacity", "0.2")
         $("#loader").css("visibility", "visible")
@@ -1096,9 +1105,20 @@
     $("#kmod").on("input", function () {
 
         kmods = $(this).val()
+        console.log(fdiff_bool);
+        if (fdiff_bool) {
 
-        fillHeads(currKmean)
-        updateStats(headStat[disp][curname],curname)
+            let hk = Object.keys(currDiffHeat)
+
+            let svg = d3.select("#model")
+            for (let i = 0; i < hk.length; i++) {
+                svg.select("#" + hk[i]).attr("fill", diff_col(agDiff(currDiffHeat[hk[i]])));
+            }
+
+        } else {
+            fillHeads(currKmean)
+        }
+        updateStats(headStat[disp][curname], curname)
 
     })
 

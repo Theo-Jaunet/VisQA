@@ -27,7 +27,7 @@ let oldHeatLabels = {};
 
 
 let mono_col = d3.scaleLinear().domain([0, 0.35, 1]).range(['#ffffe1', '#FEEAA9', '#9b4a28']).interpolate(d3.interpolateHcl);
-let diff_col = d3.scaleLinear().domain([0, 0.08, 0.5, 0.9]).range(["EFF0E8", '#f2e7e9', "#aa5b65", "#6b111c"]).interpolate(d3.interpolateHcl);
+let diff_col = d3.scaleLinear().domain([0, 0.08, 0.1, 0.5]).range(["#EFF0E8", '#f2e7e9', "#aa5b65", "#6b111c"]).interpolate(d3.interpolateHcl);
 let fDuff_col = d3.scaleSequential(d3.interpolatePuOr).domain([-0.8, 0.8]);
 
 let asked = false;
@@ -39,7 +39,8 @@ let models = {};
 let metaDat = {};
 
 let modType = "oracle";
-let disp = "tiny_oracle"
+// let disp = "tiny_oracle"
+let disp = "lxmert_tiny_init_oracle_pretrain"
 let ogSize = [];
 
 let imShown;
@@ -50,8 +51,10 @@ let order;
 let initFlatDone = false;
 let loadedImgs = [0, 0];
 let headStat = {};
-
 let currQuest;
+
+
+let normed = false;
 load_data_light().then(r => init(r));
 
 
@@ -397,8 +400,6 @@ function drawModel(mod) {
 
         let tw = crossSt + (crossWidth * (i + 1)) + (block_xinter * (i))
         let th = crossySt + crossHeight / 2
-
-        console.log("LLAAAA --" + tw + "--" + th + " ||" + (tw + block_xinter));
         svg.append("path")
             .attr("d", `M${tw} ${th} ${tw + block_xinter} ${th}`)
             .attr("stroke", "rgba(115,115,115,0.53)")
@@ -611,8 +612,7 @@ function initStacked() {
     let bandPad = 6
 
     let yScale = d3.scaleLinear().domain([0, 300]).range([(size[1] - 120) / 2, 50])
-
-    let yScale2 = d3.scaleLinear().domain([0, 300]).range([(size[1] - 120), size[1] / 2]);
+    let yScale2 = d3.scaleLinear().domain([50, 500]).range([486 - 108, 486 - 220])
 
 
     groups.selectAll('rect')
@@ -670,6 +670,7 @@ function initStacked() {
         .domain([0, 100]).nice()
         .range([0, 471]).clamp(true)
 
+
     let vals = [12, 25, 50]
 
     svg.append("text")
@@ -690,7 +691,6 @@ function initStacked() {
 
 
     for (let i = 0; i < vals.length; i++) {
-        console.log(tScale(vals[i]));
 
         svg.append("line")
             .attr("x1", leftmarg)
@@ -782,7 +782,21 @@ function sortQues(a, b) {
 
 
 function onlyUnique(value, index, self) {
-  return self.indexOf(value) === index;
+    return self.indexOf(value) === index;
+}
+
+
+function normArray(dat) {
+
+    let ref = dat.reduce((a, b) => a + b)
+
+    for (let i = 0; i < dat.length; i++) {
+
+        dat[i] = dat[i] / ref
+    }
+
+
+    return dat
 }
 
 function updateStats(data, id) {
@@ -797,6 +811,8 @@ function updateStats(data, id) {
     let gr = ""
     let op = ""
 
+    let domain = (normed ? [0, 1] : [0, 400])
+
     if (currQuest != -1) {
         gr = currQuest["groups"]["global"]
         op = currQuest["operations"].filter(onlyUnique);
@@ -807,7 +823,7 @@ function updateStats(data, id) {
     let teKey = Object.keys(data['functions']);
 
     let dat = teKey.map(d => {
-        return {"val": data["functions"][d][kmods], "key": d}
+        return {"val": (normed ? normArray(data["functions"][d][kmods]) : data["functions"][d][kmods]), "key": d}
     });
     // let temp = dat.sort((a, b) => (a["val"][0] > b["val"][0]) ? -1 : ((b["val"][0] > a["val"][0]) ? 1 : 0))
     let labels = dat.map(d => d["key"]);
@@ -830,12 +846,17 @@ function updateStats(data, id) {
     let grs = g.selectAll("g").data(stack(temp.map(d => d["val"])))
     // let grs = g.selectAll("g").data(stack(teKey.map(d => data["functions"][d])))
 
-    let yScale = d3.scaleLinear().domain([150, 1500]).range([(486 - 265) / 2, 20]).nice()
+    let yScale = d3.scaleLinear().domain(domain).range([(486 - 255) / 2, 30]).clamp(true)
+
+
+    let exlu = ["select", "relate", "query", "exist"]
 
     grs.selectAll('rect')
         .data(d => d)
-        .join('rect').transition().duration(200).attr('y', d => yScale(d[1]))
-        .attr('height', d => yScale(d[0]) - yScale(d[1]))
+        .join('rect').transition().duration(200)
+        .attr('y', d => yScale(d[1]))
+        .attr('height', d => yScale(d[0]) - yScale(d[1])
+        )
 
     let tg = d3.select("#topLabels")
 
@@ -862,7 +883,7 @@ function updateStats(data, id) {
     let teKey2 = Object.keys(data['groups'])
 
     let dat2 = teKey2.map(d => {
-        return {"val": data["groups"][d][kmods], "key": d}
+        return {"val": (normed ? normArray(data["groups"][d][kmods]) : data["groups"][d][kmods]), "key": d}
     })
 
     let labels2 = dat2.map(d => d["key"]);
@@ -888,7 +909,7 @@ function updateStats(data, id) {
     let grs2 = g2.selectAll("g").data(stack(temp2.map(d => d["val"])))
     // let grs = g.selectAll("g").data(stack(teKey.map(d => data["functions"][d])))
 
-    let yScale2 = d3.scaleLinear().domain([50, 500]).range([486 - 108, 486 - 220])
+    let yScale2 = d3.scaleLinear().domain((normed ? [0, 2] : [0, 500])).range([486 - 96, 486 - 250])
 
     grs2.selectAll('rect')
         .data(d => d)
@@ -981,10 +1002,7 @@ function median(values) {
 function init(dat) {
 
     models = dat[2];
-    console.log(models);
     metaDat = dat[3]
-    console.log(metaDat);
-
 
     delete metaDat["2412518"]
 
@@ -995,7 +1013,7 @@ function init(dat) {
     let sel = $("#models");
 
     for (let i = 0; i < models.length; i++) {
-        sel.append(new Option(models[i].display, models[i].display))
+        sel.append(new Option(models.reverse()[i].display, models[i].display))
     }
 
     let tres = countDistrib()
@@ -1133,7 +1151,6 @@ function loadInst(imgId, thead) {
         questId = (metaDat[imgId]["ids"]["min"] !== undefined ? metaDat[imgId]["ids"]["min"] : questId)
     }
 
-    console.log(questId);
 
     let im = new Image();
     let val = imgId
@@ -1161,10 +1178,6 @@ function loadInst(imgId, thead) {
 
     let q = getQ(metaDat[imgId]["questions"], questId)
 
-
-    // metaDat[imgId].filter(d => d["questionId"] == questId)[0]
-
-    console.log(q);
     currQuest = q
 
     let form = new FormData();
@@ -1246,7 +1259,6 @@ function fillScene(data) {
     let svg = d3.select("#sceneGraph");
 
     svg.selectAll("*").remove();
-    console.log(links);
 
     const link = svg.append("g")
         // .attr("stroke", "#999")
@@ -1538,9 +1550,6 @@ function fillTree() {
                     .attr("font-size", 14)
                     .text(data[i]["question"])*/
     }
-    console.log(path);
-
-    console.log(res);
 
 
     if (path.length > 1) {
@@ -1566,15 +1575,13 @@ function fillTree() {
         if (d.x > x1) x1 = d.x;
         if (d.x < x0) x0 = d.x;
 
-        console.log(d);
-
 
         d.y = d.y * 0.5
-        console.log(d.y);
+
+
         if (d.parent != null && d.data.children) {
             // d.y+= d.data.name.length*10
-            console.log(d.data.name);
-            console.log(d.data.name.length);
+
         }
         // d.y += d.data.name.length * 2
     });
@@ -1662,7 +1669,6 @@ function ask(data) {
     d = data
 
     // $("#result").html("Answer: <br> " + d.pred + " at " + (Math.round(d.confidence * 10000) / 100) + "%")
-    console.log(d);
 
     DrawRes(d.five);
 
@@ -2253,10 +2259,17 @@ function drawHeat(data, name, coords) {
 
 
 function agDiff(data) {
-    let tres = data.map(d => Math.max(...d))
-    return tres.reduce((a, b) => a + b) / tres.length
-
+    data = data.map(d => d.map(e => parseFloat(e)))
+    if (kmods == 1) {
+        return median(data.map(d => median(d)))
+    } else if (kmods == 0) {
+        return Math.max(...data.map(d => Math.max(...d.map(f => Math.abs(f)))))
+    } else {
+        return Math.min(...data.map(d => Math.min(...d.map(f => Math.abs(f)))))
+    }
 }
+
+
 
 function findRC(coords, cw, ch, st, marg, pad) {
 
@@ -2287,8 +2300,7 @@ function makeDiff(mat1, mat2) {
 
 
 function makeDiff2(mat1, mat2) {
-
-    return mat1.map((d, i) => d.map((f, j) => f - mat2[i][j]));
+    return mat1.map((d, i) => d.map((f, j) => ((j < mat2.length && i < mat2.length) ? f - mat2[i][j] : 0)));
 }
 
 
