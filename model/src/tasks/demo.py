@@ -55,10 +55,7 @@ def get_alignment_from_attmap(att_map, boxes, obj_class, tkn_sent):
 
 
 def get_k_dist_from_attmaps(att_maps, lang_mask, vis_mask):
-    """
-    Return distribution of k for each attention map in att_maps
-    """
-
+    """ Return distribution of k for each attention map in att_maps """
     k_dist = {}
     for maptype in ['lang', 'vis', 'vl', 'lv', 'vv', 'll']:
         n_layers = len(att_maps[maptype])
@@ -101,7 +98,7 @@ def get_k_dist_from_attmaps(att_maps, lang_mask, vis_mask):
     return k_dist
 
 
-def empty_mask():
+def empty_mask(n_heads):
     head_mask = {}
     for maptype in ['lang', 'vis', 'vl', 'lv', 'vv', 'll']:
 
@@ -112,7 +109,7 @@ def empty_mask():
         else:
             n_layers = args.xlayers
 
-        head_mask[maptype] = torch.zeros((n_layers, args.n_head))
+        head_mask[maptype] = torch.zeros((n_layers, n_heads))
     return head_mask
 
 
@@ -385,7 +382,7 @@ class Demo():
             if self.mode in ['lxmert_tiny', 'lxmert_tiny_init_oracle_pretrain', 'lxmert_tiny_init_oracle_scratch']:
                 self.cfg["tiny_lxmert"] = 1
                 self.cfg["oracle"] = 0
-            elif self.mode in ['lxmert']:
+            elif self.mode in ['lxmert_full_12heads_768hdims']:
                 self.cfg["tiny_lxmert"] = 0
                 self.cfg["oracle"] = 0
             elif self.mode in ['tiny_oracle']:
@@ -420,7 +417,7 @@ class Demo():
         args.task_pointer = 'KLDiv'
         args.n_head = 12
         args.hidden_size = 768
-        args.from_scratch = False
+        args.from_scratch = True
 
         args.visual_feat_dim = 2048
 
@@ -443,13 +440,15 @@ class Demo():
         self.cfg["pretrained_model_lxmert"] = path
         self.cfg["pretrained_model_tiny_lxmert"] = path
         self.cfg["pretrained_model_tiny_lxmert_oracle"] = path
-        print("Config loaded!")
+
+        print("pre-Config loaded!")
 
     def load_model(self):
         """
         Load the pre-trained VQA model
         """
 
+        print(args.n_head)
         # update data, to allow multiple load_model() calls
         self.data_loader = Demo_data(self.cfg)
 
@@ -525,6 +524,9 @@ class Demo():
             self.displayer.draw_k_dist(k_dist)
 
     def ask(self, question, image, head_mask, show_heads=False, force_attmaps=None):
+
+        args.n_head = head_mask["lang"].size()[1]
+
         """
         Ask a question about an (pre-processed) image,
         @input:
@@ -566,8 +568,8 @@ class Demo():
         # iou_question, iou_answer = iou_question.cuda(), iou_answer.cuda()
         # sem_question_words, sem_answer_words, bboxes_words = sem_question_words.cuda(), sem_answer_words.cuda(), bboxes_words.cuda()
 
-        #* Forcing attention maps: example!
-        #* 1) I simulate an attention map extracted from another question
+        # * Forcing attention maps: example!
+        # * 1) I simulate an attention map extracted from another question
         # n_layers = {'lang':9, 'vis':5, 'vl':5, 'lv':5, 'vv':5, 'll':5}
         # dim = {'lang':(20,20), 'vis':(36,36), 'vl':(20,36), 'lv':(36,20), 'vv':(36,36), 'll':(20,20)} # (receive, send)
         # force_attmaps = {}
@@ -576,12 +578,12 @@ class Demo():
         #     for layer in range(n_layers[maptype]):
         #         heads_attmap = []
         #         for head in range(4):
-        #             heads_attmap.append(torch.log(torch.rand(dim[maptype]).softmax(dim=-1)+1e-9))    
+        #             heads_attmap.append(torch.log(torch.rand(dim[maptype]).softmax(dim=-1)+1e-9))
         #         force_attmaps[maptype].append(heads_attmap)
-        #* 2) be sure to have logprob (not softmax)
-        #* 3) If you want, you can let some heads free. To do so, assign them a None value.
-        #* These heads will be computed as usual.
-        #force_attmaps['lang'][0][0] = None
+        # * 2) be sure to have logprob (not softmax)
+        # * 3) If you want, you can let some heads free. To do so, assign them a None value.
+        # * These heads will be computed as usual.
+        # force_attmaps['lang'][0][0] = None
 
         # Inference
         with torch.no_grad():
@@ -600,7 +602,9 @@ class Demo():
                                                                                                 visual_attention_mask,
                                                                                                 verbose=True,
                                                                                                 head_mask=head_mask,
-                                                                                                force_attmaps=force_attmaps,)
+                                                                                                force_attmaps=force_attmaps, )
+
+
 
         # Extract alignment for attention map 'vl' layer 3 head 0
         # word2bbox = get_alignment_from_attmap(
@@ -614,6 +618,7 @@ class Demo():
         k_dist = get_k_dist_from_attmaps(att_maps, lang_mask.squeeze(), vis_mask)
         # k_dist = get_k_dist_from_attmaps(att_maps, lang_mask.cpu().squeeze(), vis_mask)
 
+
         # compute prediction
         # logit = torch.softmax(logit, dim=-1)
         # score, label = logit.max(1)
@@ -621,7 +626,6 @@ class Demo():
         # score_srt, label_srt = torch.sort(logit.squeeze(), descending=True, dim=-1)
         five_predictions = [(self.label_to_ans[label_srt[i].numpy()], score_srt[i]) for i in range(5)]
         attention_heads = att_maps
-
 
         # textual and visual input labels
         bboxes_pxl = (boxes.squeeze()[:obj_num] * torch.tensor([width, height, width, height]).unsqueeze(

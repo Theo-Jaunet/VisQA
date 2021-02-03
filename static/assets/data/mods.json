@@ -1,5 +1,16 @@
 [
   {
+    "display": "lxmert_full_12heads_768hdims",
+    "data": "oracle",
+    "type": "rcnn",
+    "mod": {
+      "head": 12,
+      "lang": 9,
+      "vis": 5,
+      "cross": 5
+    }
+  },
+  {
     "display": "tiny_oracle",
     "data": "oracle",
     "type": "oracle",
@@ -13,7 +24,7 @@
   {
     "display": "lxmert_tiny",
     "data": "oracle",
-     "type": "rcnn",
+    "type": "rcnn",
     "mod": {
       "head": 4,
       "lang": 9,
@@ -32,4 +43,5 @@
       "cross": 5
     }
   }
+
 ]

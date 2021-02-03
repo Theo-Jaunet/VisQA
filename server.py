@@ -47,8 +47,8 @@ def makeOrder(layout):
     return res
 
 
-order = makeOrder(mod)
 
+order = makeOrder(mod)
 
 # print(order)
 

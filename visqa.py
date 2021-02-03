@@ -19,7 +19,8 @@ from model.src.tasks.demo import Demo, empty_mask
 # cache = Cache(config={'CACHE_TYPE': 'simple'})
 # cache.init_app(app)
 # Compress(app)
-
+my_demo4 = Demo("lxmert_full_12heads_768hdims")
+print("MODEL 4 LOADED !!!")
 my_demo = Demo("tiny_oracle")
 print("MODEL 1 LOADED !!!")
 my_demo2 = Demo("lxmert_tiny")
@@ -55,6 +56,7 @@ def toSliptDict(data):
     res = {}
     global order
     # print(data['lang'][0][0])
+    print(order)
     for elem in order:
         temp = elem.split("_")
         res[elem] = [
@@ -97,11 +99,21 @@ def ask():
     global my_demo
     global my_demo2
     global my_demo3
+    global my_demo4
+    global mod
+    global order
     units = request.form['units'].split(",")
     question = request.form['question']
     image = request.form['image']
     disp = request.form['disp']
-    head_mask = empty_mask()
+    if disp == "lxmert_full_12heads_768hdims":
+        head_mask = empty_mask(12)
+        mod = [("lang", 9, 12), ("vis", 5, 12), ("vl", 5, 12), ("lv", 5, 12), ("vv", 5, 12), ("ll", 5, 12)]
+        order = makeOrder(mod)
+    else:
+        mod = [("lang", 9, 4), ("vis", 5, 4), ("vl", 5, 4), ("lv", 5, 4), ("vv", 5, 4), ("ll", 5, 4)]
+        order = makeOrder(mod)
+        head_mask = empty_mask(4)
 
     if units is not None and not units == ['']:
         for elem in units:
@@ -116,10 +128,13 @@ def ask():
     elif disp == "lxmert_tiny_init_oracle_pretrain":
         five_predictions, attention_heads, alignment, k_dist, input_labels, input_size = my_demo3.ask(question, image,
                                                                                                       head_mask)
+    elif disp == "lxmert_full_12heads_768hdims":
+
+        five_predictions, attention_heads, alignment, k_dist, input_labels, input_size = my_demo4.ask(question, image,
+                                                                                                      head_mask)
     else:
         five_predictions, attention_heads, alignment, k_dist, input_labels, input_size = my_demo.ask(question, image,
                                                                                                      head_mask)
-
     k_vals = toSliptDict(k_dist)
 
     five = {}
@@ -228,7 +243,7 @@ def pruneStats():
     # units = ["lang_4_0", "lang_6_1", "lang_6_0", "lang_5_0", "lang_3_3"]
     # units = ["lang_8_1", "lang_7_1", "lang_7_2", "lang_6_0", "lang_7_3", "lang_6_3", "lang_8_0"]
     # units = ["lv_0_0", "lv_0_1", "lv_0_2", "lv_0_3","lang_8_2","lang_8_3","lang_8_1","lang_8_0"]
-    units = ["lang_8_0","lang_6_2","lang_6_3","lang_6_1","lang_6_0"]
+    units = ["lang_8_0", "lang_6_2", "lang_6_3", "lang_6_1", "lang_6_0"]
     # units = ["vl_2_3", "lang_1_2", "lang_2_1", "lang_3_2", "lang_5_2", "lang_6_3", "lang_6_0", "lang_7_0", "lang_8_3",
     #          "lang_8_2", "lang_7_2", "lang_6_2", "lang_6_1", "lang_5_3", "lang_4_0", "lang_3_3", "lang_2_0", "lang_1_1",
     #          "ll_0_0"]
@@ -251,7 +266,7 @@ def pruneStats():
                 for k2, v2 in v["questions"].items():
                     # print(v2)
                     if "and" in v2["operations"]:
-                    # if "tail" == v2["ood"]: # "relate" in v2["operations"]:
+                        # if "tail" == v2["ood"]: # "relate" in v2["operations"]:
                         # temp = v2["question"].split(" ")
                         #
                         # rof = temp.index("and")
@@ -264,7 +279,6 @@ def pruneStats():
                         # else:
                         #     temp[rof - 1] = temp[rof + 1]
                         #     temp[rof + 1] = bob
-
 
                         # v2["question"] =" ".join(temp)
 

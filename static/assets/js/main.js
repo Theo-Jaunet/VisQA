@@ -1004,16 +1004,21 @@ function init(dat) {
     models = dat[2];
     metaDat = dat[3]
 
+    console.log(models);
+
     delete metaDat["2412518"]
 
     headStat["tiny_oracle"] = dat[4];
     headStat["lxmert_tiny"] = dat[5];
     headStat["lxmert_tiny_init_oracle_pretrain"] = dat[6];
+    headStat["lxmert"] = dat[6];
 
     let sel = $("#models");
 
-    for (let i = 0; i < models.length; i++) {
-        sel.append(new Option(models.reverse()[i].display, models[i].display))
+    for (let i = models.length-1; i > -1; i--) {
+        let name = models[i].display
+        console.log(name);
+        sel.append(new Option(name, name))
     }
 
     let tres = countDistrib()
@@ -2268,7 +2273,6 @@ function agDiff(data) {
         return Math.min(...data.map(d => Math.min(...d.map(f => Math.abs(f)))))
     }
 }
-
 
 
 function findRC(coords, cw, ch, st, marg, pad) {
