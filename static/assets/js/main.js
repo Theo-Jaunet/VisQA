@@ -68,7 +68,8 @@ async function load_data_light() {
         await d3.json('static/assets/data/info.json', d3.autoType),
         await d3.json('static/assets/data/tiny_oracle_full.json', d3.autoType),
         await d3.json('static/assets/data/lxmert_tiny_full.json', d3.autoType),
-        await d3.json('static/assets/data/lxmert_tiny_init_oracle_pretrain_full.json', d3.autoType)
+        await d3.json('static/assets/data/lxmert_tiny_init_oracle_pretrain_full.json', d3.autoType),
+        await d3.json('static/assets/data/lxmert_full.json', d3.autoType)
     ]
 }
 
@@ -1011,7 +1012,7 @@ function init(dat) {
     headStat["tiny_oracle"] = dat[4];
     headStat["lxmert_tiny"] = dat[5];
     headStat["lxmert_tiny_init_oracle_pretrain"] = dat[6];
-    headStat["lxmert"] = dat[6];
+    headStat["lxmert_full_12heads_768hdims"] = dat[7];
 
     let sel = $("#models");
 
@@ -2255,11 +2256,14 @@ function drawHeat(data, name, coords) {
                 cont.fillStyle = mono_col(data[i][j]);
             }
 
+
+
             // cont.fillRect(st + marg + ((cw + pad) * j), st + marg + ((ch + pad) * i) + pad, cw, ch)
             cont.fillRect(st + marg + ((cw + pad) * j), st + marg + ((ch + pad) * i) + pad, cw, ch)
             cont.strokeRect(st + marg + ((cw + pad) * j), st + marg + ((ch + pad) * i) + pad, cw, ch)
         }
     }
+     ramp(mono_col)
 }
 
 

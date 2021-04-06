@@ -28,13 +28,13 @@ COMPRESS_MIN_SIZE = 500
 cache = Cache(config={'CACHE_TYPE': 'simple'})
 cache.init_app(app)
 Compress(app)
-
-my_demo = Demo("tiny_oracle")
+my_demo = Demo("lxmert_full_12heads_768hdims")
+# my_demo = Demo("tiny_oracle")
 # my_demo = Demo("tiny_oracle")
 # my_demo = Demo("lxmert_tiny")
 
-mod = [("lang", 9, 4), ("vis", 5, 4), ("vl", 5, 4), ("lv", 5, 4), ("vv", 5, 4), ("ll", 5, 4)]
-
+# mod = [("lang", 9, 4), ("vis", 5, 4), ("vl", 5, 4), ("lv", 5, 4), ("vv", 5, 4), ("ll", 5, 4)]
+mod = [("lang", 9, 12), ("vis", 5, 12), ("vl", 5, 12), ("lv", 5, 12), ("vv", 5, 12), ("ll", 5, 12)]
 
 def makeOrder(layout):
     res = []
@@ -118,7 +118,7 @@ def stater(mod, name, disp):
 
         for im in range(len(imgs["default"])):
             five_predictions, attention_heads, alignment, k_dist, input_labels, input_size \
-                = my_demo.ask(dataset[im].question, imgs["default"][im], empty_mask())
+                = my_demo.ask(dataset[im].question, imgs["default"][im], empty_mask(12))
             temp = toSliptD(k_dist)
 
             for elem in order:
@@ -314,7 +314,7 @@ def ask():
     units = request.form['units'].split(",")
     question = request.form['question']
     image = request.form['image']
-    head_mask = empty_mask()
+    head_mask = empty_mask(12)
 
     if units is not None and not units == ['']:
         for elem in units:
@@ -514,7 +514,7 @@ def stackDat():
     with open("static/assets/data/info.json", "r") as datFile:
         data = ujson.load(datFile)
         res = {}
-        head_mask = empty_mask()
+        head_mask = empty_mask(12)
         for elem in order:
             res[elem] = {"functions": {}, "groups": {}, "kmeds": [[], [], []]}
         # skip = [51,54,101,138,151,204,206]
