@@ -349,7 +349,21 @@
         }
 
     </style>
-</head>
+
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZBG5M8MXTX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+
+        gtag('js', new Date());
+
+        gtag('config', 'G-ZBG5M8MXTX');
+    </script>
 <body>
 <script src="{{ url_for('static', filename='assets/js/main.js')}}"></script>
 <script src="{{ url_for('static', filename='assets/js/mapsHandler.js')}}"></script>
