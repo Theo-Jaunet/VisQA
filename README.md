@@ -16,6 +16,7 @@ For more information, please refer to the manuscript:
 [VisQA: X-raying Vision and Language Reasoning in Transformers](https://arxiv.org/abs/2104.00926)
 
 Work by:  Theo Jaunet*, Corentin Kervadec*, Romain Vuillemot, Grigory Antipov, Moez Baccouche, and Christian Wolf
+
 <em> (\*) indicates equal contribution </em>
 
 
