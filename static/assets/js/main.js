@@ -1673,8 +1673,8 @@ function fillTree() {
 function ask(data) {
     // d = JSON.parse(data);
 
-    data = JSON.parse(data)
-    console.log(data);
+    // data = JSON.parse(data)
+    // console.log(data);
     d = data
 
     // $("#result").html("Answer: <br> " + d.pred + " at " + (Math.round(d.confidence * 10000) / 100) + "%")
