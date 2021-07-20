@@ -56,7 +56,7 @@ def toSliptDict(data):
     res = {}
     global order
     # print(data['lang'][0][0])
-    print(order)
+    # print(order)
     for elem in order:
         temp = elem.split("_")
         res[elem] = [
@@ -166,7 +166,7 @@ def switchMod():
     type = request.form['type']
     my_demo.cfg['type'] = type
 
-    print("DISP:", disp)
+    # print("DISP:", disp)
 
     if disp in ['lxmert_tiny', 'lxmert_tiny_init_oracle_pretrain', 'lxmert_tiny_init_oracle_scratch']:
         my_demo.cfg["tiny_lxmert"] = 1
@@ -225,9 +225,9 @@ def RCNNStats():
                         fail.append(k)
 
         # TODO CHECK if input labels has item
-    print(ok)
-    print(spoon)
-    print(fail)
+    # print(ok)
+    # print(spoon)
+    # print(fail)
     pass
 
 
@@ -309,12 +309,6 @@ def pruneStats():
                         stats2[ref.index(ood2)] += 1
                     # print(k, "-- ", v2["question"], "-- GT", v2["answer"], "---", five_predictions2[0][0], "--", v2["answer"] == five_predictions2[0][0])
 
-            print(stats1)
-            print(stats2)
-
-            print("--*-")
-            print(jf)
-            print(jf2)
 
             # five_predictions, attention_heads, alignment, k_dist, input_labels, input_size \
             #     = my_demo2.ask(v["questions"]["0"]["question"], k, head_mask)

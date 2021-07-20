@@ -1016,7 +1016,7 @@ function init(dat) {
 
     let sel = $("#models");
 
-    for (let i = models.length-1; i > -1; i--) {
+    for (let i = models.length - 1; i > -1; i--) {
         let name = models[i].display
         console.log(name);
         sel.append(new Option(name, name))
@@ -1672,6 +1672,9 @@ function fillTree() {
 
 function ask(data) {
     // d = JSON.parse(data);
+
+    data = JSON.parse(data)
+    console.log(data);
     d = data
 
     // $("#result").html("Answer: <br> " + d.pred + " at " + (Math.round(d.confidence * 10000) / 100) + "%")
@@ -2257,13 +2260,12 @@ function drawHeat(data, name, coords) {
             }
 
 
-
             // cont.fillRect(st + marg + ((cw + pad) * j), st + marg + ((ch + pad) * i) + pad, cw, ch)
             cont.fillRect(st + marg + ((cw + pad) * j), st + marg + ((ch + pad) * i) + pad, cw, ch)
             cont.strokeRect(st + marg + ((cw + pad) * j), st + marg + ((ch + pad) * i) + pad, cw, ch)
         }
     }
-     ramp(mono_col)
+    ramp(mono_col)
 }
 
 

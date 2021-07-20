@@ -32,6 +32,40 @@
 
     <style>
 
+
+        #github:hover {
+            transform: scale(1.1);
+            cursor: pointer;
+
+        }
+
+
+        .authorBlock {
+            color: #333333;
+            /*width: fit-content;*/
+            display: inline-block;
+            text-align: center;
+            margin: 6px;
+            padding: 6px;
+            width: 210px;
+            margin-bottom: 20px;
+            border: 1px solid #FFF;
+
+        }
+
+        .authorBlock > h4 {
+            display: initial;
+        }
+
+        .authorBlock:hover {
+            background-color: rgba(50, 50, 50, 0.15);
+
+            border: 1px solid #555555;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+
         .ramp_lab {
             position: absolute;
             margin-top: 30px;
@@ -324,8 +358,24 @@
 –––––––––––––––––––––––––––––––––––––––––––––––––– -->
 
 <!--Icons made by <a href="https://www.flaticon.com/authors/dmitri13" title="dmitri13">dmitri13</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a>-->
-
+<div style="width: 42px;height: 42px;position: absolute;right: 15px;top:15px">
+    <a href="https://github.com/Theo-Jaunet/VisQA" target="_blank">
+        <img id="github" src="{{ url_for('static', filename='assets/images/github.png')}}" style="width: 100%">
+    </a>
+</div>
 <div class="container" style="margin-left: auto;width:1750px!important;max-width: 1750px">
+
+    <div class="row">
+        <div class="twelve columns" style="text-align: center;margin-top: 20px">
+            <h2>VisQA: X-raying Vision and Language Reasoning in Transformers</h2>
+            <p> For more information on this tool and how to use it, please refer to our <a
+                    href="{{ url_for('static', filename='assets/demo.mp4')}}" target="_blank">vidéo demo</a> and <a
+                    href="https://arxiv.org/abs/2104.00926" target="_blank">paper</a>.
+            </p>
+
+        </div>
+    </div>
+
     <div class="row">
         <div class="twelve column" style="margin-top: 0.8%;position: relative">
             <!--            <div id="questDisp" style="width: 100%;height: 35px"></div>-->
@@ -520,6 +570,82 @@
             </div>
         </div>
 
+    </div>
+
+    <div class="row">
+        <div class="twelve column" style="margin-top: 3%;position: relative;text-align: center">
+            <p style="width: 155px;margin-top: 20px;border-bottom: solid 1px #555;display: inline-block"></p>
+            <h2 style="text-align: center"> Authors </h2>
+
+            <div style="width: 100%; display: inline-block">
+                <a href="https://theo-jaunet.github.io/" target="_blank">
+                    <div class="authorBlock">
+
+                        <h4 style="font-size: 2.6rem;text-align: center;width: fit-content"> Théo Jaunet</h4>
+                        <img style="width: 150px;height: 150px;border: #555555 solid 1px;display: inline-block;text-align: center"
+                             src="static/assets/images/authors/theo.jpeg">
+                    </div>
+                </a>
+                <a href="https://corentinkervadec.github.io/" target="_blank">
+                    <div class="authorBlock">
+
+                        <h4 style="font-size: 2.6rem;text-align: center;width: fit-content"> Corentin Kervadec</h4>
+
+                        <img style="height: 150px;border: #555555 solid 1px;display: inline-block;text-align: center"
+                             src="static/assets/images/authors/corentin.jpg">
+
+                    </div>
+                </a>
+                <a href="https://romain.vuillemot.net/" target="_blank">
+                    <div class="authorBlock">
+
+                        <h4 style="font-size: 2.6rem;text-align: center;width: fit-content"> Romain Vuillemot</h4>
+                        <img style="height: 150px;border: #555555 solid 1px;display: inline-block;text-align: center"
+                             src="static/assets/images/authors/romain.png">
+                    </div>
+
+                </a>
+                <a href="https://www.linkedin.com/in/grigory-antipov/" target="_blank">
+                    <div class="authorBlock">
+                        <h4 style="font-size: 2.6rem;text-align: center;width: fit-content"> Grigory Antipov</h4>
+                        <img style="width: 150px;height: 150px;border: #555555 solid 1px;display: inline-block;text-align: center"
+                             src="static/assets/images/authors/grigory.jpeg">
+                    </div>
+                </a>
+                <a href="https://www.linkedin.com/in/moezbac/" target="_blank">
+                    <div class="authorBlock">
+                        <h4 style="font-size: 2.6rem;text-align: center;width: fit-content"> Moez Baccouche</h4>
+                        <img style="width: 150px;height: 150px;border: #555555 solid 1px;display: inline-block;text-align: center"
+                             src="static/assets/images/authors/moez.png">
+                    </div>
+                </a>
+                <a href="https://perso.liris.cnrs.fr/christian.wolf/" target="_blank">
+
+                    <div class="authorBlock">
+                        <h4 style="font-size: 2.6rem;text-align: center;width: fit-content"> Christian Wolf</h4>
+                        <img style="height: 150px;border: #555555 solid 1px;display: inline-block;text-align: center"
+                             src="static/assets/images/authors/christian.png">
+                    </div>
+                </a>
+                <div style="width: 100%;text-align: center">
+                    <div style="display: inline-block;">
+                        <h4 style="text-align: left">BibTex</h4>
+                        <pre style=" padding: 1.125em;line-height: 1.11;margin-bottom: 0.88em; background-color: #fafafa;border: thin solid #f3f3f3;white-space: pre;
+    counter-reset: line-numbering;word-break: normal;text-align: left">
+                    <code>
+@inproceedings{Jaunet2021VisQA,
+    author = {Theo Jaunet, Corentin Kervadec, Romain Vuillemot, Grigory Antipov, Moez Baccouche, and Christian Wolf},
+    title = {VisQA: X-raying Vision and Language Reasoning in Transformers},
+    journal={IEEE Transactions on Visualization and Computer Graphics (TVCG)},
+    year={2021},
+    publisher={IEEE}
+}</code>
+                </pre>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
 
 
@@ -1251,7 +1377,7 @@
             // console.log(i / (n - 1));
 
             context.fillStyle = color(i / (n - 1));
-            context.fillRect(i*w, 0, w, 150);
+            context.fillRect(i * w, 0, w, 150);
         }
 
 

@@ -137,7 +137,7 @@ def stater(mod, name, disp):
 
 
 def make_proj(data):
-    print('making Umap  ....')
+    # print('making Umap  ....')
     X_umap = umap.UMAP(n_neighbors=20, min_dist=0.3).fit_transform(data).tolist()
 
     return X_umap
@@ -255,7 +255,7 @@ def formatK_dist(k_dist):
 def toSliptD(data):
     res = {}
     global order
-    print(data['lang'][0][0])
+    # print(data['lang'][0][0])
     for elem in order:
         temp = elem.split("_")
         res[elem] = [
@@ -325,20 +325,20 @@ def ask():
     five_predictions, attention_heads, alignment, k_dist, input_labels, input_size \
         = my_demo.ask(question, image, head_mask)
 
-    print(input_size["textual"])
+    # print(input_size["textual"])
     k_vals = toSliptDict(k_dist)
 
     five = {}
     for u in range(len(five_predictions)):
         five[five_predictions[u][0]] = five_predictions[u][1].item()
 
-    print(five)
+    # print(five)
 
     for k, v in alignment.items():
         alignment[k]["xywh"] = alignment[k]["xywh"].tolist()
 
-    print(input_labels)
-    print(image)
+    # print(input_labels)
+    # print(image)
     return ujson.dumps({
         # "pred": top_prediction[0],
         # "confidence": top_prediction[1].item(),
@@ -425,9 +425,9 @@ def getQuests(data, id):
     i = 0
     for line in data:
         if data[line]['imageId'] == id:
-            print(line)
-            print(data[line])
-            print("---")
+            # print(line)
+            # print(data[line])
+            # print("---")
             res[i] = formatLine(data[line], line)
             i += 1
     return res
@@ -470,7 +470,7 @@ def switchMod():
     type = request.form['type']
     my_demo.cfg['type'] = type
 
-    print("DISP:", disp)
+    # print("DISP:", disp)
 
     if disp in ['lxmert_tiny', 'lxmert_tiny_init_oracle_pretrain', 'lxmert_tiny_init_oracle_scratch']:
         my_demo.cfg["tiny_lxmert"] = 1
@@ -604,8 +604,8 @@ if __name__ == '__main__':
 
     # my_demo.load_model()
 
-    stackDat()
-    # app.run(host='0.0.0.0', port=5000, debug=False)
+    # stackDat()
+    app.run(host='0.0.0.0', port=5000, debug=False)
 
     # with open("/home/theo/Downloads/val_all_tail0.20_head0.20.json", 'r') as fjson:
     #     imgs = ujson.load(fjson)
