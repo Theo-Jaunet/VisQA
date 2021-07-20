@@ -33,6 +33,12 @@
     <style>
 
 
+        .kmod_lab {
+            margin-top: 14px;
+            position: absolute;
+            margin-left: -6px;
+        }
+
         #github:hover {
             transform: scale(1.1);
             cursor: pointer;
@@ -498,10 +504,9 @@
                         <input type="range" min="0" max="2" value="1" id="kmod" style="width: 130px" list="ticks1">
 
                         <datalist id="ticks1">
-                            <option value="0">min</option>
-                            <option value="1">med</option>
-                            <option value="2">max</option>
-
+                            <option value="0"><span class="kmod_lab">min</span></option>
+                            <option value="1"><span class="kmod_lab">med</span></option>
+                            <option value="2"><span class="kmod_lab">max</span></option>
                         </datalist>
                         <!--                        <p style="display: inline-block"> min</p>-->
                         <!--                        <p style="display: inline-block"> med</p>-->
