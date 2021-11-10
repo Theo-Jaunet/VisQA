@@ -63,7 +63,7 @@ You can launch the server with the script 'visqa.py' at the root of this repo:
 
 
 ```
-python wsgi.py
+python visqa.py
 ```
 
 
